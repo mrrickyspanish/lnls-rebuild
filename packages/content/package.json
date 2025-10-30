@@ -1,0 +1,15 @@
+{
+  "name": "@lnls/content",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schemas": "./src/schemas/index.ts",
+    "./queries": "./src/queries/index.ts",
+    "./mappers": "./src/mappers/index.ts"
+  },
+  "dependencies": {
+    "groq": "3.40.0",
+    "zod": "3.23.8"
+  }
+}
