@@ -37,10 +37,11 @@ export default async function HomePage() {
   // Placeholder data - will be replaced with real Sanity queries
   const articles: Article[] = []
   const episodes: Episode[] = []
+  const featuredArticle: Article | null = null
 
   return (
     <main>
-      <Hero />
+      {featuredArticle && <Hero article={featuredArticle} />}
       <NewsStream news={newsData} />
       <FeaturedArticles articles={articles} />
       <LatestEpisodes episodes={episodes} />
