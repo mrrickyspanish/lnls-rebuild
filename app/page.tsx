@@ -42,7 +42,7 @@ export default async function HomePage() {
   return (
     <main>
       {featuredArticle && <Hero article={featuredArticle} />}
-      <NewsStream news={newsData} />
+      <NewsStream items={newsData} />
       <FeaturedArticles articles={articles} />
       <LatestEpisodes episodes={episodes} />
       <NewsletterSignup />
