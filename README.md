@@ -114,3 +114,35 @@ MIT License - See LICENSE file for details
 ## Contact
 
 For questions or support, please open an issue on GitHub.
+
+## Phase-1 Implemented
+
+### Environment Checklist
+
+- Configure `apps/web/.env` using the keys in `.env.example`
+- Configure `apps/studio/.env` with Sanity + Supabase credentials
+- Apply `supabase/phase1.sql` to your Supabase project
+- Ensure Anthropic, YouTube, and Spreaker credentials are in place before running ingest jobs
+
+### First-Run Steps
+
+```bash
+pnpm install
+supabase db execute --file supabase/phase1.sql # or run via the dashboard
+# copy the env templates to actual .env files and add values
+cp apps/web/.env.example apps/web/.env
+cp apps/studio/.env.example apps/studio/.env
+pnpm dev # starts Next.js web + Sanity Studio via Turborepo
+```
+
+Once the services are up:
+
+1. Create one sample Article and one Game Day entry in Studio.
+2. Hit `/api/ingest/spreaker` and `/api/ingest/youtube` once to seed media.
+3. Visit the web app home page to verify the AI News Stream and content listings.
+
+### Outstanding Integrations
+
+- Wire `/api/subscribe` to Resend for welcome emails.
+- Connect Supabase events ingestion for trending article signals.
+- Add optional admin-only `/admin/ingest` trigger if needed.

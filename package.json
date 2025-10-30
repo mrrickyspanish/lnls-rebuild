@@ -1,0 +1,21 @@
+{
+  "name": "lnls-rebuild",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "seed": "pnpm --filter @lnls/studio run seed"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.7",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "eslint": "9.4.0",
+    "prettier": "3.2.5",
+    "turbo": "2.0.3",
+    "typescript": "5.4.5"
+  }
+}

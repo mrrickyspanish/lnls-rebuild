@@ -1,0 +1,30 @@
+{
+  "name": "@lnls/studio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "seed": "sanity dataset import ./seed.ndjson production || true"
+  },
+  "dependencies": {
+    "@sanity/vision": "3.37.1",
+    "next": "15.0.0-canary.125",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "sanity": "3.37.1",
+    "sanity-plugin-workflow": "3.1.0",
+    "@sanity/ui": "2.2.6"
+  },
+  "devDependencies": {
+    "@lnls/config": "workspace:*",
+    "@types/node": "20.12.7",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "eslint": "9.4.0",
+    "eslint-config-next": "15.0.0-canary.125",
+    "typescript": "5.4.5"
+  }
+}
