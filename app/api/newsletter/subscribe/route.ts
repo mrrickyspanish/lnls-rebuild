@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       throw error
     }
 
-    // Send welcome email
+const resend = new Resend(process.env.RESEND_API_KEY)    // Send welcome email
     await resend.emails.send({
       from: 'LNLS <newsletter@lnls.media>',
       to: email,
