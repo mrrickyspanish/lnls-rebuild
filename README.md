@@ -1,148 +1,270 @@
-# LNLS Rebuild
+# Late Night Lake Show — Full-Stack Platform
 
-## Project Summary
+> Where Lakers fans stay up talking ball.
 
-LNLS (Late Night Lake Show) is a modern Lakers fan podcast and content platform featuring AI-powered content creation, social media integration, and automated publishing workflows. The rebuild focuses on creating a scalable, maintainable Next.js application with Sanity CMS, Supabase backend, and comprehensive AI pipeline integration.
+Modern NBA content hub built with Next.js, Sanity CMS, Supabase, and AI-powered automation.
 
-## Color Palette
+---
 
-### Primary Colors
-- **Purple**: `#552583` (Lakers Purple)
-- **Gold**: `#FDB927` (Lakers Gold)
-- **Black**: `#000000`
-- **White**: `#FFFFFF`
+## 🏀 Features
 
-### Secondary/Accent Colors
-- **Dark Purple**: `#32174D`
-- **Light Gold**: `#FDCD60`
-- **Gray Scale**: `#F5F5F5`, `#E0E0E0`, `#757575`
+### Content Management
+- **Articles** — Rich text editor with MDX support
+- **Podcast Episodes** — Auto-sync from Spreaker RSS
+- **YouTube Integration** — Automatic video feed updates
+- **Multi-format Publishing** — Write once, distribute everywhere
 
-## Typography Palette
+### AI-Powered Tools
+- **Auto News Aggregation** — RSS feeds + AI summarization
+- **Social Caption Generator** — X, Instagram, LinkedIn posts
+- **SEO Optimization** — AI-generated meta descriptions
+- **Show Notes Generator** — Podcast transcripts → formatted notes
 
-### Font Families
-- **Headings**: Inter, system-ui, sans-serif
-- **Body**: Inter, system-ui, sans-serif
-- **Code**: 'Fira Code', 'JetBrains Mono', monospace
+### User Features
+- **Live News Stream** — Real-time Lakers & NBA updates
+- **Newsletter System** — Daily email digests via Resend
+- **Responsive Design** — Mobile-first, performant
+- **Dark Mode** — Slate/neon color system
 
-### Font Weights
-- Light: 300
-- Regular: 400
-- Medium: 500
-- Semibold: 600
-- Bold: 700
-- Extrabold: 800
+---
 
-## AI Pipeline Integration
+## 🛠 Tech Stack
 
-### RSS Feed Processing
-- Automated Lakers news aggregation from trusted sources
-- AI-powered content summarization and categorization
-- Duplicate detection and content deduplication
-- Scheduled processing via cron jobs
-- Content storage in Sanity CMS
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 15 (App Router), React 18, TypeScript |
+| **Styling** | Tailwind CSS, Custom Design System |
+| **CMS** | Sanity Studio (Headless) |
+| **Database** | Supabase (PostgreSQL) |
+| **AI** | Anthropic Claude Sonnet 4.5 |
+| **Email** | Resend |
+| **Hosting** | Vercel |
+| **Media** | YouTube API, Spreaker RSS |
 
-### Social Media Caption Generation
-- AI-generated captions for Instagram, Twitter/X, and Facebook
-- Platform-specific formatting and character limits
-- Hashtag optimization and trend integration
-- Brand voice consistency enforcement
-- Multi-variant generation for A/B testing
+---
 
-### YouTube to Article Conversion
-- Automated transcript extraction from YouTube videos
-- AI-powered article generation from transcripts
-- SEO optimization and keyword extraction
-- Featured image generation and selection
-- Auto-publishing to CMS with proper metadata
+## 📁 Project Structure
 
-### Podcast Notes Generation
-- Episode transcript processing
-- Key points and highlights extraction
-- Timestamp generation for show notes
-- Guest information and link extraction
-- Chapter markers and navigation aids
+```
+lnls-platform/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes (AI, RSS, newsletter)
+│   ├── news/              # Article pages
+│   ├── podcast/           # Episode pages
+│   ├── videos/            # YouTube feed
+│   ├── about/             # Team & info
+│   └── subscribe/         # Newsletter signup
+├── components/            # React components
+├── lib/                   # Utilities & clients
+│   ├── sanity/           # Sanity config & queries
+│   ├── supabase/         # Database client
+│   └── ai/               # AI helper functions
+├── studio/               # Sanity Studio
+│   └── schemas/          # Content models
+├── styles/               # Global styles
+└── public/               # Static assets
+```
 
-## Tech Stack
+---
 
-- **Framework**: Next.js 14+ (App Router)
-- **CMS**: Sanity.io
-- **Database**: Supabase (PostgreSQL)
-- **Hosting**: Vercel
-- **AI Services**: OpenAI API, Claude API
-- **Styling**: Tailwind CSS
-- **Authentication**: Supabase Auth
+## 🚀 Quick Start
 
-## Getting Started
-
-For detailed setup instructions, see [Build Instructions](./docs/build_instructions.md).
-
-For architecture details, see [Architecture Documentation](./docs/architecture.md).
-
-For AI coding guidelines, see [AI Guidelines](./rules/ai_guidelines.md).
-
-## Quick Start
-
+### 1. Install Dependencies
 ```bash
-# Clone the repository
-git clone https://github.com/mrrickyspanish/lnls-rebuild.git
-cd lnls-rebuild
-
-# Install dependencies
 npm install
-
-# Set up environment variables (copy .env.example to .env.local)
-cp .env.example .env.local
-
-# Run development server
-npm run dev
 ```
 
-## Documentation
+### 2. Configure Environment
+```bash
+cp .env.example .env.local
+# Fill in your API keys and credentials
+```
 
-- [Build Instructions](./docs/build_instructions.md) - Step-by-step setup guide
-- [Architecture](./docs/architecture.md) - Technical architecture and design decisions
-- [AI Guidelines](./rules/ai_guidelines.md) - AI-specific coding standards and rules
+### 3. Start Development
+```bash
+# Next.js app
+npm run dev
 
-## Contributing
+# Sanity Studio (in another terminal)
+npm run studio
+```
 
-This project follows strict AI guidelines and coding standards. Please review the documentation in `/docs` and `/rules` before contributing.
+- App: http://localhost:3000
+- Studio: http://localhost:3000/studio
 
-## License
+---
 
-MIT License - See LICENSE file for details
+## 📚 Documentation
 
-## Contact
+- **[Deployment Guide](DEPLOYMENT.md)** — Full setup instructions
+- **[API Documentation](docs/api.md)** — Endpoint reference
+- **[Content Guide](docs/content.md)** — How to publish content
+- **[AI Tools](docs/ai.md)** — Using AI features
 
-For questions or support, please open an issue on GitHub.
+---
 
-## Phase-1 Implemented
+## 🎨 Design System
 
-### Environment Checklist
+### Color Palette
+```css
+--slate-base: #0F172A      /* Primary background */
+--slate-secondary: #1E293B /* Card backgrounds */
+--slate-muted: #64748B     /* Disabled text */
+--neon-purple: #A78BFA     /* Primary accent */
+--neon-gold: #FBBF24       /* Secondary accent */
+--offwhite: #F1F5F9        /* Body text */
+```
 
-- Configure `apps/web/.env` using the keys in `.env.example`
-- Configure `apps/studio/.env` with Sanity + Supabase credentials
-- Apply `supabase/phase1.sql` to your Supabase project
-- Ensure Anthropic, YouTube, and Spreaker credentials are in place before running ingest jobs
+### Typography
+- **Headings:** Bebas Neue (bold, uppercase)
+- **Body:** Inter (clean, readable)
 
-### First-Run Steps
+---
+
+## 🔧 Available Scripts
 
 ```bash
-pnpm install
-supabase db execute --file supabase/phase1.sql # or run via the dashboard
-# copy the env templates to actual .env files and add values
-cp apps/web/.env.example apps/web/.env
-cp apps/studio/.env.example apps/studio/.env
-pnpm dev # starts Next.js web + Sanity Studio via Turborepo
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+
+npm run studio       # Start Sanity Studio locally
+npm run studio:build # Build Sanity Studio
+npm run studio:deploy # Deploy Studio to Sanity
 ```
 
-Once the services are up:
+---
 
-1. Create one sample Article and one Game Day entry in Studio.
-2. Hit `/api/ingest/spreaker` and `/api/ingest/youtube` once to seed media.
-3. Visit the web app home page to verify the AI News Stream and content listings.
+## 🤖 AI Features
 
-### Outstanding Integrations
+### Social Captions
+Generate X, Instagram, and LinkedIn posts from article content.
 
-- Wire `/api/subscribe` to Resend for welcome emails.
-- Connect Supabase events ingestion for trending article signals.
-- Add optional admin-only `/admin/ingest` trigger if needed.
+```typescript
+POST /api/ai/assist
+{
+  "action": "generateSocialCaptions",
+  "data": {
+    "title": "LeBron drops 40",
+    "excerpt": "King James turns back the clock..."
+  }
+}
+```
+
+### News Aggregation
+Automatically fetch, summarize, and publish Lakers news.
+
+```bash
+# Manual trigger
+curl https://yourdomain.com/api/rss/aggregate
+```
+
+---
+
+## 📊 Analytics
+
+Built-in event tracking via Supabase:
+
+```typescript
+import { trackEvent } from '@/lib/supabase/client'
+
+trackEvent('article_view', '/news/lebron-40-points', {
+  articleId: 'abc123',
+  category: 'game-recap'
+})
+```
+
+---
+
+## 🔐 Environment Variables
+
+Required API keys:
+
+```env
+NEXT_PUBLIC_SANITY_PROJECT_ID=
+SANITY_API_TOKEN=
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+ANTHROPIC_API_KEY=
+RESEND_API_KEY=
+YOUTUBE_API_KEY=
+```
+
+See `.env.example` for complete list.
+
+---
+
+## 🚢 Deployment
+
+### Vercel (Recommended)
+1. Push to GitHub
+2. Import repo in Vercel
+3. Add environment variables
+4. Deploy
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+---
+
+## 📝 Content Workflow
+
+1. **Write** — Draft articles in Sanity Studio
+2. **Generate** — Use AI tools for social posts, SEO
+3. **Review** — Edit and approve
+4. **Publish** — Auto-deploys to production
+5. **Distribute** — Social captions ready to copy/paste
+
+---
+
+## 🎯 Roadmap
+
+### Phase 1 ✅
+- [x] Core website
+- [x] Sanity CMS integration
+- [x] AI news aggregation
+- [x] Newsletter system
+- [x] YouTube feed
+
+### Phase 2 🔄
+- [ ] Comments system
+- [ ] User accounts
+- [ ] Monetization (ads, affiliates)
+- [ ] Mobile app (React Native)
+
+### Phase 3 📋
+- [ ] Live streaming integration
+- [ ] Advanced analytics dashboard
+- [ ] Personalized recommendations
+- [ ] Multi-language support
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md).
+
+### Code Style
+- TypeScript strict mode
+- ESLint + Prettier
+- Conventional Commits
+- Component-first architecture
+
+---
+
+## 📄 License
+
+Copyright © 2024 Late Night Lake Show. All rights reserved.
+
+---
+
+## 📞 Contact
+
+- **Website:** https://lnls.media
+- **X/Twitter:** [@latenightlakeshow](https://twitter.com/latenightlakeshow)
+- **Email:** hello@lnls.media
+- **YouTube:** [@latenightlakeshow](https://youtube.com/@latenightlakeshow)
+
+---
+
+**Built by Lakers fans, for Lakers fans.** 💜💛

@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-slate-muted;
+  }
+  
+  body {
+    @apply bg-slate-base text-offwhite font-inter antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bebas tracking-wide;
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-gradient-to-r from-neon-purple to-neon-gold bg-clip-text text-transparent;
+  }
+  
+  .card {
+    @apply bg-slate-secondary rounded-lg border border-slate-muted/20 p-6 hover:border-neon-purple/50 transition-all duration-300;
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-r from-neon-purple to-neon-gold text-slate-base font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity duration-200;
+  }
+  
+  .btn-secondary {
+    @apply border border-neon-purple text-neon-purple font-semibold px-6 py-3 rounded-lg hover:bg-neon-purple/10 transition-all duration-200;
+  }
+  
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .article-content {
+    @apply prose prose-invert prose-lg max-w-none
+    prose-headings:font-bebas prose-headings:tracking-wide
+    prose-h2:text-3xl prose-h2:mb-4
+    prose-h3:text-2xl prose-h3:mb-3
+    prose-p:text-offwhite prose-p:leading-relaxed
+    prose-a:text-neon-purple prose-a:no-underline hover:prose-a:text-neon-gold prose-a:transition-colors
+    prose-strong:text-neon-gold prose-strong:font-semibold
+    prose-blockquote:border-l-4 prose-blockquote:border-neon-purple prose-blockquote:pl-4 prose-blockquote:italic
+    prose-code:bg-slate-secondary prose-code:text-neon-purple prose-code:px-2 prose-code:py-1 prose-code:rounded;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
