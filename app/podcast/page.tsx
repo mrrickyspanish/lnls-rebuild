@@ -19,7 +19,6 @@ export default async function PodcastPage() {
 
   return (
     <div className="section-container py-12">
-      {/* Header */}
       <div className="mb-12">
         <h1 className="text-5xl lg:text-6xl font-bebas gradient-text mb-4">
           Podcast
@@ -28,7 +27,6 @@ export default async function PodcastPage() {
           Real talk about the Lakers, NBA, and basketball culture. New episodes every week.
         </p>
 
-        {/* Podcast Platforms */}
         <div className="flex flex-wrap gap-4 mt-6">
           
             href="https://open.spotify.com/show/your-show-id"
@@ -57,7 +55,6 @@ export default async function PodcastPage() {
         </div>
       </div>
 
-      {/* Episodes Grid */}
       <LatestEpisodes episodes={episodes} />
     </div>
   )
