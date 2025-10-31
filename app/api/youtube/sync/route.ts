@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@sanity/client'
 
 export async function GET(request: NextRequest) {
   try {
     const channelId = process.env.YOUTUBE_CHANNEL_ID
     const apiKey = process.env.YOUTUBE_API_KEY
+    const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+    const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+    const token = process.env.SANITY_API_TOKEN
 
     if (!channelId || !apiKey) {
       return NextResponse.json(
         { error: 'YouTube credentials not configured' },
+        { status: 500 }
+      )
+    }
+
+    if (!projectId || !dataset || !token) {
+      return NextResponse.json(
+        { error: 'Sanity credentials not configured' },
         { status: 500 }
       )
     }
@@ -24,13 +35,12 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     const videos = data.items || []
 
-    // Lazy import and initialize Sanity client
-    const { createClient } = await import('@sanity/client')
+    // Initialize Sanity client inside the handler
     const sanity = createClient({
-      projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-      dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+      projectId,
+      dataset,
       apiVersion: '2024-01-01',
-      token: process.env.SANITY_API_TOKEN,
+      token,
       useCdn: false,
     })
 
