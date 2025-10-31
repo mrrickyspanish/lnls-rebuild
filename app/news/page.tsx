@@ -1,5 +1,6 @@
 // app/news/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getClient, queries } from "@/lib/sanity/client";
 
 export const metadata: Metadata = {
@@ -9,11 +10,19 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
-async function getNews() {
+type Article = {
+  _id: string;
+  title: string;
+  dek?: string;
+  slug?: { current?: string };
+  _createdAt?: string;
+};
+
+async function getNews(): Promise<Article[]> {
   const sanity = getClient();
-  // If your query key is different, swap to queries.articles or queries.newsList
-  const items = await sanity.fetch(queries.news);
-  return Array.isArray(items) ? items : [];
+  // Use the existing query key you have available
+  const items: unknown = await sanity.fetch(queries.articles);
+  return Array.isArray(items) ? (items as Article[]) : [];
 }
 
 export default async function NewsPage() {
@@ -27,17 +36,21 @@ export default async function NewsPage() {
         <p className="text-slate-muted">No news yet. Check back soon.</p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {news.map((n: any) => (
-            <article key={n._id} className="card">
-              <a href={`/news/${n.slug?.current ?? ""}`} className="block">
-                <h2 className="text-2xl font-bebas">{n.title}</h2>
-                {n.dek && <p className="text-slate-muted mt-2">{n.dek}</p>}
-              </a>
-              <div className="text-xs text-slate-muted mt-3">
-                {n._createdAt ? new Date(n._createdAt).toLocaleDateString() : null}
-              </div>
-            </article>
-          ))}
+          {news.map((n) => {
+            const slug = n.slug?.current ?? "";
+            const href = slug ? `/news/${slug}` : "#";
+            return (
+              <article key={n._id} className="card">
+                <Link href={href} className="block">
+                  <h2 className="text-2xl font-bebas">{n.title}</h2>
+                  {n.dek && <p className="text-slate-muted mt-2">{n.dek}</p>}
+                </Link>
+                <div className="text-xs text-slate-muted mt-3">
+                  {n._createdAt ? new Date(n._createdAt).toLocaleDateString() : null}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>
