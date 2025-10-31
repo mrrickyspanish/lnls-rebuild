@@ -11,7 +11,7 @@ Modern NBA content hub built with Next.js, Sanity CMS, Supabase, and AI-powered 
 ### Content Management
 - **Articles** — Rich text editor with MDX support
 - **Podcast Episodes** — Auto-sync from Spreaker RSS
-- **YouTube Integration** — Automatic video feed updates
+- **YouTube Integrations** — Automatic video feed updates
 - **Multi-format Publishing** — Write once, distribute everywhere
 
 ### AI-Powered Tools
