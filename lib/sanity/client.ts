@@ -9,17 +9,22 @@ export const sanityConfig = {
   useCdn: process.env.NODE_ENV === 'production',
 }
 
-export const client = createClient(sanityConfig)
+// Lazy client creation
+export function getClient() {
+  return createClient(sanityConfig)
+}
 
-export const writeClient = createClient({
-  ...sanityConfig,
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false,
-})
-
-const builder = imageUrlBuilder(client)
+export function getWriteClient() {
+  return createClient({
+    ...sanityConfig,
+    token: process.env.SANITY_API_TOKEN,
+    useCdn: false,
+  })
+}
 
 export function urlFor(source: SanityImageSource) {
+  const client = getClient()
+  const builder = imageUrlBuilder(client)
   return builder.image(source)
 }
 

@@ -1,4 +1,4 @@
-import { client, queries } from '@/lib/sanity/client'
+import { getClient, queries } from '@/lib/sanity/client'
 import LatestEpisodes from '@/components/LatestEpisodes'
 
 export const metadata = {
@@ -9,6 +9,7 @@ export const metadata = {
 export const revalidate = 60
 
 async function getEpisodes() {
+  const client = getClient()
   const episodes = await client.fetch(queries.episodes)
   return episodes
 }
@@ -29,7 +30,7 @@ export default async function PodcastPage() {
 
         {/* Podcast Platforms */}
         <div className="flex flex-wrap gap-4 mt-6">
-          <a
+          
             href="https://open.spotify.com/show/your-show-id"
             target="_blank"
             rel="noopener noreferrer"
@@ -37,7 +38,7 @@ export default async function PodcastPage() {
           >
             Listen on Spotify
           </a>
-          <a
+          
             href="https://podcasts.apple.com/us/podcast/your-podcast"
             target="_blank"
             rel="noopener noreferrer"
@@ -45,7 +46,7 @@ export default async function PodcastPage() {
           >
             Listen on Apple Podcasts
           </a>
-          <a
+          
             href="https://www.youtube.com/@latenightlakeshow"
             target="_blank"
             rel="noopener noreferrer"
