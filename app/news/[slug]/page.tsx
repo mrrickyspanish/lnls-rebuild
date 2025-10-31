@@ -1,8 +1,13 @@
 // app/news/[slug]/page.tsx
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getClient, queries } from "@/lib/sanity/client";
 import Link from "next/link";
+import { getClient, queries } from "@/lib/sanity/client";
+
+export const revalidate = 60;
+
+type RouteParams = { slug: string };
+type PageProps = { params: Promise<RouteParams> };
 
 type Article = {
   _id: string;
@@ -10,22 +15,19 @@ type Article = {
   dek?: string;
   slug?: { current?: string };
   _createdAt?: string;
-  body?: unknown; // render later with PortableText, if you have it
+  body?: unknown;
 };
-
-export const revalidate = 60;
-
-type Params = { params: { slug: string } };
 
 async function getArticle(slug: string): Promise<Article | null> {
   const sanity = getClient();
-  // Use your existing query key; you listed `articleBySlug` in queries
+  // You listed queries.articleBySlug as a function(slug) — using it here:
   const doc = await sanity.fetch(queries.articleBySlug(slug));
   return doc ?? null;
 }
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const article = await getArticle(params.slug);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params; // <-- await params (Next 15)
+  const article = await getArticle(slug);
   if (!article) return { title: "Article not found" };
   return {
     title: article.title,
@@ -33,8 +35,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function ArticlePage({ params }: Params) {
-  const article = await getArticle(params.slug);
+export default async function ArticlePage({ params }: PageProps) {
+  const { slug } = await params; // <-- await params (Next 15)
+  const article = await getArticle(slug);
   if (!article) return notFound();
 
   return (
@@ -55,7 +58,7 @@ export default async function ArticlePage({ params }: Params) {
         {article._createdAt ? new Date(article._createdAt).toLocaleDateString() : null}
       </div>
 
-      {/* TODO: render body with @portabletext/react if you have rich content */}
+      {/* TODO: render rich body with @portabletext/react if needed */}
       {/* <PortableText value={article.body} components={portableComponents} /> */}
     </div>
   );
