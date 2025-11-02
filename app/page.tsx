@@ -3,7 +3,7 @@ import NewsStream from '@/components/NewsStream'
 import FeaturedArticles from '@/components/FeaturedArticles'
 import LatestEpisodes from '@/components/LatestEpisodes'
 import NewsletterSignup from '@/components/NewsletterSignup'
-import { getNewsStream } from '@/lib/supabase/client'
+import { getNewsStream } from '@/lib/supabase/news'
 
 export const revalidate = 300 // Revalidate every 5 minutes
 
@@ -31,10 +31,19 @@ interface Episode {
   hosts: Array<{ name: string }>
 }
 
-export default async function HomePage() {
-  const newsData = await getNewsStream(10)
+type NewsItem = {
+  id: string
+  title: string
+  source: string
+  source_url: string
+  summary?: string | null
+  published_at: string
+}
 
-  // Placeholder data - will be replaced with real Sanity queries
+export default async function HomePage() {
+  const newsData: NewsItem[] = await getNewsStream(10)
+
+  // TODO: replace with real Sanity queries
   const articles: Article[] = []
   const episodes: Episode[] = []
   const featuredArticle: Article | null = null

@@ -1,78 +1,72 @@
-import { ExternalLink, TrendingUp } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+"use client";
+import { formatDateUTC } from '@/utils/date';
+import Image from "next/image";
 
-interface NewsItem {
-  id: string
-  title: string
-  summary: string
-  source: string
-  url: string
-  published_at: string
-  featured: boolean
-  tags: string[]
-}
+type NewsItem = {
+  id?: string;
+  title: string;
+  summary?: string | null;
+  source: string;
+  source_url: string;
+  image_url?: string | null;
+  published_at: string;
+};
 
-interface NewsStreamProps {
-  items: NewsItem[]
-}
-
-export default function NewsStream({ items }: NewsStreamProps) {
-  if (!items || items.length === 0) {
-    return (
-      <div className="card text-center py-12">
-        <p className="text-slate-muted">Loading latest news...</p>
-      </div>
-    )
-  }
+export default function NewsStream({ items = [] as NewsItem[] }) {
+  if (!items.length) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {items.map((item) => (
-        <a
-          key={item.id}
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="card group cursor-pointer hover:scale-[1.02] transition-transform"
-        >
-          <div className="flex items-start justify-between mb-3">
-            <span className="text-xs font-semibold text-neon-purple uppercase tracking-wide">
-              {item.source}
-            </span>
-            {item.featured && (
-              <TrendingUp className="w-4 h-4 text-neon-gold" />
+    <section className="py-10 px-4 sm:px-6 lg:px-8">
+      <h2 className="text-3xl font-bold mb-6">Latest Stories</h2>
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((it) => (
+          <li
+            key={it.source_url}
+            className="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-600 transition"
+          >
+            {it.image_url && (
+              <div className="relative w-full h-48">
+                <Image
+                  src={it.image_url}
+                  alt={it.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width:768px) 100vw, 33vw"
+                />
+              </div>
             )}
-          </div>
-
-          <h3 className="text-lg font-bebas text-offwhite mb-2 group-hover:text-neon-purple transition-colors">
-            {item.title}
-          </h3>
-
-          <p className="text-sm text-slate-muted mb-4 line-clamp-3">
-            {item.summary}
-          </p>
-
-          <div className="flex items-center justify-between text-xs text-slate-muted">
-            <span>
-              {formatDistanceToNow(new Date(item.published_at), { addSuffix: true })}
-            </span>
-            <ExternalLink className="w-4 h-4 group-hover:text-neon-purple transition-colors" />
-          </div>
-
-          {item.tags && item.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {item.tags.slice(0, 3).map((tag) => (
+            <div className="p-4 flex flex-col justify-between h-full">
+              <a
+                href={it.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-lg font-semibold hover:underline line-clamp-2"
+              >
+                {it.title}
+              </a>
+              {it.summary && (
+                <p className="text-sm text-slate-400 mt-2 line-clamp-3">
+                  {it.summary}
+                </p>
+              )}
+              <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
                 <span
-                  key={tag}
-                  className="text-xs bg-slate-base px-2 py-1 rounded text-neon-gold"
+                  className={`inline-block px-2 py-0.5 rounded-full ${
+                    it.source === "YouTube"
+                      ? "bg-red-600/20 text-red-400"
+                      : it.source.includes("ESPN")
+                      ? "bg-orange-600/20 text-orange-400"
+                      : "bg-blue-600/20 text-blue-400"
+                  }`}
                 >
-                  {tag}
+                  {it.source}
                 </span>
-              ))}
+                <time dateTime={it.published_at}>{formatDateUTC(it.published_at)}</time>
+              </div>
             </div>
-          )}
-        </a>
-      ))}
-    </div>
-  )
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }

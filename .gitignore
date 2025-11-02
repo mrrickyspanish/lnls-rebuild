@@ -36,3 +36,4 @@ next-env.d.ts
 
 # Sanity
 /studio/dist
+.env.local
