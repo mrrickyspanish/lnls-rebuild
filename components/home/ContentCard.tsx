@@ -19,6 +19,15 @@ type ContentCardProps = {
   lightMode?: boolean;
 };
 
+// Format date consistently on client and server
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
+}
+
 export default function ContentCard({
   id,
   title,
@@ -41,6 +50,11 @@ export default function ContentCard({
   const isBanner = size === "banner";
   const isFeatured = size === "featured";
   const isPodcast = (content_type || "").toLowerCase() === "podcast" && !!source_url;
+
+  // Text should be WHITE when card has image, DARK when lightMode + no image
+  const hasImage = !!image_url;
+  const textColor = hasImage ? "text-white" : (lightMode ? "text-gray-900" : "text-white");
+  const metaColor = hasImage ? "text-slate-200" : (lightMode ? "text-gray-600" : "text-slate-300");
 
   return (
     <Link
@@ -77,7 +91,7 @@ export default function ContentCard({
               alt={title}
               fill
               priority={priority}
-              className={`object-cover ${lightMode ? "" : ""}`}
+              className="object-cover"
               sizes={
                 isHero
                   ? "(max-width: 768px) 100vw, 50vw"
@@ -86,9 +100,8 @@ export default function ContentCard({
                   : "(max-width: 768px) 100vw, 33vw"
               }
             />
-            {!lightMode && (
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-            )}
+            {/* ALWAYS show gradient when there's an image for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
           </div>
         )}
 
@@ -121,19 +134,17 @@ export default function ContentCard({
 
           <div className={`${isBanner ? "ml-auto max-w-2xl" : ""} space-y-2`}>
             {(content_type || published_at) && (
-              <div className={`flex items-center gap-2 text-xs ${lightMode ? "text-gray-600" : "text-slate-400"} uppercase tracking-wide`}>
+              <div className={`flex items-center gap-2 text-xs ${metaColor} uppercase tracking-wide`}>
                 {content_type && <span>{content_type}</span>}
                 {published_at && content_type && <span>•</span>}
                 {published_at && (
-                  <span>{new Date(published_at).toLocaleDateString()}</span>
+                  <span>{formatDate(published_at)}</span>
                 )}
               </div>
             )}
 
             <h3
-              className={`font-semibold leading-tight ${
-                lightMode ? "text-gray-900" : "text-white"
-              } ${isHero ? "text-2xl md:text-3xl lg:text-4xl" : ""} ${
+              className={`font-semibold leading-tight ${textColor} ${isHero ? "text-2xl md:text-3xl lg:text-4xl" : ""} ${
                 isFeatured ? "text-xl md:text-2xl" : ""
               } ${isBanner ? "text-xl md:text-2xl" : ""} ${
                 size === "standard" ? "text-lg md:text-xl" : ""
@@ -143,14 +154,14 @@ export default function ContentCard({
             </h3>
 
             {excerpt && (isHero || isBanner) && (
-              <p className={`${lightMode ? "text-gray-700" : "text-slate-300"} text-sm md:text-base line-clamp-2 max-w-2xl`}>
+              <p className={`${hasImage ? "text-slate-200" : (lightMode ? "text-gray-700" : "text-slate-300")} text-sm md:text-base line-clamp-2 max-w-2xl`}>
                 {excerpt}
               </p>
             )}
 
             {source && (
-              <div className={`text-xs ${lightMode ? "text-gray-600" : "text-slate-400"}`}>
-                via <span className={`${lightMode ? "text-gray-800" : "text-slate-300"}`}>{source}</span>
+              <div className={`text-xs ${metaColor}`}>
+                via <span className={`${hasImage ? "text-white" : (lightMode ? "text-gray-800" : "text-slate-300")}`}>{source}</span>
               </div>
             )}
           </div>

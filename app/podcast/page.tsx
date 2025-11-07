@@ -1,166 +1,308 @@
-import type { Metadata } from "next";
-import { getNewsStream } from "@/lib/supabase/client";
-import Image from "next/image";
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { Play, Clock } from "lucide-react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Videos",
-  description: "Watch Late Night Lake Show videos and highlights.",
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { Play, Clock } from "lucide-react";
+import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
+import ScrollReveal from "@/components/animations/ScrollReveal";
+import StaggerContainer, { StaggerItem, staggerItemVariants } from "@/components/animations/StaggerContainer";
+
+type Episode = {
+  id: string;
+  title: string;
+  episode_number?: number;
+  description: string;
+  audio_url: string;
+  published_at: string;
+  image_url?: string;
+  duration?: string;
 };
 
-export const revalidate = 60;
-
-async function getVideos() {
-  const allContent = await getNewsStream(100);
-  // Filter for videos only
-  const videos = allContent.filter((item: any) => {
-    const ct = (item.content_type || "").toLowerCase();
-    const url = item.source_url || "";
-    return ct === "video" || url.includes("youtube.com") || url.includes("youtu.be");
-  });
-  return videos;
+// Format date consistently
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
 }
 
-export default async function VideosPage() {
-  const videos = await getVideos();
-  const featuredVideo = videos[0];
-  const restVideos = videos.slice(1);
+export default function PodcastPage() {
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { playEpisode, currentEpisode, isPlaying } = useAudioPlayer();
 
-  if (!featuredVideo) {
+  useEffect(() => {
+    async function loadEpisodes() {
+      try {
+        console.log('🎙️ Fetching from API route...');
+        const response = await fetch('/api/podcast/episodes');
+        const data = await response.json();
+        
+        if (data.success) {
+          console.log('✅ Loaded episodes:', data.episodes.length);
+          setEpisodes(data.episodes);
+        } else {
+          throw new Error(data.error || 'Failed to load episodes');
+        }
+        setLoading(false);
+      } catch (err: any) {
+        console.error('❌ Error:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    }
+    loadEpisodes();
+  }, []);
+
+  if (loading) {
     return (
-      <div className="section-container py-12">
-        <h1 className="text-5xl lg:text-6xl font-bebas gradient-text mb-4">Videos</h1>
-        <p className="text-slate-muted">No videos available yet.</p>
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-slate-400"
+        >
+          Loading episodes...
+        </motion.div>
       </div>
     );
   }
 
-  // Extract YouTube video ID
-  const getYouTubeId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?]+)/);
-    return match ? match[1] : null;
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
+          <h1 className="text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-indigo-300 to-cyan-200 mb-4">
+            Podcast
+          </h1>
+          <p className="text-red-400">Error loading episodes: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
-  const featuredId = getYouTubeId(featuredVideo.source_url || "");
+  const featured = episodes[0];
+  const restEpisodes = episodes.slice(1);
+
+  if (!featured) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
+          <h1 className="text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-indigo-300 to-cyan-200 mb-4">
+            Podcast
+          </h1>
+          <p className="text-slate-400">No episodes available yet.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12">
-      <div className="section-container">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-8 md:py-12">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-5xl lg:text-6xl font-bebas gradient-text mb-4">
-            Videos
-          </h1>
-          <p className="text-lg text-slate-muted max-w-2xl">
-            Watch the latest Lakers analysis, highlights, and discussions.
-          </p>
-        </div>
-
-        {/* Featured Video Player */}
-        <div className="mb-12">
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-2xl">
-            {featuredId ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${featuredId}?autoplay=1&rel=0`}
-                title={featuredVideo.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                Video unavailable
-              </div>
-            )}
+        <ScrollReveal direction="up" delay={0.1}>
+          <div className="mb-8">
+            <h1 className="text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-indigo-300 to-cyan-200 mb-4">
+              Podcast
+            </h1>
+            <p className="text-lg text-slate-400 max-w-2xl">
+              Listen to the latest episodes of Late Night Lake Show.
+            </p>
           </div>
+        </ScrollReveal>
 
-          <div className="mt-4">
-            <h2 className="text-2xl md:text-3xl font-bebas text-offwhite mb-2">
-              {featuredVideo.title}
-            </h2>
-            <div className="flex items-center gap-3 text-sm text-slate-muted">
-              {featuredVideo.published_at && (
-                <span>
-                  {formatDistanceToNow(new Date(featuredVideo.published_at), { addSuffix: true })}
-                </span>
-              )}
-              {featuredVideo.source && (
-                <>
-                  <span>•</span>
-                  <span>{featuredVideo.source}</span>
-                </>
-              )}
+        {/* Featured Episode */}
+        <ScrollReveal direction="up" delay={0.2}>
+          <div className="mb-12 bg-slate-900/40 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-2xl">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Episode Artwork */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="relative aspect-square md:w-80 rounded-2xl overflow-hidden shadow-2xl cursor-pointer group"
+                onClick={() => {
+                  playEpisode({
+                    id: featured.id,
+                    title: featured.title,
+                    audio_url: featured.audio_url,
+                    image_url: featured.image_url,
+                    episode_number: featured.episode_number,
+                  });
+                }}
+              >
+                {featured.image_url ? (
+                  <Image
+                    src={featured.image_url}
+                    alt={featured.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 to-purple-900 flex items-center justify-center">
+                    <span className="text-white/20 text-8xl">🎙️</span>
+                  </div>
+                )}
+
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                  <motion.div 
+                    whileHover={{ scale: 1.15 }}
+                    className="w-20 h-20 rounded-full bg-indigo-600 group-hover:bg-indigo-500 flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Play className="w-10 h-10 text-white fill-current ml-1" />
+                  </motion.div>
+                </div>
+
+                {currentEpisode?.id === featured.id && isPlaying && (
+                  <div className="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    Now Playing
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Episode Info */}
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
+                  {featured.episode_number && (
+                    <span className="bg-indigo-600/20 text-indigo-300 px-2 py-1 rounded">
+                      Episode {featured.episode_number}
+                    </span>
+                  )}
+                  {featured.duration && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {Math.floor(parseInt(featured.duration) / 60)} min
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                  {featured.title}
+                </h2>
+
+                <p className="text-slate-300 mb-4 line-clamp-3">
+                  {featured.description}
+                </p>
+
+                <div className="flex items-center gap-3 text-sm text-slate-400 mb-6">
+                  {featured.published_at && <span>{formatDate(featured.published_at)}</span>}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    playEpisode({
+                      id: featured.id,
+                      title: featured.title,
+                      audio_url: featured.audio_url,
+                      image_url: featured.image_url,
+                      episode_number: featured.episode_number,
+                    });
+                  }}
+                  className="w-fit px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-semibold flex items-center gap-2 transition-colors"
+                >
+                  <Play className="w-5 h-5 fill-current" />
+                  Play Episode
+                </motion.button>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
-        {/* More Videos Grid */}
-        {restVideos.length > 0 && (
+        {/* All Episodes */}
+        {restEpisodes.length > 0 && (
           <>
-            <h3 className="text-2xl font-bebas text-offwhite mb-6">More Videos</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {restVideos.map((video: any) => {
-                const videoId = getYouTubeId(video.source_url || "");
-                const thumbnailUrl = videoId 
-                  ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-                  : video.image_url;
+            <ScrollReveal direction="up" delay={0.1}>
+              <h3 className="text-2xl font-bold text-white mb-6">All Episodes</h3>
+            </ScrollReveal>
 
-                return (
-                  <Link
-                    key={video.id}
-                    href={video.source_url || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group"
+            <StaggerContainer staggerDelay={0.05} className="space-y-4">
+              {restEpisodes.slice(0, 20).map((episode) => (
+                <StaggerItem key={episode.id} variants={staggerItemVariants}>
+                  <motion.div
+                    whileHover={{ x: 8 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => {
+                      playEpisode({
+                        id: episode.id,
+                        title: episode.title,
+                        audio_url: episode.audio_url,
+                        image_url: episode.image_url,
+                        episode_number: episode.episode_number,
+                      });
+                    }}
+                    className="bg-slate-900/40 backdrop-blur-sm rounded-2xl p-4 border border-slate-700/50 hover:border-indigo-500/50 transition-all cursor-pointer group"
                   >
-                    <article className="card h-full flex flex-col bg-slate-900/60 backdrop-blur-sm border border-slate-700/50 hover:border-indigo-500/50 transition-all">
+                    <div className="flex items-center gap-4">
                       {/* Thumbnail */}
-                      <div className="relative aspect-video rounded-lg overflow-hidden mb-3">
-                        {thumbnailUrl ? (
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                        {episode.image_url ? (
                           <Image
-                            src={thumbnailUrl}
-                            alt={video.title}
+                            src={episode.image_url}
+                            alt={episode.title}
                             fill
                             className="object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-indigo-500/20 to-purple-600/20" />
-                        )}
-
-                        {/* Play Button Overlay */}
-                        <div className="absolute inset-0 bg-slate-base/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center">
-                            <Play className="w-7 h-7 text-white fill-current ml-1" />
+                          <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-purple-900 flex items-center justify-center">
+                            <span className="text-white/20 text-3xl">��️</span>
                           </div>
+                        )}
+
+                        {currentEpisode?.id === episode.id && isPlaying && (
+                          <div className="absolute inset-0 bg-indigo-600/80 flex items-center justify-center">
+                            <div className="w-8 h-8 border-2 border-white rounded-full flex items-center justify-center gap-0.5">
+                              <div className="w-1 h-3 bg-white"></div>
+                              <div className="w-1 h-3 bg-white"></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
+                          {episode.episode_number && (
+                            <span>Episode {episode.episode_number}</span>
+                          )}
+                          {episode.duration && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {Math.floor(parseInt(episode.duration) / 60)} min
+                              </span>
+                            </>
+                          )}
+                          {episode.published_at && (
+                            <>
+                              <span>•</span>
+                              <span>{formatDate(episode.published_at)}</span>
+                            </>
+                          )}
                         </div>
+
+                        <h4 className="text-white font-semibold group-hover:text-indigo-300 transition-colors truncate">
+                          {episode.title}
+                        </h4>
                       </div>
 
-                      {/* Title */}
-                      <h4 className="text-lg font-bebas text-offwhite mb-2 group-hover:text-indigo-400 transition-colors line-clamp-2 px-3">
-                        {video.title}
-                      </h4>
-
-                      {/* Meta */}
-                      <div className="flex items-center gap-3 text-xs text-slate-muted mt-auto pt-3 px-3 pb-3 border-t border-slate-muted/20">
-                        {video.published_at && (
-                          <span>
-                            {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
-                          </span>
-                        )}
-                        {video.source && (
-                          <>
-                            <span>•</span>
-                            <span>{video.source}</span>
-                          </>
-                        )}
-                      </div>
-                    </article>
-                  </Link>
-                );
-              })}
-            </div>
+                      {/* Play Button */}
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        className="w-12 h-12 rounded-full bg-indigo-600 group-hover:bg-indigo-500 flex items-center justify-center flex-shrink-0 transition-colors"
+                      >
+                        <Play className="w-5 h-5 text-white fill-current ml-0.5" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
           </>
         )}
       </div>

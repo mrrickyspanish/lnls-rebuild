@@ -2,11 +2,14 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import ContentCard from "./ContentCard";
 import LivingTile from "./LivingTile";
 import { detectTopic, type Topic } from "@/lib/theme/tokens";
 import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
 import VideoModal from "../VideoModal";
+import ScrollReveal from "@/components/animations/ScrollReveal";
+import StaggerContainer, { StaggerItem, staggerItemVariants } from "@/components/animations/StaggerContainer";
 
 type ContentItem = {
   id: string;
@@ -154,48 +157,64 @@ export default function BentoGrid({ box1, box2, items }: BentoGridProps) {
 
   return (
     <div className="w-full">
-      {/* DARK SECTION - Featured Bento (this sets the page background mood) */}
+      {/* DARK SECTION - Featured Bento with stagger animation */}
       <div className="w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pb-24">
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
           <section className="bg-slate-900/40 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-2xl">
-            <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-20 auto-rows-[130px] sm:auto-rows-[150px] lg:auto-rows-[160px]">
-              <div 
+            <StaggerContainer 
+              staggerDelay={0.15}
+              className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-20 auto-rows-[130px] sm:auto-rows-[150px] lg:auto-rows-[160px]"
+            >
+              <StaggerItem
+                variants={staggerItemVariants}
                 className="col-span-1 sm:col-span-12 row-span-2 cursor-pointer"
                 onClick={handleHeroClick}
               >
                 <ContentCard {...hero} size="hero" priority />
-              </div>
+              </StaggerItem>
 
-              <div 
+              <StaggerItem
+                variants={staggerItemVariants}
                 className="col-span-1 sm:col-span-8 row-span-2 cursor-pointer"
                 onClick={handleSecondBoxClick}
               >
                 <ContentCard {...topTiles[0]} size="standard" />
-              </div>
-              <div className="col-span-1 sm:col-span-6 row-span-2">
-                <ContentCard {...topTiles[1]} size="standard" />
-              </div>
-              <div className="col-span-1 sm:col-span-6 row-span-2">
-                <ContentCard {...topTiles[2]} size="standard" />
-              </div>
+              </StaggerItem>
 
-              <div className="col-span-1 sm:col-span-8 row-span-2">
+              <StaggerItem
+                variants={staggerItemVariants}
+                className="col-span-1 sm:col-span-6 row-span-2"
+              >
+                <ContentCard {...topTiles[1]} size="standard" />
+              </StaggerItem>
+
+              <StaggerItem
+                variants={staggerItemVariants}
+                className="col-span-1 sm:col-span-6 row-span-2"
+              >
+                <ContentCard {...topTiles[2]} size="standard" />
+              </StaggerItem>
+
+              <StaggerItem
+                variants={staggerItemVariants}
+                className="col-span-1 sm:col-span-8 row-span-2"
+              >
                 <LivingTile />
-              </div>
-            </div>
+              </StaggerItem>
+            </StaggerContainer>
           </section>
         </div>
       </div>
 
-      {/* WHITE PANE — sits ON TOP of the dark background */}
+      {/* WHITE PANE with scroll reveal */}
       <div className="relative w-full">
         <div
           className="
             relative
-            -mt-12 md:-mt-16              /* overlaps the dark section */
+            -mt-12 md:-mt-16
             bg-white
-            rounded-t-[48px]              /* big curved top corners */
-            shadow-[0_-16px_48px_rgba(0,0,0,0.28)]  /* lifted look */
+            rounded-t-[48px]
+            shadow-[0_-16px_48px_rgba(0,0,0,0.28)]
             border-t border-gray-200/90
           "
         >
@@ -203,57 +222,69 @@ export default function BentoGrid({ box1, box2, items }: BentoGridProps) {
           <div className="pointer-events-none absolute -top-px left-0 right-0 h-[22px] rounded-t-[48px] bg-gradient-to-b from-slate-900/60 to-transparent" />
 
           <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12 pt-12 pb-16">
-            {/* Header + Tabs */}
-            <div className="mb-6 md:mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">More Stories</h2>
-                <p className="text-gray-600">Catch up on the latest NBA news and updates</p>
-              </div>
+            {/* Header + Tabs with scroll reveal */}
+            <ScrollReveal direction="up" delay={0.1} fullWidth>
+              <div className="mb-6 md:mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">More Stories</h2>
+                  <p className="text-gray-600">Catch up on the latest NBA news and updates</p>
+                </div>
 
-              <div 
-                className="flex flex-wrap gap-2 rounded-full bg-gray-100 p-1"
-                role="tablist"
-                aria-label="Content filters"
-              >
-                {FILTERS.map((f) => {
-                  const active = f === filter;
-                  const label = f === "all" ? "All" : f[0].toUpperCase() + f.slice(1);
-                  return (
-                    <button
-                      key={f}
-                      onClick={() => handleFilterChange(f as any)}
-                      role="tab"
-                      aria-selected={active}
-                      aria-controls="content-grid"
-                      className={[
-                        "px-3.5 py-1.5 rounded-full text-sm transition",
-                        active
-                          ? "bg-white text-gray-900 shadow-sm border border-gray-200"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-white/70",
-                      ].join(" ")}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex flex-wrap gap-2 rounded-full bg-gray-100 p-1"
+                  role="tablist"
+                  aria-label="Content filters"
+                >
+                  {FILTERS.map((f, index) => {
+                    const active = f === filter;
+                    const label = f === "all" ? "All" : f[0].toUpperCase() + f.slice(1);
+                    return (
+                      <motion.button
+                        key={f}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                        onClick={() => handleFilterChange(f as any)}
+                        role="tab"
+                        aria-selected={active}
+                        aria-controls="content-grid"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={[
+                          "px-3.5 py-1.5 rounded-full text-sm transition",
+                          active
+                            ? "bg-white text-gray-900 shadow-sm border border-gray-200"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-white/70",
+                        ].join(" ")}
+                      >
+                        {label}
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
               </div>
-            </div>
+            </ScrollReveal>
 
-            {/* Grid */}
-            <section 
-              id="content-grid"
-              role="tabpanel"
+            {/* Grid with stagger animation */}
+            <StaggerContainer
+              staggerDelay={0.08}
               className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             >
               {filtered.map((item) => (
-                <div
+                <StaggerItem
                   key={item.id}
+                  variants={staggerItemVariants}
                   className="h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
                 >
                   <ContentCard {...item} size="standard" lightMode={true} />
-                </div>
+                </StaggerItem>
               ))}
-            </section>
+            </StaggerContainer>
           </div>
         </div>
       </div>
