@@ -1,4 +1,5 @@
 "use client";
+import { customEase } from "@/components/animations/easing";
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
@@ -41,7 +42,7 @@ export const staggerItemVariants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: [0.21, 0.47, 0.32, 0.98],
+      ease: customEase,
     },
   },
 };
