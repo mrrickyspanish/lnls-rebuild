@@ -1,4 +1,5 @@
 "use client";
+import { customEase } from "@/components/animations/easing";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
@@ -46,7 +47,7 @@ export default function ScrollReveal({
       transition={{
         duration: 0.7,
         delay: delay,
-        ease: [0.21, 0.47, 0.32, 0.98],
+        ease: customEase,
       }}
       className={fullWidth ? "w-full" : className}
     >
