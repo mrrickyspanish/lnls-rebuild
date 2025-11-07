@@ -1,4 +1,5 @@
 "use client";
+import { customEase } from "@/components/animations/easing";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
