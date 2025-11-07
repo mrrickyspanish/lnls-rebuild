@@ -1,0 +1,20 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      // YouTube
+      { protocol: 'https', hostname: 'i.ytimg.com' },
+      { protocol: 'https', hostname: 'img.youtube.com' },
+
+      // ESPN
+      { protocol: 'https', hostname: 'a.espncdn.com' },
+      { protocol: 'https', hostname: 'img.espn.com' },
+
+      // NBA
+      { protocol: 'https', hostname: 'cdn.nba.com' },
+      { protocol: 'https', hostname: 'ak-static.cms.nba.com' },
+      { protocol: 'https', hostname: 'images.daznservices.com' },
+    ],
+  },
+};
+module.exports = nextConfig;

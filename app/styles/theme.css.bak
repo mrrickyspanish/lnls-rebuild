@@ -1,0 +1,49 @@
+:root {
+  /* Base surface (dark, not pure black) */
+  --lnls-bg: #0F172A;           /* slate-900 */
+  --lnls-surface: rgba(15,23,42,0.80);
+  --lnls-surface-strong: rgba(15,23,42,0.92);
+  --lnls-border: rgba(255,255,255,0.10);
+
+  /* Text */
+  --lnls-text: #E2E8F0;         /* slate-200 */
+  --lnls-text-muted: #94A3B8;   /* slate-400 */
+
+  /* Global accents (subtle glow) */
+  --lnls-accent: #9BA9FF;       /* neutral accent for generic CTAs */
+  --lnls-glow: rgba(155,169,255,0.35);
+
+  /* Category accents */
+  --acc-nba:    #F97316;  /* orange/amber */
+  --acc-lakers: #552583;  /* Lakers purple */
+  --acc-lakers-2: #FDB927;/* Lakers gold */
+  --acc-podcast:#06B6D4;  /* cyan/teal */
+  --acc-tech:   #3B82F6;  /* blue */
+  --acc-ent:    #EC4899;  /* pink */
+  --acc-video:  #EF4444;  /* red */
+}
+
+/* Reusable surfaces (glass-inspired) */
+.lnls-tile {
+  background: var(--lnls-surface);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--lnls-border);
+  border-radius: 16px;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+.lnls-tile:hover {
+  background: var(--lnls-surface-strong);
+  transform: translateY(-4px);
+}
+
+/* Accent rings on hover (category-driven classes use these) */
+.ring-nba:hover     { box-shadow: 0 0 0 1px var(--acc-nba),     0 0 24px color-mix(in oklab, var(--acc-nba), transparent 70%); }
+.ring-lakers:hover  { box-shadow: 0 0 0 1px var(--acc-lakers),  0 0 24px color-mix(in oklab, var(--acc-lakers), transparent 70%); }
+.ring-podcast:hover { box-shadow: 0 0 0 1px var(--acc-podcast), 0 0 24px color-mix(in oklab, var(--acc-podcast), transparent 70%); }
+.ring-tech:hover    { box-shadow: 0 0 0 1px var(--acc-tech),    0 0 24px color-mix(in oklab, var(--acc-tech), transparent 70%); }
+.ring-ent:hover     { box-shadow: 0 0 0 1px var(--acc-ent),     0 0 24px color-mix(in oklab, var(--acc-ent), transparent 70%); }
+.ring-video:hover   { box-shadow: 0 0 0 1px var(--acc-video),   0 0 24px color-mix(in oklab, var(--acc-video), transparent 70%); }
+
+/* Body base */
+html, body { background: var(--lnls-bg); color: var(--lnls-text); }
+.text-muted { color: var(--lnls-text-muted); }

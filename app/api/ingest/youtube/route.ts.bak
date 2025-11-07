@@ -77,7 +77,7 @@ export async function GET() {
   // (Relies on the unique index you created: ai_news_video_unique_by_video_id)
   const { data, error } = await supabase
     .from("ai_news_stream")
-    .upsert(rows, { onConflict: "video_id", ignoreDuplicates: false }).select()
+    .upsert(rows, { onConflict: "video_id", ignoreDuplicates: false });.select()
 
   if (error) {
     return NextResponse.json({ ok: false, error }, { status: 500 });

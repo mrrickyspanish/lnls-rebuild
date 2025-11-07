@@ -1,27 +1,28 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from "tailwindcss";
+
+const config: Config = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        'slate-base': '#0F172A',
-        'slate-secondary': '#1E293B',
-        'slate-muted': '#475569',
-        'offwhite': '#F1F5F9',
-        'neon-purple': '#A78BFA',
-        'neon-gold': '#FBBF24',
+        background: "var(--background)",
+        foreground: "var(--foreground)",
       },
-      fontFamily: {
-        'bebas': ['Bebas Neue', 'sans-serif'],
-        'inter': ['Inter', 'sans-serif'],
+      gridTemplateColumns: {
+        '20': 'repeat(20, minmax(0, 1fr))'
       },
+      gridColumn: {
+        'span-6': 'span 6 / span 6',
+        'span-8': 'span 8 / span 8',
+        'span-12': 'span 12 / span 12',
+        'span-20': 'span 20 / span 20',
+      }
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
-}
+  plugins: [],
+};
+export default config;

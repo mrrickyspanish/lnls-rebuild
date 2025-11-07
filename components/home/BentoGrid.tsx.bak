@@ -1,0 +1,135 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import ContentCard from "./ContentCard";
+import LivingTile from "./LivingTile";
+import { detectTopic, type Topic } from "@/lib/theme/tokens";
+
+type ContentItem = {
+  id: string;
+  title: string;
+  excerpt?: string;
+  image_url?: string | null;
+  content_type?: string;
+  source?: string;
+  source_url?: string | null;
+  published_at?: string | null;
+};
+
+type BentoGridProps = { items: ContentItem[] };
+
+const FILTERS: Array<"all" | Topic> = [
+  "all",
+  "lakers",
+  "nba",
+  "video",
+  "podcast",
+  "tech",
+  "entertainment",
+];
+
+export default function BentoGrid({ items }: BentoGridProps) {
+  if (!items || items.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-slate-400">No content available</p>
+      </div>
+    );
+  }
+
+  const hero = items[0];
+  const topTiles = items.slice(1, 5);
+  const gridItems = items.slice(5);
+
+  const [filter, setFilter] = useState<"all" | Topic>("all");
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return gridItems;
+    return gridItems.filter((it) => detectTopic(it) === filter);
+  }, [gridItems, filter]);
+
+  return (
+    <div className="w-full">
+      {/* DARK SECTION - Featured Bento */}
+      <div className="w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pb-16">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
+          <section className="bg-slate-900/40 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-2xl">
+            <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-20 auto-rows-[130px] sm:auto-rows-[150px] lg:auto-rows-[160px]">
+              {/* Hero - 12/20 cols */}
+              <div className="col-span-1 sm:col-span-12 row-span-2">
+                <ContentCard {...hero} size="hero" priority />
+              </div>
+
+              {/* Feature blocks */}
+              <div className="col-span-1 sm:col-span-8 row-span-2">
+                <ContentCard {...topTiles[0]} size="standard" />
+              </div>
+              <div className="col-span-1 sm:col-span-6 row-span-2">
+                <ContentCard {...topTiles[1]} size="standard" />
+              </div>
+              <div className="col-span-1 sm:col-span-6 row-span-2">
+                <ContentCard {...topTiles[2]} size="standard" />
+              </div>
+
+              {/* Living tile */}
+              <div className="col-span-1 sm:col-span-8 row-span-2">
+                <LivingTile />
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* WHITE SECTION */}
+      <div className="relative w-full bg-white">
+        {/* Alfa-style curved seam */}
+
+        <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12 pt-14 md:pt-16 pb-16">
+          {/* Section header + filter tabs */}
+          <div className="mb-6 md:mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                More Stories
+              </h2>
+              <p className="text-gray-600">Catch up on the latest NBA news and updates</p>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex flex-wrap gap-2 rounded-full bg-gray-100 p-1">
+              {FILTERS.map((f) => {
+                const active = f === filter;
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={[
+                      "px-3.5 py-1.5 rounded-full text-sm transition",
+                      active
+                        ? "bg-white text-gray-900 shadow-sm border border-gray-200"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-white/70",
+                    ].join(" ")}
+                    aria-pressed={active}
+                  >
+                    {f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Grid */}
+          <section className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((item) => (
+              <div
+                key={item.id}
+                className="h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+              >
+                <ContentCard {...item} size="standard" theme="light" />
+              </div>
+            ))}
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}

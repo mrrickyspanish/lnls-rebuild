@@ -1,0 +1,172 @@
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { AccentColors, detectTopic, getCategoryBadge } from "@/lib/theme/tokens";
+
+type ContentCardProps = {
+  id: string;
+  title: string;
+  excerpt?: string;
+  image_url?: string | null;
+  content_type?: string;
+  source?: string;
+  source_url?: string | null;
+  published_at?: string | null;
+  priority?: boolean;
+  size?: "hero" | "featured" | "standard" | "banner";
+  theme?: "dark" | "light";
+};
+
+export default function ContentCard({
+  id,
+  title,
+  excerpt,
+  image_url,
+  content_type,
+  source,
+  source_url,
+  published_at,
+  priority = false,
+  size = "standard",
+  theme = "dark",
+}: ContentCardProps) {
+  const topic = detectTopic({ title, content_type, source, excerpt });
+  const accent = AccentColors[topic];
+  const badge = getCategoryBadge(topic);
+  const href = source_url || "#";
+
+  const isHero = size === "hero";
+  const isBanner = size === "banner";
+  const isFeatured = size === "featured";
+  const isLight = theme === "light";
+
+  // NEW: when we have an image, content text sits on top of media
+  const onImage = Boolean(image_url);
+
+  // Text palettes (prioritize readability)
+  const titleColor =
+    onImage ? "text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]" : isLight ? "text-gray-900" : "text-white";
+
+  const metaColor =
+    onImage ? "text-white/80 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]" : isLight ? "text-gray-500" : "text-slate-400";
+
+  const bodyColor =
+    onImage ? "text-white/90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]" : isLight ? "text-gray-700" : "text-slate-300";
+
+  return (
+    <Link href={href} target={href.startsWith("http") ? "_blank" : "_self"} className="block h-full group">
+      <motion.div
+        className={[
+          "relative h-full w-full overflow-hidden rounded-2xl border transition-all duration-200 ring-1",
+          isLight ? "bg-white border-gray-200" : "bg-slate-900/80 backdrop-blur-sm border-[var(--lnls-border)]",
+          accent.ring,
+          accent.glow,
+        ].join(" ")}
+        whileHover={{ scale: 1.015 }}
+        transition={{ duration: 0.18 }}
+      >
+        {/* Media */}
+        <div className={`relative ${isBanner ? "h-32" : "h-full"} w-full`}>
+          {image_url ? (
+            <>
+              <Image
+                src={image_url}
+                alt={title}
+                fill
+                priority={priority}
+                className="object-cover"
+                sizes={
+                  isHero ? "(max-width: 768px) 100vw, 50vw"
+                  : isBanner ? "100vw"
+                  : "(max-width: 768px) 100vw, 33vw"
+                }
+              />
+              {/* Stronger scrim over images to boost readability on light theme */}
+              <div
+                className={[
+                  "absolute inset-0 pointer-events-none",
+                  // when text sits on image, use a darker scrim regardless of theme
+                  "bg-gradient-to-t from-black/60 via-black/25 to-transparent",
+                ].join(" ")}
+              />
+            </>
+          ) : (
+            <div className={[ "absolute inset-0 grid place-items-center",
+              isLight ? "bg-gray-50" : "bg-slate-800/40",
+            ].join(" ")}>
+              <span className={isLight ? "text-5xl opacity-30" : "text-6xl opacity-20"}>{badge.icon}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className={["absolute inset-0 flex flex-col p-5 md:p-6", isBanner ? "flex-row items-center" : "justify-end"].join(" ")}>
+          {/* Badge */}
+          <div className="absolute top-4 left-4 z-10">
+            <div
+              className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-md flex items-center gap-1.5"
+              style={{
+                backgroundColor: `${accent.primary}20`,
+                color: onImage ? "#ffffff" : (isLight ? "#111827" : accent.primary),
+                border: `1px solid ${accent.primary}40`,
+              }}
+            >
+              <span>{badge.icon}</span>
+              <span>{badge.label}</span>
+            </div>
+          </div>
+
+          <div className={`${isBanner ? "ml-auto max-w-2xl" : ""} space-y-2`}>
+            {(content_type || published_at) && (
+              <div className={["flex items-center gap-2 text-xs uppercase tracking-wide", metaColor].join(" ")}>
+                {content_type && <span>{content_type}</span>}
+                {published_at && content_type && <span>•</span>}
+                {published_at && <span>{new Date(published_at).toLocaleDateString()}</span>}
+              </div>
+            )}
+
+            <h3 className={[
+              "font-semibold leading-tight transition-colors",
+              titleColor,
+              isHero && "text-2xl md:text-3xl lg:text-4xl",
+              isFeatured && "text-xl md:text-2xl",
+              isBanner && "text-xl md:text-2xl",
+              size === "standard" && "text-lg md:text-xl",
+              "group-hover:text-opacity-90",
+            ].filter(Boolean).join(" ")}>
+              {title}
+            </h3>
+
+            {/* Excerpt: hero/banner always; standard = 1 line @ md+ */}
+            {(isHero || isBanner) && excerpt && (
+              <p className={["text-sm md:text-base line-clamp-2 max-w-2xl", bodyColor].join(" ")}>
+                {excerpt}
+              </p>
+            )}
+            {size === "standard" && excerpt && (
+              <p className={["hidden md:block text-sm line-clamp-1", bodyColor].join(" ")}>
+                {excerpt}
+              </p>
+            )}
+
+            {source && (
+              <div className={["text-xs", metaColor].join(" ")}>
+                via <span className={onImage ? "text-white" : (isLight ? "text-gray-700" : "text-slate-300")}>{source}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Accent rail */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-1"
+          style={{ backgroundColor: AccentColors[topic].primary }}
+          initial={{ scaleX: 0 }}
+          whileHover={{ scaleX: 1 }}
+          transition={{ duration: 0.25 }}
+        />
+      </motion.div>
+    </Link>
+  );
+}

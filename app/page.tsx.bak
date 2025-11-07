@@ -1,0 +1,112 @@
+import BentoGrid from "@/components/home/BentoGrid";
+import { getNewsStream } from "@/lib/supabase/client";
+import { client } from "@/sanity/lib/client";
+
+export const revalidate = 60;
+
+type SanityContent = {
+  _id: string;
+  _type: "article" | "episode" | "clip";
+  title: string;
+  slug?: { current: string };
+  excerpt?: string;
+  mainImage?: { asset: { url: string } };
+  thumbnailUrl?: string;
+  publishedAt?: string;
+  source?: string;
+  externalUrl?: string;
+  videoUrl?: string;
+};
+
+export default async function HomePage() {
+  try {
+    const supabaseData = await getNewsStream(30);
+
+    const [articles, episodes, clips] = await Promise.all([
+      client.fetch<SanityContent[]>(
+        `*[_type == "article"] | order(publishedAt desc)[0...15] {
+          _id, _type, title, slug, excerpt,
+          "mainImage": mainImage.asset->url,
+          publishedAt, source, externalUrl
+        }`
+      ),
+      client.fetch<SanityContent[]>(
+        `*[_type == "episode"] | order(publishedAt desc)[0...10] {
+          _id, _type, title, slug, excerpt,
+          "mainImage": mainImage.asset->url,
+          publishedAt, source
+        }`
+      ),
+      client.fetch<SanityContent[]>(
+        `*[_type == "clip"] | order(publishedAt desc)[0...10] {
+          _id, _type, title, videoUrl, thumbnailUrl,
+          publishedAt, source
+        }`
+      ),
+    ]);
+
+    const supabaseItems = supabaseData.map((item: any) => ({
+      id: String(item.id),
+      title: item.title,
+      excerpt: item.excerpt || undefined,
+      image_url: item.image_url || null,
+      content_type: item.content_type || "article",
+      source: item.source || undefined,
+      source_url: item.source_url || null,
+      published_at: item.published_at || null,
+    }));
+
+    const sanityContent = [...articles, ...episodes, ...clips];
+    const sanityItems = sanityContent.map((item) => {
+      let content_type = "article";
+      if (item._type === "episode") content_type = "podcast";
+      if (item._type === "clip") content_type = "video";
+
+      return {
+        id: item._id,
+        title: item.title,
+        excerpt: item.excerpt || undefined,
+        image_url: item.mainImage || item.thumbnailUrl || null,
+        content_type,
+        source: item.source || "LNLS",
+        source_url: item.externalUrl || item.videoUrl || (item.slug ? `/news/${item.slug.current}` : null),
+        published_at: item.publishedAt || null,
+      };
+    });
+
+    const allItems = [...supabaseItems, ...sanityItems];
+
+    allItems.sort((a, b) => {
+      const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-8 md:py-12">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8">
+          <div className="text-center space-y-3">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+              Late Night Lake Show
+            </h1>
+            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto">
+              A modern hub for Lakers, NBA, tech & entertainment
+            </p>
+          </div>
+        </div>
+
+        <BentoGrid items={allItems} />
+      </main>
+    );
+  } catch (error) {
+    console.error("Error fetching content:", error);
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-20">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-white mb-4">Late Night Lake Show</h1>
+          <p className="text-slate-400">Unable to load content. Please try again later.</p>
+        </div>
+      </main>
+    );
+  }
+}

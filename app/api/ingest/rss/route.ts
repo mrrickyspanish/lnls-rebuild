@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { XMLParser } from "fast-xml-parser";
+import { getOgImage } from "@/lib/og";
 
 const FEEDS = [
   "https://www.espn.com/espn/rss/nba/news",
@@ -24,48 +25,20 @@ async function fetchFeed(url: string) {
   return Array.isArray(items) ? items : [items].filter(Boolean);
 }
 
-async function summarize(title: string, link: string) {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return "";
-  try {
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 120,
-        messages: [{
-          role: "user",
-          content: `Summarize this headline + link in 2 concise sentences for Lakers/NBA readers. No fluff.\n\n${title}\n${link}`
-        }],
-      }),
-    });
-    if (!resp.ok) return "";
-    const data = await resp.json();
-    const text = data?.content?.[0]?.text ?? "";
-    return (text || "").trim();
-  } catch {
-    return "";
-  }
-}
-
 export async function GET() {
   try {
     const supa = getWriteClient();
-    let inserted = 0, skipped = 0;
-    const feedsReport: { host: string; inserted: number; skipped: number }[] = [];
+    let inserted = 0, updated = 0, skipped = 0, ogApplied = 0;
+    const feedsReport: { host: string; inserted: number; updated: number; skipped: number; ogApplied: number }[] = [];
 
     for (const feed of FEEDS) {
-      let feedIns = 0, feedSkip = 0;
+      const host = new URL(feed).hostname;
+      let fIns = 0, fUpd = 0, fSkip = 0, fOg = 0;
       let items: any[] = [];
       try {
         items = await fetchFeed(feed);
       } catch {
-        feedsReport.push({ host: new URL(feed).hostname, inserted: 0, skipped: 0 });
+        feedsReport.push({ host, inserted: 0, updated: 0, skipped: 0, ogApplied: 0 });
         continue;
       }
 
@@ -73,37 +46,65 @@ export async function GET() {
         const title =
           item?.title?.["#text"] ?? item?.title ?? item?.["media:title"]?.["#text"] ?? "";
         const link = item?.link?.href ?? item?.link ?? item?.guid ?? "";
-        if (!title || !link) { feedSkip++; continue; }
+        if (!title || !link) { fSkip++; continue; }
 
+        // de-dupe by source_url
         const { data: exists, error: existsErr } = await supa
           .from("ai_news_stream")
-          .select("id")
+          .select("id,image_url")
           .eq("source_url", link)
           .maybeSingle();
 
-        if (existsErr || exists) { feedSkip++; continue; }
-
         const publishedRaw = item?.pubDate ?? item?.published ?? item?.updated ?? new Date().toISOString();
         const published_at = new Date(publishedRaw).toISOString();
-        const summary = await summarize(title, link);
 
-        const { error: insErr } = await supa.from("ai_news_stream").insert({
+        // try to read item image fields first
+        const feedImg =
+          item?.enclosure?.["@_url"] ||
+          item?.["media:thumbnail"]?.["@_url"] ||
+          item?.["media:content"]?.["@_url"] ||
+          null;
+
+        // Prepare row
+        const row: any = {
           title,
-          summary,
-          source: new URL(feed).hostname,
+          summary: null, // can wire summarizer later
+          source: host,
           source_url: link,
           published_at,
-        });
+          image_url: feedImg,
+        };
 
-        if (insErr) { feedSkip++; } else { feedIns++; }
+        // If missing image, try OG scrape
+        if (!row.image_url && row.source_url) {
+          const og = await getOgImage(row.source_url);
+          if (og) { row.image_url = og; fOg++; }
+        }
+
+        if (!existsErr && exists) {
+          // optional: update missing image_url on existing record
+          if (!exists.image_url && row.image_url) {
+            const { error: updErr } = await supa
+              .from("ai_news_stream")
+              .update({ image_url: row.image_url })
+              .eq("id", exists.id);
+            if (!updErr) fUpd++; else fSkip++;
+          } else {
+            fSkip++;
+          }
+        } else {
+          const { error: insErr } = await supa.from("ai_news_stream").insert(row);
+          if (insErr) fSkip++; else fIns++;
+        }
       }
 
-      inserted += feedIns; skipped += feedSkip;
-      feedsReport.push({ host: new URL(feed).hostname, inserted: feedIns, skipped: feedSkip });
+      inserted += fIns; updated += fUpd; skipped += fSkip; ogApplied += fOg;
+      feedsReport.push({ host, inserted: fIns, updated: fUpd, skipped: fSkip, ogApplied: fOg });
     }
 
-    return NextResponse.json({ inserted, skipped, feeds: feedsReport });
+    return NextResponse.json({ inserted, updated, skipped, ogApplied, feeds: feedsReport });
   } catch (e: any) {
+    console.error("RSS ingest error:", e);
     return NextResponse.json({ error: e?.message ?? "ingest failed" }, { status: 500 });
   }
 }

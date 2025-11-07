@@ -1,9 +1,6 @@
-import { Suspense } from "react";
 import BentoGrid from "@/components/home/BentoGrid";
 import { getNewsStream } from "@/lib/supabase/client";
 import { client } from "@/sanity/lib/client";
-import { getLatestEpisode } from "@/lib/podcast/spreaker";
-import { selectHero, isYouTube } from "@/lib/heroSelector";
 
 export const revalidate = 60;
 
@@ -25,31 +22,30 @@ export default async function HomePage() {
   try {
     const supabaseData = await getNewsStream(30);
 
-    const [articles, episodes, clips, latestPodcast] = await Promise.all([
+    const [articles, episodes, clips] = await Promise.all([
       client.fetch<SanityContent[]>(
-        `*[_type == "article"] | order(publishedAt desc)[0...15]{
-          _id,_type,title,slug,excerpt,
+        `*[_type == "article"] | order(publishedAt desc)[0...15] {
+          _id, _type, title, slug, excerpt,
           "mainImage": mainImage.asset->url,
-          publishedAt,source,externalUrl
+          publishedAt, source, externalUrl
         }`
       ),
       client.fetch<SanityContent[]>(
-        `*[_type == "episode"] | order(publishedAt desc)[0...10]{
-          _id,_type,title,slug,excerpt,
+        `*[_type == "episode"] | order(publishedAt desc)[0...10] {
+          _id, _type, title, slug, excerpt,
           "mainImage": mainImage.asset->url,
-          publishedAt,source
+          publishedAt, source
         }`
       ),
       client.fetch<SanityContent[]>(
-        `*[_type == "clip"] | order(publishedAt desc)[0...10]{
-          _id,_type,title,videoUrl,thumbnailUrl,
-          publishedAt,source
+        `*[_type == "clip"] | order(publishedAt desc)[0...10] {
+          _id, _type, title, videoUrl, thumbnailUrl,
+          publishedAt, source
         }`
       ),
-      getLatestEpisode(),
     ]);
 
-    const supabaseItems = (supabaseData || []).map((item: any) => ({
+    const supabaseItems = supabaseData.map((item: any) => ({
       id: String(item.id),
       title: item.title,
       excerpt: item.excerpt || undefined,
@@ -60,8 +56,10 @@ export default async function HomePage() {
       published_at: item.published_at || null,
     }));
 
-    const sanityItems = [...articles, ...episodes, ...clips].map((item) => {
-      let content_type: "article" | "podcast" | "video" = "article";
+    const sanityContent = [...articles, ...episodes, ...clips];
+
+    const sanityItems = sanityContent.map((item) => {
+      let content_type = "article";
       if (item._type === "episode") content_type = "podcast";
       if (item._type === "clip") content_type = "video";
 
@@ -72,36 +70,60 @@ export default async function HomePage() {
         image_url: item.mainImage || item.thumbnailUrl || null,
         content_type,
         source: item.source || "LNLS",
-        source_url:
-          item.externalUrl ||
-          item.videoUrl ||
-          (item.slug ? `/news/${item.slug.current}` : null),
+        source_url: item.externalUrl || item.videoUrl || (item.slug ? `/news/${item.slug.current}` : null),
         published_at: item.publishedAt || null,
       };
     });
 
-    // Merge & sort newest → oldest
+    // Merge all items and sort by published date desc
     const merged = [...supabaseItems, ...sanityItems].sort((a, b) => {
       const da = a.published_at ? new Date(a.published_at).getTime() : 0;
       const db = b.published_at ? new Date(b.published_at).getTime() : 0;
       return db - da;
     });
 
-    // Find latest video from merged content
-    const latestVideo = merged.find((x) => {
-      const ct = (x.content_type || "").toLowerCase();
-      return ct === "video" || isYouTube(x.source_url);
-    });
+    // Helper: get latest by predicate
+    const latestBy = (arr: typeof merged, predicate: (x: any) => boolean) => {
+      for (const it of arr) {
+        if (predicate(it)) return it;
+      }
+      return null;
+    };
 
-    // Select Box 1 and Box 2 using hero selector
-    const heroSelection = selectHero({
-      podcast: latestPodcast,
-      video: latestVideo || null,
-    });
+    // 1) Latest LNLS article (source "LNLS" AND content_type 'article')
+    const latestLnlsArticle =
+      latestBy(merged, (x) => (x.source?.toLowerCase?.() === "lnls") && x.content_type === "article") ||
+      latestBy(merged, (x) => x.content_type === "article"); // fallback any article
+
+    // 2) Latest podcast (content_type 'podcast')
+    const latestPodcast = latestBy(merged, (x) => x.content_type === "podcast");
+
+    // Build final ordered feed:
+    // [ hero = LNLS article, first top tile = podcast (if exists), then the rest without dups ]
+    const chosenIds = new Set<string>();
+    const ordered: typeof merged = [];
+
+    if (latestLnlsArticle) {
+      ordered.push(latestLnlsArticle);
+      chosenIds.add(String(latestLnlsArticle.id));
+    }
+
+    if (latestPodcast && !chosenIds.has(String(latestPodcast.id))) {
+      ordered.push(latestPodcast);
+      chosenIds.add(String(latestPodcast.id));
+    }
+
+    for (const it of merged) {
+      const id = String(it.id);
+      if (!chosenIds.has(id)) {
+        ordered.push(it);
+        chosenIds.add(id);
+      }
+    }
 
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-8 md:py-12">
-        {/* HERO HEADER visuals (no layout change) */}
+        {/* HERO HEADER (visual-only enhancements already added) */}
         <div className="relative max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8">
           <div className="hero-ambient" aria-hidden></div>
           <span className="hero-twinkle t1" aria-hidden></span>
@@ -118,24 +140,8 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <Suspense fallback={
-          <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-96 bg-slate-800/50 rounded-3xl"></div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="h-64 bg-slate-800/50 rounded-2xl"></div>
-                <div className="h-64 bg-slate-800/50 rounded-2xl"></div>
-                <div className="h-64 bg-slate-800/50 rounded-2xl"></div>
-              </div>
-            </div>
-          </div>
-        }>
-          <BentoGrid
-            box1={heroSelection.box1}
-            box2={heroSelection.box2}
-            items={merged}
-          />
-        </Suspense>
+        {/* Feed with hero pinned to LNLS article & podcast next */}
+        <BentoGrid items={ordered} />
       </main>
     );
   } catch (error) {

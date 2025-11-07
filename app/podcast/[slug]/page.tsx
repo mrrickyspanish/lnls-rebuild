@@ -1,17 +1,20 @@
-import { Metadata } from 'next';
+import type { Metadata } from "next";
 
-interface EpisodePageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export async function generateMetadata({ params }: EpisodePageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
   const { slug } = await params;
   return {
     title: `${slug} | LNLS Podcast`,
+    description: `Listen to episode ${slug} of Late Night Lake Show`,
   };
 }
 
-export default async function EpisodePage({ params }: EpisodePageProps) {
+export default async function EpisodePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
 
   return (
