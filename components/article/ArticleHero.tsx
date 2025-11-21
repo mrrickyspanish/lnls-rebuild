@@ -40,10 +40,119 @@ type ArticleCardProps = {
 function ArticleCard({ article, isHero, isClickable }: ArticleCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const CardWrapper = isClickable ? Link : 'div';
-  const wrapperProps = isClickable 
-    ? { href: `/news/${article.slug}` }
-    : {};
+  const cardContent = isHero ? (
+    <div className="p-1">
+      <div
+        className={`relative h-[450px] rounded-lg overflow-hidden bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80 ${
+          isHero ? '' : 'opacity-60 hover:opacity-100'
+        } transition-opacity cursor-${isClickable ? 'pointer' : 'default'}`}
+      >
+        <div className="absolute inset-0 rounded-lg overflow-hidden">
+          {article.heroImage ? (
+            <Image
+              src={article.heroImage}
+              alt={article.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              priority={isHero}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+              <BookOpen className={`text-white/10 ${isHero ? 'w-32 h-32' : 'w-24 h-24'}`} />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        </div>
+
+        {isClickable && !isHero && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: isHovered ? 1 : 0, opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-2xl">
+              <ChevronRight className="w-8 h-8 text-black" />
+            </div>
+          </motion.div>
+        )}
+
+        <div className={`absolute bottom-0 left-0 right-0 ${isHero ? 'p-6' : 'p-4'} space-y-${isHero ? '2' : '1'}`}>
+          <div className="flex items-center gap-2 text-xs text-white/80">
+            <span>By {article.author.name}</span>
+            <span>•</span>
+            <span>{formatDate(article.publishedAt)}</span>
+            <span>•</span>
+            <span>{article.readTime} min</span>
+          </div>
+          <h3
+            className={`font-bold text-white leading-tight font-netflix line-clamp-2 ${
+              isHero ? 'text-xl md:text-2xl' : 'text-sm md:text-base'
+            }`}
+          >
+            {article.title}
+          </h3>
+          {isHero && article.excerpt && (
+            <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">{article.excerpt}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div
+      onMouseEnter={() => isClickable && setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`relative h-[450px] rounded-lg overflow-hidden bg-[var(--netflix-bg)] shadow-2xl ${
+        isHero ? '' : 'opacity-60 hover:opacity-100'
+      } transition-opacity cursor-${isClickable ? 'pointer' : 'default'}`}
+    >
+      {article.heroImage ? (
+        <Image
+          src={article.heroImage}
+          alt={article.title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          priority={isHero}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+          <BookOpen className={`text-white/10 ${isHero ? 'w-32 h-32' : 'w-24 h-24'}`} />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+      {isClickable && !isHero && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: isHovered ? 1 : 0, opacity: isHovered ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-2xl">
+            <ChevronRight className="w-8 h-8 text-black" />
+          </div>
+        </motion.div>
+      )}
+      <div className={`absolute bottom-0 left-0 right-0 ${isHero ? 'p-6' : 'p-4'} space-y-${isHero ? '2' : '1'}`}>
+        <div className="flex items-center gap-2 text-xs text-white/80">
+          <span>By {article.author.name}</span>
+          <span>•</span>
+          <span>{formatDate(article.publishedAt)}</span>
+          <span>•</span>
+          <span>{article.readTime} min</span>
+        </div>
+        <h3
+          className={`font-bold text-white leading-tight font-netflix line-clamp-2 ${
+            isHero ? 'text-xl md:text-2xl' : 'text-sm md:text-base'
+          }`}
+        >
+          {article.title}
+        </h3>
+        {isHero && article.excerpt && (
+          <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">{article.excerpt}</p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <motion.div
@@ -69,147 +178,13 @@ function ArticleCard({ article, isHero, isClickable }: ArticleCardProps) {
         zIndex: isHero ? 10 : isClickable ? 5 : 1 
       }}
     >
-      <CardWrapper {...wrapperProps}>
-        {isHero ? (
-          <div className="p-1">
-            <div className={`relative h-[450px] rounded-lg overflow-hidden bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80 ${
-              isHero ? '' : 'opacity-60 hover:opacity-100'
-            } transition-opacity cursor-${isClickable ? 'pointer' : 'default'}`}>
-              <div className="absolute inset-0 rounded-lg overflow-hidden">
-                {/* Image */}
-                {article.heroImage ? (
-                  <Image
-                    src={article.heroImage}
-                    alt={article.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    priority={isHero}
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                    <BookOpen className={`text-white/10 ${isHero ? 'w-32 h-32' : 'w-24 h-24'}`} />
-                  </div>
-                )}
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-              </div>
-
-              {/* Next Arrow (Card 2 only) */}
-              {isClickable && !isHero && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ 
-                    scale: isHovered ? 1 : 0,
-                    opacity: isHovered ? 1 : 0 
-                  }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-2xl">
-                    <ChevronRight className="w-8 h-8 text-black" />
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Metadata Inside Card */}
-              <div className={`absolute bottom-0 left-0 right-0 ${isHero ? 'p-6' : 'p-4'} space-y-${isHero ? '2' : '1'}`}>
-                {/* Tags */}
-                <div className="flex items-center gap-2 text-xs text-white/80">
-                  <span>By {article.author.name}</span>
-                  <span>•</span>
-                  <span>{formatDate(article.publishedAt)}</span>
-                  <span>•</span>
-                  <span>{article.readTime} min</span>
-                </div>
-
-                {/* Title */}
-                <h3 className={`font-bold text-white leading-tight font-netflix line-clamp-2 ${
-                  isHero ? 'text-xl md:text-2xl' : 'text-sm md:text-base'
-                }`}>
-                  {article.title}
-                </h3>
-
-                {/* Description - Only on Hero */}
-                {isHero && article.excerpt && (
-                  <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">
-                    {article.excerpt}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div
-            onMouseEnter={() => isClickable && setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className={`relative h-[450px] rounded-lg overflow-hidden bg-[var(--netflix-bg)] shadow-2xl ${
-              isHero ? '' : 'opacity-60 hover:opacity-100'
-            } transition-opacity cursor-${isClickable ? 'pointer' : 'default'}`}
-          >
-            {/* Image */}
-            {article.heroImage ? (
-              <Image
-                src={article.heroImage}
-                alt={article.title}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                priority={isHero}
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                <BookOpen className={`text-white/10 ${isHero ? 'w-32 h-32' : 'w-24 h-24'}`} />
-              </div>
-            )}
-
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-
-            {/* Next Arrow (Card 2 only) */}
-            {isClickable && !isHero && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ 
-                  scale: isHovered ? 1 : 0,
-                  opacity: isHovered ? 1 : 0 
-                }}
-                transition={{ duration: 0.2 }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-2xl">
-                  <ChevronRight className="w-8 h-8 text-black" />
-                </div>
-              </motion.div>
-            )}
-
-            {/* Metadata Inside Card */}
-            <div className={`absolute bottom-0 left-0 right-0 ${isHero ? 'p-6' : 'p-4'} space-y-${isHero ? '2' : '1'}`}>
-              {/* Tags */}
-              <div className="flex items-center gap-2 text-xs text-white/80">
-                <span>By {article.author.name}</span>
-                <span>•</span>
-                <span>{formatDate(article.publishedAt)}</span>
-                <span>•</span>
-                <span>{article.readTime} min</span>
-              </div>
-
-              {/* Title */}
-              <h3 className={`font-bold text-white leading-tight font-netflix line-clamp-2 ${
-                isHero ? 'text-xl md:text-2xl' : 'text-sm md:text-base'
-              }`}>
-                {article.title}
-              </h3>
-
-              {/* Description - Only on Hero */}
-              {isHero && article.excerpt && (
-                <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">
-                  {article.excerpt}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-      </CardWrapper>
+      {isClickable ? (
+        <Link href={`/news/${article.slug}`} className="block">
+          {cardContent}
+        </Link>
+      ) : (
+        cardContent
+      )}
     </motion.div>
   );
 }
