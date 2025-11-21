@@ -1,65 +1,119 @@
 // app/news/[slug]/page.tsx
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { getClient, queries } from "@/lib/sanity/client";
+
+import ArticleHero from "@/components/article/ArticleHero";
+import ArticleBody from "@/components/article/ArticleBody";
+import RelatedRow from "@/components/article/RelatedRow";
+import AuthorCard from "@/components/article/AuthorCard";
+import ShareBar from "@/components/article/ShareBar";
+import ReadProgress from "@/components/article/ReadProgress";
+import { fetchArticleBySlug, fetchRelatedArticles } from "@/lib/supabase/articles";
+import type { Article } from "@/types/supabase";
 
 export const revalidate = 60;
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
-type Article = {
-  _id: string;
-  title: string;
-  dek?: string;
-  slug?: { current?: string };
-  _createdAt?: string;
-  body?: unknown;
-};
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1200&h=675&fit=crop";
 
-async function getArticle(slug: string): Promise<Article | null> {
-  const sanity = getClient();
-  // You listed queries.articleBySlug as a function(slug) — using it here:
-  const doc = await sanity.fetch(queries.articleBySlug(slug));
-  return doc ?? null;
+function buildHeroArticle(article: Article, slug: string) {
+  return {
+    slug,
+    title: article.title,
+    excerpt: article.excerpt || "",
+    heroImage: article.hero_image_url || FALLBACK_IMAGE,
+    author: { name: article.author_name },
+    publishedAt: article.published_at || article.created_at,
+    readTime: article.read_time || 5,
+    topic: article.topic || "Lakers",
+  };
+}
+
+function toHeroCard(article: Article | undefined) {
+  if (!article) return null;
+  return {
+    slug: article.slug,
+    title: article.title,
+    excerpt: article.excerpt || "",
+    heroImage: article.hero_image_url || FALLBACK_IMAGE,
+    author: { name: article.author_name },
+    publishedAt: article.published_at || article.created_at,
+    readTime: article.read_time || 4,
+    topic: article.topic || "Lakers",
+  };
+}
+
+function mapRelatedRow(articles: Article[]) {
+  return articles.map((article) => ({
+    id: article.id,
+    title: article.title,
+    image_url: article.hero_image_url,
+    content_type: "article",
+    source: "LNLS",
+    source_url: `/news/${article.slug}`,
+    published_at: article.published_at || article.created_at,
+    excerpt: article.excerpt,
+  }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params; // <-- await params (Next 15)
-  const article = await getArticle(slug);
+  const { slug } = await params;
+  const article = await fetchArticleBySlug(slug);
   if (!article) return { title: "Article not found" };
   return {
     title: article.title,
-    description: article.dek || "LNLS article",
+    description: article.excerpt || "LNLS article",
   };
 }
 
 export default async function ArticlePage({ params }: PageProps) {
-  const { slug } = await params; // <-- await params (Next 15)
-  const article = await getArticle(slug);
+  const { slug } = await params;
+  const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
 
+  const relatedArticles = await fetchRelatedArticles(article.id, article.topic, 6);
+  const [nextArticle, previewArticle, ...remainingRelated] = relatedArticles;
+
+  const currentArticle = buildHeroArticle(article, slug);
+  const relatedRowItems = mapRelatedRow(remainingRelated);
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    "";
+  const shareUrl = siteUrl
+    ? `${siteUrl.replace(/\/$/, "")}/news/${slug}`
+    : `/news/${slug}`;
+
   return (
-    <div className="section-container py-12">
-      <Link href="/news" className="text-sm text-slate-muted hover:underline">
-        ← Back to News
-      </Link>
+    <>
+      <ReadProgress />
+      <ShareBar url={shareUrl} title={article.title} />
 
-      <h1 className="mt-4 text-5xl lg:text-6xl font-bebas gradient-text">
-        {article.title}
-      </h1>
+      <article>
+        <ArticleHero
+          currentArticle={currentArticle}
+          nextArticle={toHeroCard(nextArticle)}
+          previewArticle={toHeroCard(previewArticle)}
+        />
 
-      {article.dek && (
-        <p className="mt-3 text-lg text-slate-muted max-w-2xl">{article.dek}</p>
-      )}
+        {article.body && <ArticleBody content={article.body} />}
 
-      <div className="mt-2 text-xs text-slate-muted">
-        {article._createdAt ? new Date(article._createdAt).toLocaleDateString() : null}
-      </div>
+        <AuthorCard
+          author={{
+            name: article.author_name,
+            bio: article.author_bio || undefined,
+            twitter: article.author_twitter || undefined,
+          }}
+        />
 
-      {/* TODO: render rich body with @portabletext/react if needed */}
-      {/* <PortableText value={article.body} components={portableComponents} /> */}
-    </div>
+        <RelatedRow
+          articles={relatedRowItems}
+          title="More Lakers News"
+        />
+      </article>
+    </>
   );
 }

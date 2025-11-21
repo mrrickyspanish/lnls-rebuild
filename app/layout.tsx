@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import '../styles/globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { AudioPlayerProvider } from '@/lib/audio/AudioPlayerContext'
+import GlobalAudioPlayer from '@/components/audio/GlobalAudioPlayer'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -51,11 +53,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+    <html lang="en" className={`${inter.variable} scroll-smooth`}>
+      <head>
+        <meta name="view-transition" content="same-origin" />
+      </head>
+      <body className="min-h-screen flex flex-col bg-[var(--netflix-bg)]">
+        <AudioPlayerProvider>
+          <Header />
+          <main className="flex-grow pb-24">{children}</main>
+          <Footer />
+          <GlobalAudioPlayer />
+        </AudioPlayerProvider>
       </body>
     </html>
   )

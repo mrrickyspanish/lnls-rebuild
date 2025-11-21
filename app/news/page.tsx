@@ -1,7 +1,8 @@
 // app/news/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getClient, queries } from "@/lib/sanity/client";
+
+import { fetchPublishedArticles } from "@/lib/supabase/articles";
 
 export const metadata: Metadata = {
   title: "News",
@@ -10,23 +11,18 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
-type Article = {
-  _id: string;
-  title: string;
-  dek?: string;
-  slug?: { current?: string };
-  _createdAt?: string;
-};
-
-async function getNews(): Promise<Article[]> {
-  const sanity = getClient();
-  // Use the existing query key you have available
-  const items: unknown = await sanity.fetch(queries.articles);
-  return Array.isArray(items) ? (items as Article[]) : [];
+function formatDate(dateString?: string | null) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default async function NewsPage() {
-  const news = await getNews();
+  const news = await fetchPublishedArticles(30);
 
   return (
     <div className="section-container py-12">
@@ -37,16 +33,15 @@ export default async function NewsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {news.map((n) => {
-            const slug = n.slug?.current ?? "";
-            const href = slug ? `/news/${slug}` : "#";
+            const href = `/news/${n.slug}`;
             return (
-              <article key={n._id} className="card">
+              <article key={n.id} className="card">
                 <Link href={href} className="block">
                   <h2 className="text-2xl font-bebas">{n.title}</h2>
-                  {n.dek && <p className="text-slate-muted mt-2">{n.dek}</p>}
+                  {n.excerpt && <p className="text-slate-muted mt-2">{n.excerpt}</p>}
                 </Link>
                 <div className="text-xs text-slate-muted mt-3">
-                  {n._createdAt ? new Date(n._createdAt).toLocaleDateString() : null}
+                  {formatDate(n.published_at || n.created_at)}
                 </div>
               </article>
             );

@@ -1,8 +1,79 @@
 // Supabase Database Types for LNLS Platform
 
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export type ArticleBodyBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'heading'; text: string; level?: number };
+
 export interface Database {
   public: {
     Tables: {
+      articles: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string;
+          hero_image_url: string;
+          author_name: string;
+          author_bio: string | null;
+          author_twitter: string | null;
+          read_time: number;
+          topic: string;
+          body: Json;
+          video_url: string | null;
+          published: boolean;
+          featured: boolean;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          excerpt: string;
+          hero_image_url: string;
+          author_name: string;
+          author_bio?: string | null;
+          author_twitter?: string | null;
+          read_time: number;
+          topic: string;
+          body: Json;
+          video_url?: string | null;
+          published?: boolean;
+          featured?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          excerpt?: string;
+          hero_image_url?: string;
+          author_name?: string;
+          author_bio?: string | null;
+          author_twitter?: string | null;
+          read_time?: number;
+          topic?: string;
+          body?: Json;
+          video_url?: string | null;
+          published?: boolean;
+          featured?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       profiles: {
         Row: {
           id: string;
@@ -71,7 +142,7 @@ export interface Database {
           resource_type: 'article' | 'episode' | 'page';
           resource_id: string;
           user_id: string | null;
-          metadata: Record<string, any> | null;
+          metadata: Json | null;
           created_at: string;
         };
         Insert: {
@@ -80,7 +151,7 @@ export interface Database {
           resource_type: 'article' | 'episode' | 'page';
           resource_id: string;
           user_id?: string | null;
-          metadata?: Record<string, any> | null;
+          metadata?: Json | null;
           created_at?: string;
         };
         Update: {
@@ -89,7 +160,7 @@ export interface Database {
           resource_type?: 'article' | 'episode' | 'page';
           resource_id?: string;
           user_id?: string | null;
-          metadata?: Record<string, any> | null;
+          metadata?: Json | null;
           created_at?: string;
         };
       };
@@ -98,7 +169,7 @@ export interface Database {
           id: string;
           email: string;
           status: 'active' | 'unsubscribed' | 'bounced';
-          preferences: Record<string, any> | null;
+          preferences: Json | null;
           subscribed_at: string;
           unsubscribed_at: string | null;
         };
@@ -106,7 +177,7 @@ export interface Database {
           id?: string;
           email: string;
           status?: 'active' | 'unsubscribed' | 'bounced';
-          preferences?: Record<string, any> | null;
+          preferences?: Json | null;
           subscribed_at?: string;
           unsubscribed_at?: string | null;
         };
@@ -114,7 +185,7 @@ export interface Database {
           id?: string;
           email?: string;
           status?: 'active' | 'unsubscribed' | 'bounced';
-          preferences?: Record<string, any> | null;
+          preferences?: Json | null;
           subscribed_at?: string;
           unsubscribed_at?: string | null;
         };
@@ -201,6 +272,22 @@ export type NewsletterSubscriberUpdate = Database['public']['Tables']['newslette
 export type AINewsItem = Database['public']['Tables']['ai_news_stream']['Row'];
 export type AINewsItemInsert = Database['public']['Tables']['ai_news_stream']['Insert'];
 export type AINewsItemUpdate = Database['public']['Tables']['ai_news_stream']['Update'];
+
+type ArticleTableRow = Database['public']['Tables']['articles']['Row'];
+type ArticleTableInsert = Database['public']['Tables']['articles']['Insert'];
+type ArticleTableUpdate = Database['public']['Tables']['articles']['Update'];
+
+export type Article = Omit<ArticleTableRow, 'body'> & {
+  body: ArticleBodyBlock[];
+};
+
+export type ArticleInsert = Omit<ArticleTableInsert, 'body'> & {
+  body: ArticleBodyBlock[];
+};
+
+export type ArticleUpdate = Omit<ArticleTableUpdate, 'body'> & {
+  body?: ArticleBodyBlock[];
+};
 
 // Comment with nested user data
 export interface CommentWithUser extends Comment {

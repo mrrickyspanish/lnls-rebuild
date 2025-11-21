@@ -1,65 +1,38 @@
-// app/podcast/page.tsx
-import type { Metadata } from "next";
-import { getClient, queries } from "@/lib/sanity/client";
-import LatestEpisodes from "@/components/LatestEpisodes";
+import { Suspense } from 'react';
+import { Metadata } from 'next';
+import PodcastPageClient from '@/components/podcast/PodcastPageClient';
+
+// Fetch episodes from API
+async function getEpisodes() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`, {
+    next: { revalidate: 300 }
+  });
+  
+  if (!res.ok) return [];
+  const allEpisodes = await res.json();
+  // Limit to 10 episodes (2 rows of 5)
+  return allEpisodes.slice(0, 10);
+}
 
 export const metadata: Metadata = {
-  title: "Podcast",
-  description: "Listen to every episode of the Late Night Lake Show podcast.",
+  title: 'Podcast | Late Night Lake Show',
+  description: 'Listen to the Late Night Lake Show podcast - Lakers news, analysis, and hot takes.',
 };
-
-export const revalidate = 60;
-
-async function getEpisodes() {
-  const client = getClient();
-  const episodes = await client.fetch(queries.episodes);
-  return episodes;
-}
 
 export default async function PodcastPage() {
   const episodes = await getEpisodes();
 
-  return (
-    <div className="section-container py-12">
-      <div className="mb-12">
-        <h1 className="text-5xl lg:text-6xl font-bebas gradient-text mb-4">
-          Podcast
-        </h1>
-        <p className="text-lg text-slate-muted max-w-2xl">
-          Real talk about the Lakers, NBA, and basketball culture. New episodes every week.
-        </p>
-
-        <div className="flex flex-wrap gap-4 mt-6">
-          <a
-            href="https://open.spotify.com/show/your-show-id"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary text-sm"
-          >
-            Listen on Spotify
-          </a>
-
-          <a
-            href="https://podcasts.apple.com/us/podcast/your-podcast"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary text-sm"
-          >
-            Listen on Apple Podcasts
-          </a>
-
-          <a
-            href="https://www.youtube.com/@latenightlakeshow"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary text-sm"
-          >
-            Watch on YouTube
-          </a>
+  if (!episodes || episodes.length === 0) {
+    return (
+      <div className="min-h-screen bg-[var(--netflix-bg)] pt-[76px]">
+        <div className="max-w-[1920px] mx-auto px-4 md:px-0">
+          <div className="py-12">
+            <p className="text-white/60 text-center">No episodes available</p>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <LatestEpisodes episodes={episodes} />
-    </div>
-  );
+  return <PodcastPageClient initialEpisodes={episodes} />;
 }

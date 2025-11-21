@@ -114,8 +114,31 @@ export default defineType({
           ],
         },
         {
-          type: 'code',
+          type: 'object',
+          name: 'codeBlock',
           title: 'Code Block',
+          fields: [
+            {
+              name: 'language',
+              type: 'string',
+              title: 'Language',
+              options: {
+                list: [
+                  { title: 'JavaScript', value: 'javascript' },
+                  { title: 'TypeScript', value: 'typescript' },
+                  { title: 'HTML', value: 'html' },
+                  { title: 'CSS', value: 'css' },
+                  { title: 'JSON', value: 'json' },
+                ],
+              },
+            },
+            {
+              name: 'code',
+              type: 'text',
+              title: 'Code',
+              rows: 10,
+            },
+          ],
         },
       ],
     }),
