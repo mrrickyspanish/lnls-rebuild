@@ -8,7 +8,7 @@ const RSS_FEEDS = [
   'https://lakersnation.com/feed/',
 ]
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('🔄 Starting RSS aggregation...')
     const parser = new Parser()
@@ -113,8 +113,9 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('RSS aggregation error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to aggregate news', details: error.message },
+      { error: 'Failed to aggregate news', details: message },
       { status: 500 }
     )
   }
