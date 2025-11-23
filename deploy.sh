@@ -14,6 +14,26 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
+# Store the original branch/state for restoration
+ORIGINAL_BRANCH=""
+DETACHED_HEAD=false
+
+# Trap function to restore original branch on exit
+restore_branch() {
+    local exit_code=$?
+    if [[ "$DETACHED_HEAD" == "false" ]] && [[ -n "$ORIGINAL_BRANCH" ]] && [[ "$ORIGINAL_BRANCH" != "main" ]]; then
+        echo ""
+        echo "🔄 Restoring original branch: $ORIGINAL_BRANCH"
+        git checkout "$ORIGINAL_BRANCH" 2>/dev/null || true
+    fi
+    if [[ $exit_code -ne 0 ]]; then
+        echo -e "${RED}❌ Deployment failed${NC}"
+    fi
+    exit $exit_code
+}
+
+trap restore_branch EXIT
+
 # Pre-flight validation: Check for Vercel CLI
 echo "🔍 Pre-flight Check: Vercel CLI"
 if ! command -v vercel &> /dev/null; then
@@ -35,9 +55,15 @@ fi
 echo -e "${GREEN}✓ No uncommitted changes${NC}"
 echo ""
 
-# Get current branch for reference
-CURRENT_BRANCH=$(git branch --show-current)
-echo "📍 Current branch: $CURRENT_BRANCH"
+# Get current branch for reference (handle detached HEAD)
+ORIGINAL_BRANCH=$(git branch --show-current)
+if [[ -z "$ORIGINAL_BRANCH" ]]; then
+    DETACHED_HEAD=true
+    echo "📍 Current state: Detached HEAD"
+    echo -e "${RED}⚠ Warning: You are in detached HEAD state${NC}"
+else
+    echo "📍 Current branch: $ORIGINAL_BRANCH"
+fi
 echo ""
 
 # Check if main branch exists
@@ -56,9 +82,9 @@ git checkout main
 echo -e "${GREEN}✓ Switched to main branch${NC}"
 echo ""
 
-# Pull latest changes
+# Pull latest changes (fast-forward only)
 echo "📥 Pulling latest changes..."
-git pull origin main
+git pull --ff-only origin main
 echo -e "${GREEN}✓ Latest changes pulled${NC}"
 echo ""
 
@@ -75,12 +101,7 @@ echo ""
 echo -e "${GREEN}✓ Deployment complete!${NC}"
 echo ""
 
-# Return to original branch if different from main
-if [[ "$CURRENT_BRANCH" != "main" ]]; then
-    echo "🔄 Returning to branch: $CURRENT_BRANCH"
-    git checkout "$CURRENT_BRANCH"
-fi
-
 echo "========================================"
 echo "✨ Deployment successful!"
 echo "========================================"
+# Branch restoration will be handled by the trap function
