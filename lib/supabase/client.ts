@@ -30,16 +30,15 @@ export function createSupabaseServiceClient(): SupabaseTypedClient {
 
 /**
  * Insert a subscriber. Returns PostgrestError | null per call site expectations.
- * Table name: newsletter_subs  (change here if your table is different)
+ * Table name: newsletter_subscribers
  */
 export async function subscribeToNewsletter(
-  email: string,
-  source: string = "site"
+  email: string
 ): Promise<{ data: unknown; error: PostgrestError | null }> {
   const supabase = createSupabaseServiceClient();
-  const { data, error } = await supabase
-    .from("newsletter_subs") // <-- ensure this table exists; rename if yours is newsletter_subscribers
-    .insert([{ email, source }]);
+  const { data, error } = await (supabase
+    .from("newsletter_subscribers") as any)
+    .insert([{ email }]);
 
   return { data, error };
 }
