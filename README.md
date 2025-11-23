@@ -128,6 +128,7 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
+npm run deploy       # Deploy to Vercel production (automated)
 
 npm run studio       # Start Sanity Studio locally
 npm run studio:build # Build Sanity Studio
@@ -197,7 +198,30 @@ See `.env.example` for complete list.
 
 ## 🚢 Deployment
 
-### Vercel (Recommended)
+### Quick Deploy (Automated)
+
+**Prerequisites:**
+- Vercel CLI installed: `npm install -g vercel`
+- Authenticated with Vercel: `vercel login`
+- All changes committed to git
+
+**Deploy to production:**
+```bash
+npm run deploy
+```
+
+This automated script will:
+1. Validate Vercel CLI is installed
+2. Check for uncommitted changes (fails if any found)
+3. Switch to main branch
+4. Pull latest changes
+5. Clean install dependencies
+6. Deploy to Vercel production
+7. Return to your original branch
+
+### Manual Setup (First Time)
+
+**Vercel (Recommended)**
 1. Push to GitHub
 2. Import repo in Vercel
 3. Add environment variables

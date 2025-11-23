@@ -164,6 +164,13 @@ npm run studio
 
 ## Step 7: Deploy to Vercel
 
+### Prerequisites
+Before deploying, ensure you have:
+- Vercel CLI installed: `npm install -g vercel`
+- Vercel account and authenticated: `vercel login`
+- All changes committed to git
+- Access to the main branch
+
 ### Connect GitHub
 1. Push project to GitHub:
 ```bash
@@ -189,6 +196,30 @@ git push -u origin main
    - Add them in Vercel → Settings → Environment Variables
 
 5. Deploy!
+
+### Automated Deployment Script
+
+For subsequent deployments, use the automated deployment script:
+
+```bash
+# Run the deployment script
+npm run deploy
+```
+
+The deployment script will:
+1. ✅ Verify Vercel CLI is installed
+2. ✅ Check for uncommitted changes (will fail if found)
+3. ✅ Switch to the main branch
+4. ✅ Pull the latest changes
+5. ✅ Clean install dependencies (`npm ci`)
+6. ✅ Deploy to Vercel production
+7. ✅ Return to your original branch
+
+**Important:** The script ensures clean deployments by:
+- Requiring all changes to be committed before deploying
+- Always deploying from the main branch with latest code
+- Using `npm ci` for reproducible dependency installation
+- Automatically handling branch switching
 
 ---
 
