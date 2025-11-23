@@ -24,7 +24,10 @@ restore_branch() {
     if [[ "$DETACHED_HEAD" == "false" ]] && [[ -n "$ORIGINAL_BRANCH" ]] && [[ "$ORIGINAL_BRANCH" != "main" ]]; then
         echo ""
         echo "🔄 Restoring original branch: $ORIGINAL_BRANCH"
-        git checkout "$ORIGINAL_BRANCH" 2>/dev/null || true
+        if ! git checkout "$ORIGINAL_BRANCH" 2>/dev/null; then
+            echo -e "${RED}⚠ Warning: Failed to restore original branch${NC}"
+            echo "You may need to manually checkout: git checkout $ORIGINAL_BRANCH"
+        fi
     fi
     if [[ $exit_code -ne 0 ]]; then
         echo -e "${RED}❌ Deployment failed${NC}"
@@ -94,7 +97,15 @@ echo ""
 
 # Pull latest changes (fast-forward only)
 echo "📥 Pulling latest changes..."
-git pull --ff-only origin main
+if ! git pull --ff-only origin main; then
+    echo -e "${RED}✗ Error: Failed to pull changes${NC}"
+    echo "Your local main branch has diverged from origin/main"
+    echo "Please resolve this manually before deploying:"
+    echo "  git fetch origin"
+    echo "  git merge origin/main"
+    echo "Or reset to match remote: git reset --hard origin/main"
+    exit 1
+fi
 echo -e "${GREEN}✓ Latest changes pulled${NC}"
 echo ""
 
@@ -107,7 +118,13 @@ echo ""
 # Verify Vercel project context
 echo "🔍 Verifying Vercel project..."
 if [[ -f ".vercel/project.json" ]]; then
-    echo -e "${GREEN}✓ Vercel project linked${NC}"
+    # Verify the project.json contains valid project configuration
+    if grep -q '"projectId"' ".vercel/project.json" 2>/dev/null; then
+        echo -e "${GREEN}✓ Vercel project linked${NC}"
+    else
+        echo -e "${RED}⚠ Warning: Invalid Vercel project configuration${NC}"
+        echo "Run 'vercel link' to reconnect this directory to a Vercel project"
+    fi
 else
     echo -e "${RED}⚠ Warning: Vercel project not linked${NC}"
     echo "Run 'vercel link' to connect this directory to a Vercel project"
