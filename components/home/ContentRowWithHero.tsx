@@ -475,7 +475,7 @@ export default function ContentRowWithHero({
               <CarouselCard
                 key={key}
                 item={item}
-                position={position}
+                position={position as "hero" | "card"}
                 index={index}
                 episodeQueue={items}
                 direction={direction}
