@@ -203,15 +203,20 @@ npm run deploy
 ```
 
 This script automatically:
-1. Checks out main branch
-2. Pulls latest code from origin/main
-3. Installs dependencies with `npm ci`
-4. Deploys to Vercel production with `vercel --prod`
+1. Verifies Vercel CLI is installed
+2. Checks for uncommitted changes
+3. Checks out main branch
+4. Pulls latest code from origin/main
+5. Installs dependencies with `npm ci`
+6. Deploys to Vercel production with `vercel --prod`
 
 **Prerequisites:**
 - Vercel CLI installed globally: `npm install -g vercel`
 - Authenticated with Vercel: `vercel login`
 - Project linked to Vercel: `vercel link` (done automatically on first deployment)
+- No uncommitted changes in your working directory
+
+**Note:** The deploy.sh script is already executable. If you need to make it executable again, run: `chmod +x deploy.sh`
 
 ---
 
