@@ -107,7 +107,6 @@ echo ""
 # Verify Vercel project context
 echo "🔍 Verifying Vercel project..."
 if vercel inspect &> /dev/null; then
-    PROJECT_INFO=$(vercel inspect 2>/dev/null | grep -E "Project Name|Environment" || echo "Project context available")
     echo -e "${GREEN}✓ Vercel project context verified${NC}"
 else
     echo -e "${RED}⚠ Warning: Could not verify Vercel project context${NC}"
