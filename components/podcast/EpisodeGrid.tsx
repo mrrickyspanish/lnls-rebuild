@@ -71,7 +71,7 @@ function EpisodeCard({ episode, onClick, isCurrentlyPlaying }: EpisodeCardProps)
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900 to-yellow-900 flex items-center justify-center">
-            <span className="text-white/20 text-6xl font-bold">LNLS</span>
+            <span className="text-white/20 text-6xl font-bold">TDD</span>
           </div>
         )}
 

@@ -11,7 +11,14 @@ const RSS_FEEDS = [
 export async function GET(_request: NextRequest) {
   try {
     console.log('🔄 Starting RSS aggregation...')
-    const parser = new Parser()
+    const parser = new Parser({
+      customFields: {
+        item: [
+          ['media:content', 'mediaContent'],
+          ['content:encoded', 'contentEncoded'],
+        ],
+      },
+    })
     const allNews = []
 
     for (const feedUrl of RSS_FEEDS) {
@@ -31,13 +38,36 @@ export async function GET(_request: NextRequest) {
           const published_at = !pubDate || pubDate < threeDaysAgo 
             ? now.toISOString() 
             : pubDate.toISOString();
+
+          // Extract image from various sources
+          let image_url = null;
           
+          // 1. Check media:content
+          if (item.mediaContent && item.mediaContent['$'] && item.mediaContent['$'].url) {
+            image_url = item.mediaContent['$'].url;
+          }
+          
+          // 2. Check enclosure
+          if (!image_url && item.enclosure && item.enclosure.url) {
+            image_url = item.enclosure.url;
+          }
+
+          // 3. Check content:encoded or content for <img> tags
+          if (!image_url) {
+            const content = item.contentEncoded || item.content || item.summary || '';
+            const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+            if (imgMatch) {
+              image_url = imgMatch[1];
+            }
+          }
+
           return {
             title: item.title || '',
             summary: item.contentSnippet || item.summary || '',
             source: feed.title || feedUrl.split('/')[2] || 'Unknown',
             url: item.link || '',
             published_at,
+            image_url, // Add image_url to the object
             featured: false,
             tags: item.categories || [],
           };
@@ -68,6 +98,8 @@ export async function GET(_request: NextRequest) {
 
     if (deleteError) {
       console.error('❌ Delete error:', deleteError);
+      // If delete fails, we might have issues with foreign keys or permissions
+      // But we'll try to proceed with upsert instead of insert to handle duplicates
     } else {
       console.log('✅ Deleted all old articles');
     }
@@ -78,15 +110,17 @@ export async function GET(_request: NextRequest) {
 
     const { data: insertedData, error: insertError } = await supabase
       .from('ai_news_stream')
-      .insert(
+      .upsert(
         allNews.map(item => ({
           title: item.title,
           summary: item.summary,
           source: item.source,
-          url: item.url,
+          source_url: item.url,
+          image_url: item.image_url, // Insert image_url
           published_at: currentTime,
-          tags: item.tags || []
-        }))
+          // tags: item.tags || [] // Removed tags as column is missing
+        })),
+        { onConflict: 'source_url' }
       )
       .select();
 

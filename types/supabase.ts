@@ -22,6 +22,7 @@ export interface Database {
           slug: string;
           excerpt: string;
           hero_image_url: string;
+          image_credit: string | null;
           author_name: string;
           author_bio: string | null;
           author_twitter: string | null;
@@ -41,6 +42,7 @@ export interface Database {
           slug: string;
           excerpt: string;
           hero_image_url: string;
+          image_credit?: string | null;
           author_name: string;
           author_bio?: string | null;
           author_twitter?: string | null;
@@ -60,6 +62,7 @@ export interface Database {
           slug?: string;
           excerpt?: string;
           hero_image_url?: string;
+          image_credit?: string | null;
           author_name?: string;
           author_bio?: string | null;
           author_twitter?: string | null;
@@ -164,6 +167,50 @@ export interface Database {
           created_at?: string;
         };
       };
+      youtube_videos: {
+        Row: {
+          id: number;
+          video_id: string;
+          title: string;
+          description: string | null;
+          published_at: string;
+          thumbnail_url: string | null;
+          duration: string | null;
+          view_count: number;
+          is_short: boolean;
+          playlist_ids: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          video_id: string;
+          title: string;
+          description?: string | null;
+          published_at: string;
+          thumbnail_url?: string | null;
+          duration?: string | null;
+          view_count?: number;
+          is_short?: boolean;
+          playlist_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          video_id?: string;
+          title?: string;
+          description?: string | null;
+          published_at?: string;
+          thumbnail_url?: string | null;
+          duration?: string | null;
+          view_count?: number;
+          is_short?: boolean;
+          playlist_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       newsletter_subscribers: {
         Row: {
           id: string;
@@ -198,6 +245,7 @@ export interface Database {
           source_url: string;
           source_name: string;
           published_at: string;
+          image_url: string | null; // Added image_url
           category: string;
           tags: string[];
           sentiment: 'positive' | 'neutral' | 'negative' | null;
@@ -213,6 +261,7 @@ export interface Database {
           source_url: string;
           source_name: string;
           published_at: string;
+          image_url?: string | null; // Added image_url
           category: string;
           tags?: string[];
           sentiment?: 'positive' | 'neutral' | 'negative' | null;
@@ -228,6 +277,7 @@ export interface Database {
           source_url?: string;
           source_name?: string;
           published_at?: string;
+          image_url?: string | null; // Added image_url
           category?: string;
           tags?: string[];
           sentiment?: 'positive' | 'neutral' | 'negative' | null;
@@ -272,6 +322,10 @@ export type NewsletterSubscriberUpdate = Database['public']['Tables']['newslette
 export type AINewsItem = Database['public']['Tables']['ai_news_stream']['Row'];
 export type AINewsItemInsert = Database['public']['Tables']['ai_news_stream']['Insert'];
 export type AINewsItemUpdate = Database['public']['Tables']['ai_news_stream']['Update'];
+
+export type YouTubeVideoRow = Database['public']['Tables']['youtube_videos']['Row'];
+export type YouTubeVideoInsert = Database['public']['Tables']['youtube_videos']['Insert'];
+export type YouTubeVideoUpdate = Database['public']['Tables']['youtube_videos']['Update'];
 
 type ArticleTableRow = Database['public']['Tables']['articles']['Row'];
 type ArticleTableInsert = Database['public']['Tables']['articles']['Insert'];

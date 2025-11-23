@@ -149,7 +149,7 @@ export default function PodcastHero({ currentEpisode }: PodcastHeroProps) {
                 />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900 to-yellow-900 flex items-center justify-center">
-                  <span className="text-white/20 text-6xl font-bold">LNLS</span>
+                  <span className="text-white/20 text-6xl font-bold">TDD</span>
                 </div>
               )}
             </motion.div>

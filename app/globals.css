@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base – Matte Slate */
+  --bg-primary: #0D0D0D;
+  --bg-surface: #1A1A1D;
+  --bg-elevated: #25252A;
+  --border-subtle: #2A2A2A;
+  --header-offset: 76px; /* Matches fixed header height */
+
+  /* Text */
+  --text-primary: #FFFFFF;
+  --text-secondary: #9E9E9E;
+  --text-tertiary: #5A5A5A;
+
+  /* Neon Accents */
+  --neon-orange: #FF6B35;
+  --neon-blue: #00D4FF;
+  --neon-purple: #B857FF;
+
+  /* Subtle glows – hover only */
+  --glow-orange: 0 0 20px rgba(255, 107, 53, 0.4);
+  --glow-blue: 0 0 20px rgba(0, 212, 255, 0.4);
+  --glow-purple: 0 0 20px rgba(184, 87, 255, 0.4);
+}
+
+body {
+  @apply bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased;
+}
+
+main {
+  padding-top: var(--header-offset);
+}
+
+/* Subtle pulse for the ... dots */
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.animate-dots {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* On-deck cards (B&W + color reveal) */
+.on-deck img {
+  filter: grayscale(100%) contrast(1.2);
+  transition: filter 0.4s ease;
+}
+.on-deck:hover img {
+  filter: none;
+}

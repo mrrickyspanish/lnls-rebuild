@@ -8,7 +8,7 @@ import RelatedRow from "@/components/article/RelatedRow";
 import AuthorCard from "@/components/article/AuthorCard";
 import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
-import { fetchArticleBySlug, fetchRelatedArticles } from "@/lib/supabase/articles";
+import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
 export const revalidate = 60;
@@ -24,6 +24,7 @@ function buildHeroArticle(article: Article, slug: string) {
     title: article.title,
     excerpt: article.excerpt || "",
     heroImage: article.hero_image_url || FALLBACK_IMAGE,
+    imageCredit: article.image_credit,
     author: { name: article.author_name },
     publishedAt: article.published_at || article.created_at,
     readTime: article.read_time || 5,
@@ -38,6 +39,7 @@ function toHeroCard(article: Article | undefined) {
     title: article.title,
     excerpt: article.excerpt || "",
     heroImage: article.hero_image_url || FALLBACK_IMAGE,
+    imageCredit: article.image_credit,
     author: { name: article.author_name },
     publishedAt: article.published_at || article.created_at,
     readTime: article.read_time || 4,
@@ -51,7 +53,7 @@ function mapRelatedRow(articles: Article[]) {
     title: article.title,
     image_url: article.hero_image_url,
     content_type: "article",
-    source: "LNLS",
+    source: "TDD",
     source_url: `/news/${article.slug}`,
     published_at: article.published_at || article.created_at,
     excerpt: article.excerpt,
@@ -64,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!article) return { title: "Article not found" };
   return {
     title: article.title,
-    description: article.excerpt || "LNLS article",
+    description: article.excerpt || "TDD article",
   };
 }
 
@@ -73,7 +75,19 @@ export default async function ArticlePage({ params }: PageProps) {
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
 
-  const relatedArticles = await fetchRelatedArticles(article.id, article.topic, 6);
+  let relatedArticles = await fetchRelatedArticles(article.id, article.topic, 6);
+
+  if (relatedArticles.length < 2) {
+    const fallbackArticles = await fetchPublishedArticles(6, article.topic);
+    const fillers = fallbackArticles
+      .filter((candidate) =>
+        candidate.id !== article.id &&
+        !relatedArticles.some((existing) => existing.id === candidate.id)
+      )
+      .slice(0, 2 - relatedArticles.length);
+
+    relatedArticles = [...relatedArticles, ...fillers];
+  }
   const [nextArticle, previewArticle, ...remainingRelated] = relatedArticles;
 
   const currentArticle = buildHeroArticle(article, slug);

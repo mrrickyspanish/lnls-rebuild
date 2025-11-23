@@ -8,17 +8,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'slate-base': '#0F172A',
-        'slate-secondary': '#1E293B',
-        'slate-muted': '#475569',
-        'offwhite': '#F1F5F9',
-        'neon-purple': '#A78BFA',
-        'neon-gold': '#FBBF24',
+        'slate-base': '#0D0D0D',
+        'slate-surface': '#1A1A1D',
+        'slate-elevated': '#25252A',
+        'slate-muted': '#9E9E9E', // text-secondary
+        'offwhite': '#FFFFFF', // text-primary
+        'neon-orange': '#FF6B35',
+        'neon-blue': '#00D4FF',
+        'neon-purple': '#B857FF',
       },
       fontFamily: {
-        'bebas': ['Bebas Neue', 'sans-serif'],
+        'bebas': ['Inter', 'sans-serif'], // Replacing Bebas with Inter Bold for headlines
         'inter': ['Inter', 'sans-serif'],
-        'netflix': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', 'sans-serif'],
+        'space': ['var(--font-space)', 'sans-serif'],
+        'netflix': ['Inter', 'sans-serif'], // Fallback
       },
     },
   },

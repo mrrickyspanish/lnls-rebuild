@@ -76,6 +76,22 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   return data ? mapArticle(data) : null
 }
 
+export async function fetchArticleForEdit(slug: string): Promise<Article | null> {
+  const supabase = createSupabaseAnonClient()
+  const { data, error } = await supabase
+    .from('articles')
+    .select(ARTICLE_FIELDS)
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Failed to fetch article for edit:', error)
+    return null
+  }
+
+  return data ? mapArticle(data) : null
+}
+
 export async function fetchRelatedArticles(
   currentId: string,
   topic?: string,
@@ -99,6 +115,21 @@ export async function fetchRelatedArticles(
 
   if (error) {
     console.error('Failed to fetch related articles:', error)
+    return []
+  }
+
+  return (data ?? []).map(mapArticle)
+}
+
+export async function fetchAllArticles(): Promise<Article[]> {
+  const supabase = createSupabaseAnonClient()
+  const { data, error } = await supabase
+    .from('articles')
+    .select(ARTICLE_FIELDS)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Failed to fetch all articles:', error)
     return []
   }
 

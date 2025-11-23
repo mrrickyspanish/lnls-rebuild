@@ -4,98 +4,24 @@ import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
 import { getPublishedArticles } from "@/lib/articles";
 import { getNewsStream } from "@/lib/supabase/client";
-import { getClient, queries } from "@/lib/sanity/client";
-import { isYouTube } from "@/lib/heroSelector";
+import { getYouTubeRSS } from "@/lib/youtube-rss";
 import type { Article } from "@/types/supabase";
+import { filterOwnedContent, filterExternalContent, isOwnedContent } from "@/lib/content";
 
 export const revalidate = 60;
 
-type SanityContent = {
-  _id: string;
-  _type: "article" | "episode" | "clip";
-  title: string;
-  slug?: { current: string };
-  excerpt?: string;
-  mainImage?: { asset: { url: string } };
-  thumbnailUrl?: string;
-  publishedAt?: string;
-  source?: string;
-  externalUrl?: string;
-  videoUrl?: string;
-};
-
 export default async function HomePage() {
-  // Always show a basic working version first
-  const mockContent = [
-    {
-      id: 'mock-1',
-      title: 'Welcome to Late Night Lake Show',
-      description: 'Your ultimate destination for Lakers news, NBA analysis, and podcast content.',
-      image_url: null,
-      content_type: 'article' as const,
-      source: 'LNLS',
-      source_url: '/about',
-      published_at: new Date().toISOString(),
-    },
-    {
-      id: 'mock-2',
-      title: 'Latest Episode - Lakers Talk',
-      description: 'Breaking down the latest Lakers games, trades, and roster moves.',
-      image_url: null,
-      content_type: 'podcast' as const,
-      source: 'LNLS Podcast',
-      source_url: '/podcast',
-      published_at: new Date(Date.now() - 86400000).toISOString(),
-      duration: '3600',
-      episode_number: 1,
-    },
-    {
-      id: 'mock-3',
-      title: 'NBA Analysis & Highlights',
-      description: 'Watch the latest NBA highlights and game analysis.',
-      image_url: null,
-      content_type: 'video' as const,
-      source: 'LNLS',
-      source_url: '/videos',
-      published_at: new Date(Date.now() - 172800000).toISOString(),
-    }
-  ];
-
   try {
-    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw] = await Promise.all([
+    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw, youtubeVideos] = await Promise.all([
       getNewsStream(50),
       getPublishedArticles(12, "Lakers"),
       getPublishedArticles(12, "NBA"),
+      getYouTubeRSS(),
     ]);
-
-    const client = getClient();
-
-    const [articles, episodes, clips, podcastResponse] = await Promise.all([
-      client.fetch<SanityContent[]>(
-        `*[_type == "article"] | order(publishedAt desc)[0...20]{
-          _id,_type,title,slug,excerpt,
-          "mainImage": mainImage.asset->url,
-          publishedAt,source,externalUrl
-        }`
-      ),
-      client.fetch<SanityContent[]>(
-        `*[_type == "episode"] | order(publishedAt desc)[0...10]{
-          _id,_type,title,slug,excerpt,
-          "mainImage": mainImage.asset->url,
-          publishedAt,source
-        }`
-      ),
-      client.fetch<SanityContent[]>(
-        `*[_type == "clip"] | order(publishedAt desc)[0...10]{
-          _id,_type,title,videoUrl,thumbnailUrl,
-          publishedAt,source
-        }`
-      ),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
-        .then(res => res.json())
-        .then(data => data.success ? data.episodes : [])
-        .catch(() => []),
-    ]);
+    const podcastResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
+      .then(res => res.json())
+      .then(data => Array.isArray(data) ? data : [])
+      .catch(() => []);
 
     // Process Supabase data
     const supabaseItems = (supabaseData || []).map((item: any) => ({
@@ -117,41 +43,42 @@ export default async function HomePage() {
       description: article.excerpt || undefined,
       image_url: article.hero_image_url || null,
       content_type: "article" as const,
-      source: "LNLS",
+      source: "TDD",
       source_url: `/news/${article.slug}`,
       published_at: article.published_at || article.created_at,
     });
 
-    // Process Sanity data
-    const sanityItems = [...articles, ...episodes, ...clips].map((item) => {
-      let content_type: "article" | "podcast" | "video" = "article";
-      if (item._type === "episode") content_type = "podcast";
-      if (item._type === "clip") content_type = "video";
+    const toTimestamp = (value?: string | null) => {
+      if (!value) return 0;
+      const time = new Date(value).getTime();
+      return Number.isNaN(time) ? 0 : time;
+    };
 
-      return {
-        id: item._id,
-        title: item.title,
-        excerpt: item.excerpt || undefined,
-        description: item.excerpt || undefined,
-        image_url: item.mainImage || item.thumbnailUrl || null,
-        content_type,
-        source: item.source || "LNLS",
-        source_url:
-          item.externalUrl ||
-          item.videoUrl ||
-          (item.slug ? `/news/${item.slug.current}` : null),
-        published_at: item.publishedAt || null,
-      };
-    });
+    const sortByDateDesc = <T extends { published_at?: string | null }>(items: T[]) =>
+      [...items].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at));
+
+    const dedupeById = <T extends { id?: string | number }>(items: T[]) => {
+      const seen = new Set<string>();
+      return items.filter((item) => {
+        if (item?.id === undefined || item?.id === null) return false;
+        const key = String(item.id);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+
+    type ContentItem = (typeof supabaseItems)[number];
 
     // Convert podcast episodes from API to proper format
     const podcastContent = (podcastResponse || []).map((episode: any) => ({
       id: episode.id,
       title: episode.title,
+      excerpt: episode.description || undefined,
       description: episode.description,
       image_url: episode.image_url,
       content_type: "podcast" as const,
-      source: "LNLS Podcast",
+      source: "TDD Podcast",
       source_url: episode.audio_url, // Use audio URL as the link
       published_at: episode.published_at,
       duration: episode.duration,
@@ -159,158 +86,75 @@ export default async function HomePage() {
       audio_url: episode.audio_url, // Add for audio player
     }));
 
-    // Merge all content
-    const allContent = [...supabaseItems, ...sanityItems, ...podcastContent];
+    const latestPodcastEpisode = podcastContent.length
+      ? [...podcastContent].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
+      : null;
 
-    // Content Filtering Strategy
+    // Process YouTube Videos
+    const videoContent = (youtubeVideos || []).map((video) => ({
+      id: video.id,
+      title: video.title,
+      description: video.description || undefined,
+      image_url: video.thumbnail,
+      content_type: "video" as const,
+      source: "TDD YouTube",
+      source_url: video.link,
+      published_at: video.pubDate,
+      duration: undefined, // RSS doesn't provide duration
+    }));
+
+    const nbaArticles = (nbaArticlesRaw || []).map(mapArticleToContentItem);
+    const lakersArticles = (lakersArticlesRaw || []).map(mapArticleToContentItem);
     
-    // 1. LNLS Content for Hero (< 8 days old)
-    const eightDaysAgo = new Date();
-    eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+    const allArticles = [...lakersArticles, ...nbaArticles];
 
-    const recentLNLS = allContent.filter((item) => {
-      const isLNLS = 
-        item.source?.toLowerCase().includes("lnls") || 
-        item.source?.toLowerCase().includes("late night") ||
-        (item.content_type === "podcast") ||
-        (item.content_type === "video" && item.source?.toLowerCase().includes("youtube"));
-      
-      const isRecent = item.published_at 
-        ? new Date(item.published_at) > eightDaysAgo 
-        : false;
-      
-      return isLNLS && isRecent;
-    });
+    const latestArticle = allArticles.length
+      ? [...allArticles].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
+      : null;
 
-    // Fallback: if no recent LNLS content, show latest 3
-    const lnlsContent = recentLNLS.length > 0 
-      ? recentLNLS.slice(0, 6)
-      : allContent
-          .filter(item => 
-            item.source?.toLowerCase().includes("lnls") || 
-            item.content_type === "podcast"
-          )
-          .slice(0, 3);
+    // Merge all content
+    const allContent = [...supabaseItems, ...podcastContent, ...allArticles, ...videoContent];
 
-    // 2. What's Happening Now (last 24 hours)
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const ownedContent = filterOwnedContent(allContent);
+    const externalContent = filterExternalContent(allContent);
 
-    const trendingNow = allContent.filter((item) => {
-      return item.published_at && new Date(item.published_at) > oneDayAgo;
-    }).slice(0, 12); // Show up to 12 items
+    // Trending Now - Owned Content Only
+    const trendingNow = dedupeById(sortByDateDesc(ownedContent)).slice(0, 10);
 
-    // 3. Purple & Gold (Lakers only) - IMPROVED FILTER
-    const lakersContent = allContent.filter((item) => {
-      const title = (item.title || "").toLowerCase();
-      const source = (item.source || "").toLowerCase();
-      const excerpt = (item.excerpt || "").toLowerCase();
-      
-      // Check multiple fields for Lakers keywords
-      const hasLakers = 
-        title.includes("laker") || 
-        title.includes("lal") ||
-        source.includes("laker") ||
-        excerpt.includes("laker") ||
-        title.includes("purple and gold") ||
-        title.includes("staples") ||
-        title.includes("crypto.com arena");
-      
-      // Exclude podcast episodes (already in hero)
-      const isNotPodcast = item.content_type !== "podcast";
-      
-      return hasLakers && isNotPodcast;
-    }).slice(0, 12);
+    // Around the League - External Content Only
+    const aroundLeagueItems = dedupeById(sortByDateDesc(externalContent)).slice(0, 10);
 
-    // 4. Around the League (NBA excluding Lakers) - IMPROVED FILTER
-    const leagueContent = allContent.filter((item) => {
-      const title = (item.title || "").toLowerCase();
-      const source = (item.source || "").toLowerCase();
-      const excerpt = (item.excerpt || "").toLowerCase();
-      
-      // NBA keywords and team names
-      const hasNBA = 
-        title.includes("nba") || 
-        source.includes("nba") ||
-        title.includes("basketball") ||
-        // Popular teams
-        title.includes("warriors") ||
-        title.includes("celtics") ||
-        title.includes("heat") ||
-        title.includes("bucks") ||
-        title.includes("suns") ||
-        title.includes("nuggets") ||
-        title.includes("clippers") ||
-        title.includes("knicks") ||
-        title.includes("nets") ||
-        title.includes("bulls") ||
-        // NBA terms
-        excerpt.includes("playoff") ||
-        excerpt.includes("conference") ||
-        source.includes("espn");
-      
-      // Exclude Lakers content
-      const isNotLakers = 
-        !title.includes("laker") && 
-        !source.includes("laker");
-      
-      // Exclude podcast episodes
-      const isNotPodcast = item.content_type !== "podcast";
-      
-      return hasNBA && isNotLakers && isNotPodcast;
-    }).slice(0, 12);
+    const HERO_ITEM_TARGET = 4;
 
-    // Fallback content strategies
-    const finalLakersContent = lakersContent.length > 0 
-      ? lakersContent 
-      : allContent
-          .filter(item => item.content_type === "article")
-          .slice(0, 6);
+    // Hero Logic: 1 Latest Article + 1 Latest Podcast + Fill with Owned
+    let heroItems: ContentItem[] = [];
+    
+    if (latestArticle) heroItems.push(latestArticle);
+    if (latestPodcastEpisode) heroItems.push(latestPodcastEpisode);
 
-    const finalLeagueContent = leagueContent.length > 0
-      ? leagueContent
-      : allContent
-          .filter(item => item.content_type === "article" && item.content_type !== "podcast")
-          .slice(0, 6);
+    const usedIds = new Set(heroItems.map(i => i.id));
+    
+    const fillerItems = dedupeById(sortByDateDesc(ownedContent))
+      .filter(item => !usedIds.has(item.id) && item.image_url);
 
-      const heroArticles = (lakersArticlesRaw || []).slice(0, 6);
-      const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
-      const aroundLeagueArticles = (nbaArticlesRaw || []).slice(0, 10);
+    heroItems = [...heroItems, ...fillerItems].slice(0, HERO_ITEM_TARGET);
 
-      const heroItems = heroArticles.length > 0
-        ? heroArticles.map(mapArticleToContentItem)
-        : lnlsContent;
-
-      const fallbackLakersFromFeed = supabaseItems
-        .filter((item) => (item.source || '').toLowerCase().includes('lakers'))
-        .slice(0, 10);
-
-      const purpleGoldItems = purpleGoldArticles.length > 0
-        ? purpleGoldArticles.map(mapArticleToContentItem)
-        : fallbackLakersFromFeed.length > 0
-          ? fallbackLakersFromFeed
-          : finalLakersContent;
-
-      const fallbackLeagueFromFeed = supabaseItems
-        .filter((item) => (item.source || '').toLowerCase().includes('nba'))
-        .slice(0, 10);
-
-      const aroundLeagueItems = aroundLeagueArticles.length > 0
-        ? aroundLeagueArticles.map(mapArticleToContentItem)
-        : fallbackLeagueFromFeed.length > 0
-          ? fallbackLeagueFromFeed
-          : finalLeagueContent;
+    const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
+    
+    const purpleGoldItems = purpleGoldArticles.length > 0
+      ? purpleGoldArticles.map(mapArticleToContentItem)
+      : ownedContent.filter(item => 
+          (item.title || '').toLowerCase().includes('laker') || 
+          (item.source || '').toLowerCase().includes('laker')
+        ).slice(0, 10);
 
     // Debug logging
     console.log('🔍 Data Check:', {
       allContentCount: allContent.length,
-      lakersContentCount: lakersContent.length,
-      leagueContentCount: leagueContent.length,
-      finalLakersCount: finalLakersContent.length,
-      finalLeagueCount: finalLeagueContent.length,
-      sampleLakersTitle: finalLakersContent[0]?.title,
-      sampleLeagueTitle: finalLeagueContent[0]?.title,
-      allContentSample: allContent.slice(0, 3).map(item => ({ title: item.title, source: item.source, type: item.content_type })),
+      ownedContentCount: ownedContent.length,
+      externalContentCount: externalContent.length,
+      trendingNowCount: trendingNow.length,
+      aroundLeagueCount: aroundLeagueItems.length,
     });
 
     return (
@@ -318,10 +162,10 @@ export default async function HomePage() {
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12">
           <QueueSetter episodes={podcastContent} />
           
-          {/* Hero Row - Only on LNLS */}
+          {/* Hero Row - Only on TDD */}
           {heroItems.length > 0 && (
             <ContentRowWithHero
-              title="Only on LNLS"
+              title="Only on TDD"
               items={heroItems}
               viewAllHref="/podcast"
             />
@@ -349,8 +193,25 @@ export default async function HomePage() {
           {aroundLeagueItems.length > 0 && (
             <ContentRow
               title="Around the League"
+              description="Curated from top basketball sources"
               items={aroundLeagueItems}
               viewAllHref="/news?topic=nba"
+              cardSize="small"
+            />
+          )}
+
+          {/* Latest Videos */}
+          {videoContent.length > 0 ? (
+            <ContentRow
+              title="Latest Videos"
+              description="Exclusive video content from our YouTube channel"
+              items={videoContent}
+              viewAllHref="/videos"
+            />
+          ) : (
+            <ComingSoonRow 
+              title="Latest Videos"
+              description="Exclusive video content from our YouTube channel"
             />
           )}
 
@@ -372,7 +233,7 @@ export default async function HomePage() {
     return (
       <main className="min-h-screen bg-[var(--netflix-bg)] py-20">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Late Night Lake Show</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">The Daily Dribble</h1>
           <p className="text-[var(--netflix-muted)]">Unable to load content. Please try again later.</p>
         </div>
       </main>

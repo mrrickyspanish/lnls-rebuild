@@ -32,20 +32,16 @@ export default function PodcastPageClient({ initialEpisodes }: PodcastPageClient
   };
 
   return (
-    <div className="min-h-screen bg-[var(--netflix-bg)] pt-[76px]">
-      <div className="max-w-[1920px] mx-auto px-4 md:px-0">
-        <div className="py-8">
-          {/* Hero Player */}
-          <PodcastHero currentEpisode={currentEpisode} />
+    <div className="py-8">
+      {/* Hero Player */}
+      <PodcastHero currentEpisode={currentEpisode} />
 
-          {/* Episode Grid with Filters */}
-          <EpisodeGrid 
-            episodes={episodes} 
-            onEpisodeSelect={handleEpisodeSelect}
-            currentEpisodeId={currentEpisode.id}
-          />
-        </div>
-      </div>
+      {/* Episode Grid with Filters */}
+      <EpisodeGrid 
+        episodes={episodes} 
+        onEpisodeSelect={handleEpisodeSelect}
+        currentEpisodeId={currentEpisode.id}
+      />
     </div>
   );
 }

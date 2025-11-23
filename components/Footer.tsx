@@ -1,35 +1,81 @@
-import Link from 'next/link'
-import { Twitter, Instagram, Youtube } from 'lucide-react'
+import Link from 'next/link';
+import { Twitter, Instagram, Youtube, Facebook } from 'lucide-react';
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="bg-slate-secondary border-t border-slate-muted/20 mt-auto">
-      <div className="section-container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-1">
-            <h3 className="text-2xl font-bebas gradient-text mb-4">LNLS</h3>
-            <p className="text-slate-muted text-sm">
-              Where Lakers fans stay up talking ball.
+    <footer className="bg-black border-t border-white/10 mt-auto">
+      <div className="max-w-[1920px] mx-auto px-6 py-12">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          {/* About Section */}
+          <div>
+            <h3 className="text-white font-bold text-lg mb-4 font-netflix">
+              The Daily Dribble
+            </h3>
+            <p className="text-white/60 text-sm leading-relaxed mb-4">
+              Court. Code. Culture. Where basketball meets technology and lifestyle.
             </p>
+            {/* Social Links */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://twitter.com/thedailydribble"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="Twitter"
+              >
+                <Twitter className="w-5 h-5 text-white" />
+              </a>
+              <a
+                href="https://instagram.com/thedailydribble"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5 text-white" />
+              </a>
+              <a
+                href="https://youtube.com/@thedailydribble"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-5 h-5 text-white" />
+              </a>
+              <a
+                href="https://facebook.com/thedailydribble"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5 text-white" />
+              </a>
+            </div>
           </div>
 
-          {/* Navigation */}
+          {/* Content Links */}
           <div>
-            <h4 className="font-bebas text-lg text-offwhite mb-4">Content</h4>
+            <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
+              Content
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/news"
-                  className="text-slate-muted hover:text-neon-purple transition-colors text-sm"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
                 >
-                  News
+                  Articles
                 </Link>
               </li>
               <li>
                 <Link
                   href="/podcast"
-                  className="text-slate-muted hover:text-neon-purple transition-colors text-sm"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
                 >
                   Podcast
                 </Link>
@@ -37,83 +83,117 @@ export default function Footer() {
               <li>
                 <Link
                   href="/videos"
-                  className="text-slate-muted hover:text-neon-purple transition-colors text-sm"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
                 >
                   Videos
                 </Link>
               </li>
-            </ul>
-          </div>
-
-          {/* About */}
-          <div>
-            <h4 className="font-bebas text-lg text-offwhite mb-4">About</h4>
-            <ul className="space-y-2">
               <li>
                 <Link
                   href="/about"
-                  className="text-slate-muted hover:text-neon-purple transition-colors text-sm"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
                 >
-                  Our Team
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about#advertise"
-                  className="text-slate-muted hover:text-neon-purple transition-colors text-sm"
-                >
-                  Advertise
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about#contact"
-                  className="text-slate-muted hover:text-neon-purple transition-colors text-sm"
-                >
-                  Contact
+                  About Us
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Social */}
+          {/* Topics */}
           <div>
-            <h4 className="font-bebas text-lg text-offwhite mb-4">Follow Us</h4>
-            <div className="flex space-x-4">
-              <a
-                href="https://twitter.com/latenightlakeshow"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-muted hover:text-neon-purple transition-colors"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="https://instagram.com/latenightlakeshow"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-muted hover:text-neon-purple transition-colors"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="https://youtube.com/@latenightlakeshow"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-muted hover:text-neon-purple transition-colors"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
-            </div>
+            <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
+              Topics
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/news?topic=Lakers"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  Lakers News
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/news?topic=NBA"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  NBA Coverage
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/news?topic=Tech"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  Tech & Culture
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/news?topic=Culture"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  Sports Culture
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Subscribe */}
+          <div>
+            <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
+              Stay Updated
+            </h3>
+            <p className="text-white/60 text-sm mb-4">
+              Get the latest news delivered to your inbox.
+            </p>
+            <Link
+              href="/subscribe"
+              className="inline-block px-6 py-2 bg-[var(--netflix-red)] hover:bg-red-700 text-white font-semibold text-sm rounded transition-colors"
+            >
+              Subscribe
+            </Link>
           </div>
         </div>
 
-        <div className="border-t border-slate-muted/20 mt-8 pt-8 text-center">
-          <p className="text-slate-muted text-sm">
-            © {new Date().getFullYear()} Late Night Lake Show. All rights reserved.
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Copyright */}
+            <p className="text-white/40 text-sm">
+              © {currentYear} The Daily Dribble. All rights reserved.
+            </p>
+
+            {/* Legal Links */}
+            <div className="flex items-center gap-6">
+              <Link
+                href="/privacy"
+                className="text-white/40 hover:text-white/60 text-sm transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-white/40 hover:text-white/60 text-sm transition-colors"
+              >
+                Terms of Service
+              </Link>
+              <Link
+                href="/contact"
+                className="text-white/40 hover:text-white/60 text-sm transition-colors"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-white/30 text-xs mt-4 text-center md:text-left">
+            The Daily Dribble is an independent media outlet and is not affiliated with the NBA or any specific team.
           </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

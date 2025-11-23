@@ -4,7 +4,7 @@ import { SearchClient } from "./search-client";
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search LNLS articles, videos, and podcasts.",
+  description: "Search TDD articles, videos, and podcasts.",
 };
 
 // this page depends on client router state

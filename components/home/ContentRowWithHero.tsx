@@ -16,6 +16,13 @@ type ContentRowWithHeroProps = {
   rotateInterval?: number;
 };
 
+type VisibleItem = {
+  item: any;
+  position: 'hero' | 'card';
+  key: string;
+  index: number;
+};
+
 function formatDate(dateString: string): string {
   if (!dateString) return '';
   
@@ -331,7 +338,6 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
       animate={{ 
         opacity: 1, 
         x: 0,
-        width: isHero ? 720 : 300,
         scale: isHero ? 1 : 0.98,
       }}
       exit={{ 
@@ -362,7 +368,9 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
       }}
       className="flex-shrink-0 snap-start"
       style={{ 
-        zIndex: isHero ? 10 : (position === 'card' && index === 1) ? 5 : 1 
+        zIndex: isHero ? 10 : (position === 'card' && index === 1) ? 5 : 1,
+        width: isHero ? 'min(60vw, 720px)' : 'clamp(220px, 18vw, 320px)',
+        flex: '0 0 auto',
       }}
     >
       {isPodcast && (item.audio_url || item.source_url) ? (
@@ -387,6 +395,18 @@ export default function ContentRowWithHero({
 }: ContentRowWithHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [isLargeLayout, setIsLargeLayout] = useState(false);
+
+  useEffect(() => {
+    const checkViewport = () => {
+      if (typeof window === 'undefined') return;
+      setIsLargeLayout(window.innerWidth >= 1440);
+    };
+
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
 
   // Auto-rotate
   useEffect(() => {
@@ -411,10 +431,11 @@ export default function ContentRowWithHero({
 
   if (items.length === 0) return null;
 
-  // Get visible items (hero + 2 cards)
-  const getVisibleItems = () => {
-    const visible = [];
-    for (let i = 0; i < 3; i++) {
+  // Get visible items (hero + supporting cards)
+  const getVisibleItems = (): VisibleItem[] => {
+    const visible: VisibleItem[] = [];
+    const visibleCount = Math.min(items.length, isLargeLayout ? 4 : 3);
+    for (let i = 0; i < visibleCount; i++) {
       const index = (currentIndex + i) % items.length;
       visible.push({
         item: items[index],
@@ -475,7 +496,7 @@ export default function ContentRowWithHero({
               <CarouselCard
                 key={key}
                 item={item}
-                position={position as "hero" | "card"}
+                position={position as 'hero' | 'card'}
                 index={index}
                 episodeQueue={items}
                 direction={direction}

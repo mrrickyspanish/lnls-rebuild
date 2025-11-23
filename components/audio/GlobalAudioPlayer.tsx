@@ -3,7 +3,7 @@
 import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Maximize2, Minimize2 } from "lucide-react";
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Maximize2, Minimize2, X } from "lucide-react";
 import { useState } from "react";
 
 function formatTime(seconds: number): string {
@@ -26,7 +26,8 @@ export default function GlobalAudioPlayer() {
     nextEpisode, 
     prevEpisode, 
     hasNext, 
-    hasPrev 
+    hasPrev,
+    closePlayer
   } = useAudioPlayer();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -47,12 +48,50 @@ export default function GlobalAudioPlayer() {
 
   return (
     <AnimatePresence>
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+          onClick={() => setIsExpanded(false)}
+        />
+      )}
       <motion.div
         initial={{ y: 100 }}
-        animate={{ y: 0 }}
+        animate={{ y: 0, height: isExpanded ? "auto" : "auto" }}
         exit={{ y: 100 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-t border-white/10"
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-t border-white/10 transition-all duration-300 ${
+          isExpanded ? "h-[80vh] md:h-[400px]" : ""
+        }`}
       >
+        {/* Expanded Content */}
+        {isExpanded && (
+          <div className="p-8 flex flex-col md:flex-row gap-8 items-center justify-center h-[calc(100%-80px)]">
+            {currentEpisode.image_url && (
+              <div className="relative w-64 h-64 rounded-lg overflow-hidden shadow-2xl">
+                <Image
+                  src={currentEpisode.image_url}
+                  alt={currentEpisode.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div className="text-center md:text-left max-w-xl">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                {currentEpisode.title}
+              </h2>
+              <p className="text-lg text-[var(--netflix-muted)] mb-6">
+                {currentEpisode.episode_number && `Episode ${currentEpisode.episode_number}`}
+              </p>
+              <div className="text-sm text-white/60 leading-relaxed line-clamp-4">
+                {/* Description would go here if available in Episode type */}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Progress Bar */}
         <div className="relative h-1 bg-white/20 group cursor-pointer" onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
@@ -173,6 +212,14 @@ export default function GlobalAudioPlayer() {
             ) : (
               <Maximize2 className="w-5 h-5" />
             )}
+          </button>
+
+          {/* Close Button */}
+          <button
+            onClick={closePlayer}
+            className="text-white/70 hover:text-white transition-colors ml-2"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
       </motion.div>

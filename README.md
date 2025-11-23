@@ -2,7 +2,7 @@
 
 > Where Lakers fans stay up talking ball.
 
-Modern NBA content hub built with Next.js, Sanity CMS, Supabase, and AI-powered automation.
+Modern NBA content hub built with Next.js, Supabase, and AI-powered automation.
 
 ---
 
@@ -34,8 +34,7 @@ Modern NBA content hub built with Next.js, Sanity CMS, Supabase, and AI-powered 
 |-------|-----------|
 | **Frontend** | Next.js 15 (App Router), React 18, TypeScript |
 | **Styling** | Tailwind CSS, Custom Design System |
-| **CMS** | Sanity Studio (Headless) |
-| **Database** | Supabase (PostgreSQL) |
+| **CMS + Database** | Supabase (PostgreSQL) |
 | **AI** | Anthropic Claude Sonnet 4.5 |
 | **Email** | Resend |
 | **Hosting** | Vercel |
@@ -56,11 +55,8 @@ lnls-platform/
 │   └── subscribe/         # Newsletter signup
 ├── components/            # React components
 ├── lib/                   # Utilities & clients
-│   ├── sanity/           # Sanity config & queries
 │   ├── supabase/         # Database client
 │   └── ai/               # AI helper functions
-├── studio/               # Sanity Studio
-│   └── schemas/          # Content models
 ├── styles/               # Global styles
 └── public/               # Static assets
 ```
@@ -84,13 +80,9 @@ cp .env.example .env.local
 ```bash
 # Next.js app
 npm run dev
-
-# Sanity Studio (in another terminal)
-npm run studio
 ```
 
 - App: http://localhost:3000
-- Studio: http://localhost:3000/studio
 
 ---
 
@@ -100,6 +92,86 @@ npm run studio
 - **[API Documentation](docs/api.md)** — Endpoint reference
 - **[Content Guide](docs/content.md)** — How to publish content
 - **[AI Tools](docs/ai.md)** — Using AI features
+
+---
+
+# Next.js Image Configuration
+
+## Remote Image Domains
+
+This project uses Next.js Image Optimization with a **specific allowlist** of remote domains for security.
+
+### Current Allowed Domains
+
+The following domains are configured in `next.config.js`:
+
+```js
+images: {
+  remotePatterns: [
+    // Specific approved domains listed here
+  ],
+  domains: [
+    // Legacy domain list
+  ]
+}
+```
+
+### Adding New Image Sources
+
+If you need to load images from a new external domain:
+
+1. Open `next.config.js`
+2. Add the domain to `images.remotePatterns`:
+
+```js
+remotePatterns: [
+  {
+    protocol: 'https',
+    hostname: 'example.com',
+  },
+  // ... existing entries
+]
+```
+
+3. Or add to legacy `domains` array:
+
+```js
+domains: ['example.com', ...existingDomains]
+```
+
+### Development vs Production
+
+**Production (current setup):**
+- Uses specific allowlist
+- More secure
+- Prevents unauthorized image sources
+
+**Development wildcard (not recommended for prod):**
+```js
+remotePatterns: [
+  {
+    protocol: 'https',
+    hostname: '**', // ⚠️ DO NOT use in production
+  }
+]
+```
+
+### Common Image Sources in This Project
+
+- YouTube thumbnails: `i.ytimg.com`, `i3.ytimg.com`, etc.
+- Supabase storage: Your Supabase domain
+- Any CDN or image hosting services you use
+
+### Troubleshooting
+
+**Error: "hostname ... is not configured under images"**
+
+→ Add the hostname to `next.config.js` as shown above, then restart dev server.
+
+---
+
+**Last Updated:** November 23, 2025  
+**Config Location:** `/next.config.js`
 
 ---
 
@@ -128,10 +200,6 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
-
-npm run studio       # Start Sanity Studio locally
-npm run studio:build # Build Sanity Studio
-npm run studio:deploy # Deploy Studio to Sanity
 ```
 
 ---
@@ -182,13 +250,16 @@ trackEvent('article_view', '/news/lebron-40-points', {
 Required API keys:
 
 ```env
-NEXT_PUBLIC_SANITY_PROJECT_ID=
-SANITY_API_TOKEN=
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ANTHROPIC_API_KEY=
 RESEND_API_KEY=
+RESEND_FROM_EMAIL=
 YOUTUBE_API_KEY=
+YOUTUBE_CHANNEL_ID=
+SPREAKER_RSS_URL=
+NEXT_PUBLIC_SITE_URL=
 ```
 
 See `.env.example` for complete list.
@@ -209,7 +280,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
 ## 📝 Content Workflow
 
-1. **Write** — Draft articles in Sanity Studio
+1. **Write** — Draft articles directly in Supabase or via the LNLS submission tools
 2. **Generate** — Use AI tools for social posts, SEO
 3. **Review** — Edit and approve
 4. **Publish** — Auto-deploys to production
@@ -221,7 +292,6 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
 ### Phase 1 ✅
 - [x] Core website
-- [x] Sanity CMS integration
 - [x] AI news aggregation
 - [x] Newsletter system
 - [x] YouTube feed

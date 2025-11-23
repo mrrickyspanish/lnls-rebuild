@@ -13,10 +13,10 @@ export function detectTopic(item: any): TopicType {
   const title = item.title?.toLowerCase() || "";
   const source = item.source?.toLowerCase() || "";
   
-  if (title.includes("laker") || source.includes("laker")) return "lakers";
-  if (title.includes("nba")) return "nba";
   if (item.content_type === "podcast") return "podcast";
   if (item.content_type === "video") return "video";
+  if (title.includes("laker") || source.includes("laker")) return "lakers";
+  if (title.includes("nba")) return "nba";
   if (item.content_type === "article") return "article";
   
   return "general";

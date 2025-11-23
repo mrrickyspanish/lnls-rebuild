@@ -45,7 +45,7 @@ export default function NewsletterSignup() {
           Stay in the Loop
         </h3>
         <p className="text-slate-muted">
-          Get the latest Lakers news and LNLS updates delivered daily.
+          Get the latest Lakers news and TDD updates delivered daily.
         </p>
       </div>
 

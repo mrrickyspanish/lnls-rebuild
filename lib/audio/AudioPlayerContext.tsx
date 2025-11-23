@@ -26,6 +26,7 @@ type AudioContextType = {
   setQueue: (episodes: Episode[]) => void;
   hasNext: boolean;
   hasPrev: boolean;
+  closePlayer: () => void;
 };
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -172,6 +173,15 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const closePlayer = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setCurrentEpisode(null);
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -190,6 +200,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
         queue: episodeQueue,
         hasNext,
         hasPrev,
+        closePlayer,
       }}
     >
       {children}

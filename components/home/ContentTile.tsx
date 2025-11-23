@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Mic2, Plus } from "lucide-react";
+import { Play, Mic2, Plus, BookOpen } from "lucide-react";
 import { detectTopic, AccentColors, getCategoryBadge } from "@/lib/theme/tokens";
 import { useState } from "react";
 import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
@@ -21,6 +21,7 @@ type ContentTileProps = {
   episode_number?: number;
   audio_url?: string;
   episodeQueue?: any[];
+  size?: 'default' | 'small';
 };
 
 function formatDate(dateString: string): string {
@@ -54,18 +55,25 @@ export default function ContentTile({
   episode_number,
   audio_url,
   episodeQueue = [],
+  size = 'default',
 }: ContentTileProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { playEpisode, currentEpisode, isPlaying } = useAudioPlayer();
   
   const topic = detectTopic({ title, content_type, source });
-  const accent = AccentColors[topic];
+  // Override podcast color to purple (neon-purple)
+  const accent = topic === 'podcast' 
+    ? { primary: "#B857FF", secondary: "#191414" }
+    : AccentColors[topic];
   const badge = getCategoryBadge(topic);
   const href = source_url || "#";
   const isPodcast = content_type === "podcast";
   const isVideo = content_type === "video";
+  const isArticle = content_type === "article";
 
   const isCurrentlyPlaying = currentEpisode?.id === id && isPlaying;
+  const heightClass = size === 'small' ? 'h-[375px]' : 'h-[450px]';
+  const widthClass = size === 'small' ? 'w-[250px]' : 'w-[300px]';
 
   // Handle podcast click
   const handlePodcastClick = (e: React.MouseEvent) => {
@@ -98,9 +106,10 @@ export default function ContentTile({
       whileHover={{ y: -8, scale: 1.02 }}
       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
       className="group cursor-pointer h-full flex flex-col"
+      data-category={topic}
     >
       {/* Thumbnail - Portrait layout */}
-      <div className="relative h-[450px] rounded-lg overflow-hidden bg-slate-900">
+      <div className={`on-deck relative ${widthClass} ${heightClass} rounded-lg overflow-hidden bg-slate-900`}>
         {image_url ? (
           <Image
             src={image_url}
@@ -115,39 +124,31 @@ export default function ContentTile({
         )}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
 
         {/* Duration Badge */}
         {duration && !isCurrentlyPlaying && (
-          <div className="absolute top-2 right-2 bg-black/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white">
+          <div className="absolute top-2 right-2 bg-black/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white z-10">
             {isPodcast ? `${Math.floor(parseInt(duration) / 60)}m` : duration}
           </div>
         )}
 
-        {/* Play Button */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <div className={`w-12 h-12 rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 ${
-                isCurrentlyPlaying 
-                  ? 'bg-[var(--netflix-red)] ring-[var(--netflix-red)]/50 animate-pulse' 
-                  : 'bg-white/95 ring-white/50'
-              }`}>
-                {isPodcast ? (
-                  <Mic2 className={`w-7 h-7 ${isCurrentlyPlaying ? 'text-white' : 'text-slate-900'}`} />
-                ) : (
-                  <Play className={`w-7 h-7 fill-current ml-1 ${isCurrentlyPlaying ? 'text-white' : 'text-slate-900'}`} />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Play/Read Button */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+          <div className={`w-16 h-16 rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 ${
+            isCurrentlyPlaying 
+              ? 'bg-[var(--netflix-red)] ring-[var(--netflix-red)]/50 animate-pulse' 
+              : 'bg-white/20 ring-white/50 hover:bg-white/30'
+          }`}>
+            {isArticle ? (
+              <BookOpen className="w-8 h-8 text-white" />
+            ) : isPodcast ? (
+              <Mic2 className="w-8 h-8 text-white" />
+            ) : (
+              <Play className="w-8 h-8 fill-current ml-1 text-white" />
+            )}
+          </div>
+        </div>
 
         {/* Category Badge */}
         <div className="absolute top-2 left-2">

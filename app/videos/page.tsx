@@ -1,39 +1,51 @@
 import { Metadata } from 'next';
+import { Play } from 'lucide-react';
+import { getYouTubeRSS } from '@/lib/youtube-rss';
+import VideoGrid from '@/components/video/VideoGrid';
 
 export const metadata: Metadata = {
   title: 'Videos | Late Night Lake Show',
   description: 'Watch the latest Lakers and NBA content from LNLS - full episodes, highlights, and analysis.',
 };
 
+export const revalidate = 60;
+
 export default async function VideosPage() {
+  const videos = (await getYouTubeRSS()).slice(0, 12);
+  const hasVideos = videos.length > 0;
+
   return (
-    <div className="min-h-screen bg-slate-950">
-      <section className="relative bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-              LNLS <span className="text-purple-400">Videos</span>
+    <>
+      <section className="relative min-h-screen">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
+          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-24 md:pt-32">
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
+              Videos
             </h1>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Full episodes, game breakdowns, player analysis, and everything Lakers — all in one place.
+            <p className="mt-4 text-lg md:text-2xl text-[var(--text-secondary)] max-w-xl">
+              The best moments. No filler.
             </p>
           </div>
         </div>
-      </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-16">
-          <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
+        <div className="relative z-20 pt-56 md:pt-64 px-6 pb-32">
+          <div className="max-w-7xl mx-auto">
+            {hasVideos ? (
+              <VideoGrid videos={videos} />
+            ) : (
+              <div className="text-center py-16 rounded-2xl border border-dashed border-[var(--border-subtle)] bg-surface">
+                <div className="w-20 h-20 bg-black/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Play className="w-10 h-10 text-white/20" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No videos found</h3>
+                <p className="text-[var(--text-secondary)]">
+                  Check back later for new content.
+                </p>
+              </div>
+            )}
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Videos coming soon</h3>
-          <p className="text-slate-400 mb-6">
-            YouTube videos will appear here once the API is connected and synced.
-          </p>
         </div>
       </section>
-    </div>
+    </>
   );
 }

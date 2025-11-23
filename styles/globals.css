@@ -1,53 +1,77 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Netflix Design System */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+:root {
+  /* Base Colors */
+  --bg-primary: #0D0D0D;
+  --bg-surface: #1A1A1D;
+  --bg-elevated: #25252A;
+
+  /* Neon Accents */
+  --neon-orange: #FF6B35;
+  --neon-blue: #00D4FF;
+  --neon-purple: #B857FF;
+  
+  /* Netflix Design System */
+  --netflix-red: #e50914;
+  --netflix-bg: #141414;
+  --netflix-text: #ffffff;
+  --netflix-muted: #b3b3b3;
+
+  /* Text */
+  --text-primary: #FFFFFF;
+  --text-secondary: #9E9E9E;
+  --text-tertiary: #5A5A5A;
+
+  /* Borders */
+  --border-subtle: #2A2A2A;
+
+  /* Glows */
+  --glow-orange: 0 0 20px rgba(255, 107, 53, 0.4);
+  --glow-blue: 0 0 20px rgba(0, 212, 255, 0.4);
+  --glow-purple: 0 0 20px rgba(184, 87, 255, 0.4);
 }
 
-/* Netflix Font Stack */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-space), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   * {
-    @apply border-slate-muted;
+    @apply border-slate-muted/20;
   }
   
   body {
-    @apply bg-slate-base text-offwhite font-inter antialiased;
+    @apply bg-slate-base text-offwhite font-space antialiased;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bebas tracking-wide;
+    @apply font-inter font-bold tracking-tight;
   }
 }
 
 @layer components {
   .gradient-text {
-    @apply bg-gradient-to-r from-neon-purple to-neon-gold bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-neon-orange via-neon-blue to-neon-purple bg-clip-text text-transparent;
   }
   
   .card {
-    @apply bg-slate-secondary rounded-lg border border-slate-muted/20 p-6 hover:border-neon-purple/50 transition-all duration-300;
+    @apply bg-slate-surface rounded-lg border border-slate-muted/20 p-6 hover:border-neon-blue/50 transition-all duration-300;
   }
   
   .btn-primary {
-    @apply bg-gradient-to-r from-neon-purple to-neon-gold text-slate-base font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity duration-200;
+    @apply bg-gradient-to-r from-neon-orange to-neon-purple text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-[var(--glow-orange)];
   }
   
   .btn-secondary {
-    @apply border border-neon-purple text-neon-purple font-semibold px-6 py-3 rounded-lg hover:bg-neon-purple/10 transition-all duration-200;
+    @apply border border-neon-blue text-neon-blue font-semibold px-6 py-3 rounded-lg hover:bg-neon-blue/10 transition-all duration-200;
   }
   
   .section-container {
@@ -56,18 +80,29 @@ body {
   
   .article-content {
     @apply prose prose-invert prose-lg max-w-none
-    prose-headings:font-bebas prose-headings:tracking-wide
+    prose-headings:font-inter prose-headings:font-bold
     prose-h2:text-3xl prose-h2:mb-4
     prose-h3:text-2xl prose-h3:mb-3
     prose-p:text-offwhite prose-p:leading-relaxed
-    prose-a:text-neon-purple prose-a:no-underline hover:prose-a:text-neon-gold prose-a:transition-colors
-    prose-strong:text-neon-gold prose-strong:font-semibold
+    prose-a:text-neon-blue prose-a:no-underline hover:prose-a:text-neon-orange prose-a:transition-colors
+    prose-strong:text-neon-orange prose-strong:font-semibold
     prose-blockquote:border-l-4 prose-blockquote:border-neon-purple prose-blockquote:pl-4 prose-blockquote:italic
-    prose-code:bg-slate-secondary prose-code:text-neon-purple prose-code:px-2 prose-code:py-1 prose-code:rounded;
+    prose-code:bg-slate-surface prose-code:text-neon-blue prose-code:px-2 prose-code:py-1 prose-code:rounded;
   }
 }
 
 @layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -100,15 +135,6 @@ body {
   
   .custom-scroll::-webkit-scrollbar-thumb:hover {
     background: rgb(251, 191, 36);
-  }
-  
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
   }
   
   .line-clamp-2 {
@@ -150,14 +176,6 @@ body {
   }
 }
 
-/* Netflix Design System */
-:root {
-  --netflix-red: #e50914;
-  --netflix-bg: #141414;
-  --netflix-text: #ffffff;
-  --netflix-muted: #b3b3b3;
-}
-
 .font-netflix {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -173,12 +191,28 @@ body {
   animation-duration: 0.5s;
 }
 
-/* Hide Scrollbar */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* On-Deck Card Styles */
+.on-deck img {
+  filter: grayscale(100%) contrast(1.2);
+  transition: filter 0.4s;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.on-deck:hover img {
+  filter: none;
 }
+
+/* Corner accent for Lakers topic */
+[data-category="lakers"] .on-deck::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 40px 40px 0;
+  border-color: transparent #FDB927 transparent transparent;
+  z-index: 30;
+}
+
+

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { urlFor } from '@/lib/sanity/client'
 import { formatDistanceToNow } from 'date-fns'
 import { Play, Clock } from 'lucide-react'
 
@@ -10,7 +9,7 @@ interface Episode {
   slug: { current: string }
   episodeNumber?: number
   description: string
-  coverImage: any
+  coverImage?: string | null
   audioUrl?: string
   duration?: string
   publishedAt: string
@@ -37,7 +36,7 @@ export default function LatestEpisodes({ episodes }: LatestEpisodesProps) {
             <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
               {episode.coverImage ? (
                 <Image
-                  src={urlFor(episode.coverImage).width(500).height(500).url()}
+                  src={episode.coverImage}
                   alt={episode.title}
                   fill
                   className="object-cover"

@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
 import { isArticleBodyBlocks } from '@/lib/articles/body'
-import { generateSlug } from '@/lib/slug'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
-import type { ArticleBodyBlock, ArticleInsert } from '@/types/supabase'
+import type { ArticleBodyBlock, ArticleUpdate } from '@/types/supabase'
 
-interface SubmitArticlePayload {
+interface UpdateArticlePayload {
   title: string
   excerpt: string
   heroImageUrl: string
@@ -18,10 +17,9 @@ interface SubmitArticlePayload {
   topic: string
   body: ArticleBodyBlock[]
   videoUrl?: string
-  slug?: string
 }
 
-const REQUIRED_FIELDS: Array<keyof SubmitArticlePayload> = [
+const REQUIRED_FIELDS: Array<keyof UpdateArticlePayload> = [
   'title',
   'excerpt',
   'heroImageUrl',
@@ -31,7 +29,7 @@ const REQUIRED_FIELDS: Array<keyof SubmitArticlePayload> = [
   'body'
 ]
 
-function validatePayload(payload: SubmitArticlePayload) {
+function validatePayload(payload: UpdateArticlePayload) {
   for (const field of REQUIRED_FIELDS) {
     const value = payload[field]
     if (field === 'body') {
@@ -52,9 +50,13 @@ function validatePayload(payload: SubmitArticlePayload) {
   return null
 }
 
-export async function POST(request: Request) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   try {
-    const rawPayload = (await request.json()) as SubmitArticlePayload
+    const { slug } = await params
+    const rawPayload = (await request.json()) as UpdateArticlePayload
     const errorMessage = validatePayload(rawPayload)
 
     if (errorMessage) {
@@ -62,29 +64,20 @@ export async function POST(request: Request) {
     }
 
     const supabase = createSupabaseServiceClient()
-    const slug = generateSlug(rawPayload.slug || rawPayload.title)
 
+    // Check if article exists
     const { data: existingArticle, error: fetchError } = await supabase
       .from('articles')
       .select('id')
       .eq('slug', slug)
       .maybeSingle()
 
-    if (fetchError) {
-      console.error('Article slug lookup failed:', fetchError)
-      return NextResponse.json({ error: 'Failed to verify slug uniqueness' }, { status: 500 })
+    if (fetchError || !existingArticle) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
     }
 
-    if (existingArticle) {
-      return NextResponse.json(
-        { error: 'An article with this slug already exists' },
-        { status: 409 }
-      )
-    }
-
-    const insertPayload: ArticleInsert = {
+    const updatePayload: ArticleUpdate = {
       title: rawPayload.title.trim(),
-      slug,
       excerpt: rawPayload.excerpt.trim(),
       hero_image_url: rawPayload.heroImageUrl.trim(),
       image_credit: rawPayload.imageCredit?.trim() || null,
@@ -95,25 +88,27 @@ export async function POST(request: Request) {
       topic: rawPayload.topic.trim(),
       body: rawPayload.body,
       video_url: rawPayload.videoUrl?.trim() || null,
-      published: true,
-      featured: false,
-      published_at: new Date().toISOString()
+      // We don't update slug, published_at, or created_at on edit usually
     }
 
-    const { error: insertError } = await (supabase.from('articles') as any).insert([insertPayload])
+    const { error: updateError } = await supabase
+      .from('articles')
+      // @ts-expect-error - Supabase types are tricky with JSON columns
+      .update(updatePayload as any)
+      .eq('slug', slug)
 
-    if (insertError) {
-      console.error('Article insert failed:', insertError)
-      return NextResponse.json({ error: 'Failed to save article' }, { status: 500 })
+    if (updateError) {
+      console.error('Article update failed:', updateError)
+      return NextResponse.json({ error: 'Failed to update article' }, { status: 500 })
     }
 
     revalidatePath('/news')
     revalidatePath(`/news/${slug}`)
+    revalidatePath('/admin')
 
-    return NextResponse.json({ ok: true, slug })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown server error'
-    console.error('Article submit route crashed:', message)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

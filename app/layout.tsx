@@ -1,50 +1,16 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import '../styles/globals.css'
+import './globals.css'
+import { Inter, Space_Grotesk } from 'next/font/google'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { AudioPlayerProvider } from '@/lib/audio/AudioPlayerContext'
-import GlobalAudioPlayer from '@/components/audio/GlobalAudioPlayer'
+import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
+import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })
 
-export const metadata: Metadata = {
-  title: {
-    default: 'Late Night Lake Show | Where Lakers Fans Stay Up Talking Ball',
-    template: '%s | LNLS',
-  },
-  description:
-    'Full-scale Lakers and NBA content hub — daily news, podcasts, videos, and culture coverage by basketball lifers.',
-  keywords: [
-    'Lakers',
-    'NBA',
-    'Lakers podcast',
-    'Lakers news',
-    'basketball',
-    'Late Night Lake Show',
-    'LNLS',
-  ],
-  authors: [{ name: 'Late Night Lake Show' }],
-  creator: 'Late Night Lake Show',
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: 'Late Night Lake Show',
-    title: 'Late Night Lake Show | Where Lakers Fans Stay Up Talking Ball',
-    description:
-      'Full-scale Lakers and NBA content hub — daily news, podcasts, videos, and culture coverage.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Late Night Lake Show',
-    description: 'Where Lakers fans stay up talking ball.',
-    creator: '@latenightlakeshow',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+export const metadata = {
+  title: 'The Daily Dribble',
+  description: 'Court. Code. Culture.',
 }
 
 export default function RootLayout({
@@ -53,14 +19,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} scroll-smooth`}>
+    <html lang="en" className="scroll-smooth">
       <head>
         <meta name="view-transition" content="same-origin" />
       </head>
-      <body className="min-h-screen flex flex-col bg-[var(--netflix-bg)]">
+      <body className={`${inter.variable} ${space.variable} font-sans min-h-screen flex flex-col`}>
         <AudioPlayerProvider>
           <Header />
-          <main className="flex-grow pb-24">{children}</main>
+          <main className="flex-1">
+            {children}
+          </main>
           <Footer />
           <GlobalAudioPlayer />
         </AudioPlayerProvider>

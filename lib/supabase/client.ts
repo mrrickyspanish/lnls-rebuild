@@ -30,7 +30,6 @@ export function createSupabaseServiceClient(): SupabaseTypedClient {
 
 /**
  * Insert a subscriber. Returns PostgrestError | null per call site expectations.
- * Table name: newsletter_subs  (change here if your table is different)
  */
 export async function subscribeToNewsletter(
   email: string,
@@ -38,7 +37,8 @@ export async function subscribeToNewsletter(
 ): Promise<{ data: unknown; error: PostgrestError | null }> {
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
-    .from("newsletter_subs") // <-- ensure this table exists; rename if yours is newsletter_subscribers
+    .from("newsletter_subscribers")
+    // @ts-expect-error - Supabase types inference issue
     .insert([{ email, source }]);
 
   return { data, error };
