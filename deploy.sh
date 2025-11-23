@@ -91,7 +91,11 @@ echo ""
 
 # Checkout main branch
 echo "🔄 Switching to main branch..."
-git checkout main
+if ! git checkout main; then
+    echo -e "${RED}✗ Error: Failed to checkout main branch${NC}"
+    echo "Please ensure you have no uncommitted changes or conflicts"
+    exit 1
+fi
 echo -e "${GREEN}✓ Switched to main branch${NC}"
 echo ""
 
@@ -111,7 +115,12 @@ echo ""
 
 # Clean install dependencies
 echo "📦 Installing dependencies (clean install)..."
-npm ci
+if ! npm ci; then
+    echo -e "${RED}✗ Error: Failed to install dependencies${NC}"
+    echo "Please check your package-lock.json and npm configuration"
+    echo "You may need to delete node_modules and try again"
+    exit 1
+fi
 echo -e "${GREEN}✓ Dependencies installed${NC}"
 echo ""
 
@@ -134,7 +143,15 @@ echo ""
 
 # Deploy to production
 echo "🚢 Deploying to Vercel production..."
-vercel --prod
+if ! vercel --prod; then
+    echo -e "${RED}✗ Error: Vercel deployment failed${NC}"
+    echo "Please check the error messages above for details"
+    echo "You may need to:"
+    echo "  - Verify your Vercel authentication: vercel login"
+    echo "  - Check your Vercel project settings"
+    echo "  - Review build logs for errors"
+    exit 1
+fi
 echo ""
 echo -e "${GREEN}✓ Deployment complete!${NC}"
 echo ""
