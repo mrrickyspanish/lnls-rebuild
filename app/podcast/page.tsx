@@ -1,30 +1,22 @@
 import { Metadata } from 'next';
 import PodcastPageClient from '@/components/podcast/PodcastPageClient';
-
-// Fetch episodes from API
-async function getEpisodes() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`, {
-    next: { revalidate: 300 }
-  });
-  
-  if (!res.ok) return [];
-  const allEpisodes = await res.json();
-  // Limit to 10 episodes (2 rows of 5)
-  return allEpisodes.slice(0, 10);
-}
+import { fetchPodcastEpisodes } from '@/lib/podcast';
 
 export const metadata: Metadata = {
   title: 'Podcast | The Daily Dribble',
   description: 'Listen to the The Daily Dribble podcast - Lakers news, analysis, and hot takes.',
 };
 
+export const revalidate = 300; // Cache for 5 minutes
+
 export default async function PodcastPage() {
-  const episodes = await getEpisodes();
+  // Fetch episodes directly from library (matches News/Videos pattern)
+  const episodes = await fetchPodcastEpisodes(10); // Limit to 10 episodes (2 rows of 5)
   const hasEpisodes = episodes && episodes.length > 0;
 
   return (
     <>
-      <section className="relative bg-gradient-to-t from-background to-transparent pb-6">
+      <section className="relative bg-gradient-to-t from-background to-transparent pb-8">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-24 md:pt-32">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
