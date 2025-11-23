@@ -12,7 +12,6 @@ echo ""
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Pre-flight validation: Check for Vercel CLI
@@ -41,6 +40,16 @@ CURRENT_BRANCH=$(git branch --show-current)
 echo "📍 Current branch: $CURRENT_BRANCH"
 echo ""
 
+# Check if main branch exists
+echo "🔍 Pre-flight Check: Main Branch"
+if ! git show-ref --verify --quiet refs/heads/main; then
+    echo -e "${RED}✗ Error: 'main' branch not found${NC}"
+    echo "Please ensure the repository has a 'main' branch"
+    exit 1
+fi
+echo -e "${GREEN}✓ Main branch exists${NC}"
+echo ""
+
 # Checkout main branch
 echo "🔄 Switching to main branch..."
 git checkout main
@@ -49,7 +58,7 @@ echo ""
 
 # Pull latest changes
 echo "📥 Pulling latest changes..."
-git pull
+git pull origin main
 echo -e "${GREEN}✓ Latest changes pulled${NC}"
 echo ""
 
