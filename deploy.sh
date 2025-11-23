@@ -76,6 +76,16 @@ fi
 echo -e "${GREEN}✓ Main branch exists${NC}"
 echo ""
 
+# Check if origin remote exists
+echo "🔍 Pre-flight Check: Git Remote"
+if ! git remote get-url origin &> /dev/null; then
+    echo -e "${RED}✗ Error: 'origin' remote not found${NC}"
+    echo "Please ensure the git remote 'origin' is configured"
+    exit 1
+fi
+echo -e "${GREEN}✓ Git remote 'origin' configured${NC}"
+echo ""
+
 # Checkout main branch
 echo "🔄 Switching to main branch..."
 git checkout main
@@ -92,6 +102,17 @@ echo ""
 echo "📦 Installing dependencies (clean install)..."
 npm ci
 echo -e "${GREEN}✓ Dependencies installed${NC}"
+echo ""
+
+# Verify Vercel project context
+echo "🔍 Verifying Vercel project..."
+if vercel inspect &> /dev/null; then
+    PROJECT_INFO=$(vercel inspect 2>/dev/null | grep -E "Project Name|Environment" || echo "Project context available")
+    echo -e "${GREEN}✓ Vercel project context verified${NC}"
+else
+    echo -e "${RED}⚠ Warning: Could not verify Vercel project context${NC}"
+    echo "The deployment will use the current directory's Vercel configuration"
+fi
 echo ""
 
 # Deploy to production

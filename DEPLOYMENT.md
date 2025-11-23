@@ -204,6 +204,9 @@ For subsequent deployments, use the automated deployment script:
 ```bash
 # Run the deployment script
 npm run deploy
+
+# Or run directly (the script is already executable)
+./deploy.sh
 ```
 
 The deployment script will:
