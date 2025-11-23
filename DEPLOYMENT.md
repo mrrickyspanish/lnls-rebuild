@@ -190,6 +190,29 @@ git push -u origin main
 
 5. Deploy!
 
+### Quick Deployment Script
+
+For subsequent deployments after initial setup, use the automated deployment script:
+
+```bash
+# Option 1: Run the script directly
+./deploy.sh
+
+# Option 2: Use npm script
+npm run deploy
+```
+
+This script automatically:
+1. Checks out main branch
+2. Pulls latest code from origin/main
+3. Installs dependencies with `npm ci`
+4. Deploys to Vercel production with `vercel --prod`
+
+**Prerequisites:**
+- Vercel CLI installed globally: `npm install -g vercel`
+- Authenticated with Vercel: `vercel login`
+- Project linked to Vercel: `vercel link` (done automatically on first deployment)
+
 ---
 
 ## Step 8: Domain Setup

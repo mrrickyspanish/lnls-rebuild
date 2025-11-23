@@ -132,6 +132,8 @@ npm run lint         # Run ESLint
 npm run studio       # Start Sanity Studio locally
 npm run studio:build # Build Sanity Studio
 npm run studio:deploy # Deploy Studio to Sanity
+
+npm run deploy       # Deploy to Vercel production (main branch)
 ```
 
 ---
@@ -202,6 +204,14 @@ See `.env.example` for complete list.
 2. Import repo in Vercel
 3. Add environment variables
 4. Deploy
+
+#### Quick Deploy
+After initial setup, use the automated deployment script:
+```bash
+npm run deploy
+```
+
+This script ensures you're on main with the latest code, installs dependencies, and deploys to Vercel production.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
