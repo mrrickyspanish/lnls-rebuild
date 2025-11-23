@@ -46,7 +46,7 @@ echo ""
 
 # Pre-flight validation: Check for uncommitted changes
 echo "🔍 Pre-flight Check: Uncommitted Changes"
-if [[ -n $(git status -s) ]]; then
+if ! git diff --quiet || ! git diff --cached --quiet; then
     echo -e "${RED}✗ Error: Uncommitted changes detected${NC}"
     echo "Please commit or stash your changes before deploying:"
     git status -s
@@ -106,11 +106,12 @@ echo ""
 
 # Verify Vercel project context
 echo "🔍 Verifying Vercel project..."
-if vercel inspect &> /dev/null; then
-    echo -e "${GREEN}✓ Vercel project context verified${NC}"
+if [[ -f ".vercel/project.json" ]]; then
+    echo -e "${GREEN}✓ Vercel project linked${NC}"
 else
-    echo -e "${RED}⚠ Warning: Could not verify Vercel project context${NC}"
-    echo "The deployment will use the current directory's Vercel configuration"
+    echo -e "${RED}⚠ Warning: Vercel project not linked${NC}"
+    echo "Run 'vercel link' to connect this directory to a Vercel project"
+    echo "The deployment will prompt you to select a project"
 fi
 echo ""
 
