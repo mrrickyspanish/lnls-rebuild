@@ -26,55 +26,60 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <section className="relative min-h-screen bg-gradient-to-b from-background via-background/95 to-background">
-      <div className="max-w-7xl mx-auto px-6 pt-32 md:pt-40 pb-32 space-y-32">
+    <section className="relative min-h-screen bg-gradient-to-b from-background via-background/95 to-background overflow-x-hidden">
+      <div className="max-w-6xl mx-auto px-6 pt-32 md:pt-40 pb-32 space-y-24">
         
-        {/* MAIN MESSAGE */}
+        {/* COURT. CODE. CULTURE. - Lead with value prop */}
         <div className="text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-12 leading-tight">
-              We don&apos;t just cover the game.
-              <span className="block text-primary mt-4">We live it.</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-secondary leading-relaxed">
-              No corporate talking heads. No recycled press releases.<br />
-              Just real fans, writers, creators, and analysts who breathe this world every single day.
-            </p>
-          </div>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-display font-bold mb-6 leading-tight">
+            Court. Code. Culture.
+          </h1>
+          <p className="text-lg md:text-xl text-secondary max-w-2xl mx-auto">
+            Where basketball meets technology and lifestyle.
+          </p>
         </div>
 
-        {/* THREE LANES */}
-        <div className="bg-surface/30 py-20 px-6 rounded-2xl backdrop-blur-sm border border-white/5">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold text-center mb-16">
-              Three lanes.<br />One feed.
-            </h2>
-            <div className="grid md:grid-cols-3 gap-12">
-              {lanes.map((lane) => (
-                <div key={lane.title} className="text-center group hover:shadow-[var(--glow-orange)] transition-all rounded-xl p-8">
-                  <div className={`text-7xl md:text-8xl lg:text-9xl font-display font-bold mb-6 ${lane.className}`}>
-                    {lane.title}
-                  </div>
-                  <p className="text-lg md:text-xl text-secondary leading-relaxed">{lane.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* FINAL CTA */}
-        <div className="text-center">
-          <h2 className="text-5xl md:text-6xl lg:text-8xl font-display font-bold mb-8 leading-tight">
-            Join the movement.
+        {/* THREE LANES - Show what we do */}
+        <div className="bg-surface/30 py-16 px-6 rounded-2xl backdrop-blur-sm border border-white/5">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-12">
+            Three lanes. One feed.
           </h2>
-          <p className="text-xl md:text-2xl text-secondary mb-12 max-w-2xl mx-auto">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {lanes.map((lane) => (
+              <div key={lane.title} className="text-center group hover:shadow-[var(--glow-orange)] transition-all rounded-xl p-6">
+                <div className={`text-6xl md:text-7xl font-display font-bold mb-4 ${lane.className}`}>
+                  {lane.title}
+                </div>
+                <p className="text-base md:text-lg text-secondary leading-relaxed">{lane.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* DIFFERENTIATION */}
+        <div className="text-center max-w-4xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold mb-8 leading-tight">
+            We don&apos;t just cover the game.
+            <span className="block text-primary mt-3">We live it.</span>
+          </h2>
+          <p className="text-lg md:text-xl text-secondary leading-relaxed max-w-3xl mx-auto">
+            No corporate talking heads. No recycled press releases. Just real fans, writers, creators, and analysts who breathe this world every single day.
+          </p>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center pt-8">
+          <h3 className="text-3xl md:text-4xl font-display font-bold mb-6">
+            Join the movement.
+          </h3>
+          <p className="text-lg md:text-xl text-secondary mb-8 max-w-xl mx-auto">
             Subscribe free and never miss a dribble.
           </p>
           <Link
             href="/subscribe"
-            className="inline-flex items-center gap-3 px-12 py-6 bg-primary text-black text-xl font-bold rounded-full hover:shadow-[var(--glow-orange)] transition-all"
+            className="inline-flex items-center gap-3 px-10 py-5 bg-primary text-black text-lg font-bold rounded-full hover:shadow-[var(--glow-orange)] transition-all"
           >
-            Subscribe Now <ChevronRight className="w-6 h-6" />
+            Subscribe Now <ChevronRight className="w-5 h-5" />
           </Link>
         </div>
       </div>
