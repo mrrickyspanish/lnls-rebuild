@@ -138,15 +138,18 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-neutral-400 mb-1">
-              Hero Image URL
+              Hero Image Source
             </label>
             <input
-              type="url"
+              type="text"
               value={formData.heroImageUrl}
               onChange={(e) => setFormData({ ...formData, heroImageUrl: e.target.value })}
               className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
-              placeholder="https://..."
+              placeholder="https://cdn.example.com/image.jpg or /uploads/articles/local.jpg"
             />
+            <p className="mt-1 text-xs text-neutral-500">
+              Accepts full URLs or repo assets served from <code>/public</code> (e.g. /uploads/articles/cover.jpg).
+            </p>
           </div>
 
           <div>
