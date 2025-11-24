@@ -3,19 +3,7 @@
 import { useState } from 'react';
 import PodcastHero from '@/components/podcast/PodcastHero';
 import EpisodeGrid from '@/components/podcast/EpisodeGrid';
-
-type Episode = {
-  id: string;
-  title: string;
-  description: string;
-  audio_url: string;
-  image_url?: string;
-  published_at: string;
-  duration: number;
-  episode_number?: number;
-  hosts?: string;
-  topics?: string[];
-};
+import type { Episode } from '@/lib/podcast';
 
 type PodcastPageClientProps = {
   initialEpisodes: Episode[];

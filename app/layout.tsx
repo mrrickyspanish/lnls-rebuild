@@ -4,6 +4,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
+import SplashScreen from '@/components/splash/SplashScreen'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })
@@ -24,6 +25,7 @@ export default function RootLayout({
         <meta name="view-transition" content="same-origin" />
       </head>
       <body className={`${inter.variable} ${space.variable} font-sans min-h-screen flex flex-col`}>
+        <SplashScreen />
         <AudioPlayerProvider>
           <Header />
           <main className="flex-1">
