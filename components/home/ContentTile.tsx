@@ -7,6 +7,7 @@ import { Play, Mic2, Plus, BookOpen } from "lucide-react";
 import { detectTopic, AccentColors, getCategoryBadge } from "@/lib/theme/tokens";
 import { useState } from "react";
 import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
+import { canUseNextImage } from "@/lib/images";
 
 type ContentTileProps = {
   id: string;
@@ -70,6 +71,7 @@ export default function ContentTile({
   const isPodcast = content_type === "podcast";
   const isVideo = content_type === "video";
   const isArticle = content_type === "article";
+  const useOptimizedImage = canUseNextImage(image_url);
 
   const isCurrentlyPlaying = currentEpisode?.id === id && isPlaying;
   const heightClass = size === 'small' ? 'h-[375px]' : 'h-[450px]';
@@ -111,12 +113,21 @@ export default function ContentTile({
       {/* Thumbnail - Portrait layout */}
       <div className={`on-deck relative ${widthClass} ${heightClass} rounded-lg overflow-hidden bg-slate-900`}>
         {image_url ? (
-          <Image
-            src={image_url}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          useOptimizedImage ? (
+            <Image
+              src={image_url}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <img
+              src={image_url}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+          )
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
             <span className="text-6xl text-white/10">{badge.icon}</span>

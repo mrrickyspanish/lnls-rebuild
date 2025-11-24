@@ -105,6 +105,46 @@ export async function PATCH(
     revalidatePath('/news')
     revalidatePath(`/news/${slug}`)
     revalidatePath('/admin')
+    revalidatePath('/')
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const { slug } = await params
+    const supabase = createSupabaseServiceClient()
+
+    const { data: existingArticle, error: fetchError } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
+
+    if (fetchError || !existingArticle) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+    }
+
+    const { error: deleteError } = await supabase
+      .from('articles')
+      .delete()
+      .eq('id', existingArticle.id)
+
+    if (deleteError) {
+      console.error('Article delete failed:', deleteError)
+      return NextResponse.json({ error: 'Failed to delete article' }, { status: 500 })
+    }
+
+    revalidatePath('/news')
+    revalidatePath('/admin')
+    revalidatePath('/')
 
     return NextResponse.json({ success: true })
   } catch (error) {

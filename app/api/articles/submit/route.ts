@@ -109,6 +109,7 @@ export async function POST(request: Request) {
 
     revalidatePath('/news')
     revalidatePath(`/news/${slug}`)
+    revalidatePath('/')
 
     return NextResponse.json({ ok: true, slug })
   } catch (error) {

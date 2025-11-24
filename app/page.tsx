@@ -168,6 +168,7 @@ export default async function HomePage() {
               title="Only on TDD"
               items={heroItems}
               viewAllHref="/podcast"
+              autoRotate={false}
             />
           )}
 

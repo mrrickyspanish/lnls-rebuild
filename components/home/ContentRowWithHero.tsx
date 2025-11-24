@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { detectTopic, AccentColors, getCategoryBadge } from "@/lib/theme/tokens";
 import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
+import { canUseNextImage } from "@/lib/images";
 
 type ContentRowWithHeroProps = {
   title: string;
@@ -47,9 +48,10 @@ type CarouselCardProps = {
   index: number;
   episodeQueue?: any[];
   direction: number;
+  isMobile: boolean;
 };
 
-function CarouselCard({ item, position, index, episodeQueue = [], direction }: CarouselCardProps) {
+function CarouselCard({ item, position, index, episodeQueue = [], direction, isMobile }: CarouselCardProps) {
   const topic = detectTopic(item);
   const accent = AccentColors[topic];
   const badge = getCategoryBadge(topic);
@@ -58,6 +60,7 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
   const isVideo = item.content_type === "video";
   const [isHovered, setIsHovered] = useState(false);
   const { playEpisode, currentEpisode, isPlaying } = useAudioPlayer();
+  const useOptimizedImage = canUseNextImage(item.image_url);
 
   const isHero = position === 'hero';
   const isCurrentlyPlaying = currentEpisode?.id === item.id && isPlaying;
@@ -86,6 +89,11 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
     }
   };
 
+  const heroWidth = isMobile ? 'min(90vw, 360px)' : 'min(60vw, 720px)';
+  const cardWidth = isMobile ? 'min(75vw, 280px)' : 'clamp(220px, 18vw, 320px)';
+  const heroHeightClass = isMobile ? 'h-[320px]' : 'h-[450px]';
+  const cardHeightClass = isMobile ? 'h-[260px]' : 'h-[450px]';
+
   const cardContent = (
     <motion.div
       onHoverStart={() => setIsHovered(true)}
@@ -97,16 +105,25 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
       {/* Card Container with Optional Padding for Border */}
       {isHero ? (
         <div className="p-1">
-          <div className={`relative h-[450px] rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80`}>
+          <div className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80`}>
             <div className="absolute inset-0 rounded-lg overflow-hidden">
               {item.image_url ? (
-                <Image
-                  src={item.image_url}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  priority={isHero}
-                />
+                useOptimizedImage ? (
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    priority={isHero}
+                  />
+                ) : (
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                )
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
                   <span className={`text-white/10 ${isHero ? 'text-9xl' : 'text-6xl'}`}>
@@ -214,15 +231,24 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
           </div>
         </div>
       ) : (
-        <div className="relative h-[450px] rounded-lg overflow-hidden bg-[var(--netflix-bg)] shadow-2xl">
+        <div className={`relative ${cardHeightClass} rounded-lg overflow-hidden bg-[var(--netflix-bg)] shadow-2xl`}>
           {item.image_url ? (
-            <Image
-              src={item.image_url}
-              alt={item.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              priority={isHero}
-            />
+            useOptimizedImage ? (
+              <Image
+                src={item.image_url}
+                alt={item.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                priority={isHero}
+              />
+            ) : (
+              <img
+                src={item.image_url}
+                alt={item.title}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+            )
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
               <span className={`text-white/10 ${isHero ? 'text-9xl' : 'text-6xl'}`}>
@@ -369,7 +395,7 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction }: C
       className="flex-shrink-0 snap-start"
       style={{ 
         zIndex: isHero ? 10 : (position === 'card' && index === 1) ? 5 : 1,
-        width: isHero ? 'min(60vw, 720px)' : 'clamp(220px, 18vw, 320px)',
+        width: isHero ? heroWidth : cardWidth,
         flex: '0 0 auto',
       }}
     >
@@ -395,12 +421,18 @@ export default function ContentRowWithHero({
 }: ContentRowWithHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [isLargeLayout, setIsLargeLayout] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1920;
+    return window.innerWidth;
+  });
+
+  const isMobileLayout = viewportWidth < 768;
+  const isLargeLayout = viewportWidth >= 1440;
 
   useEffect(() => {
     const checkViewport = () => {
       if (typeof window === 'undefined') return;
-      setIsLargeLayout(window.innerWidth >= 1440);
+      setViewportWidth(window.innerWidth);
     };
 
     checkViewport();
@@ -410,14 +442,14 @@ export default function ContentRowWithHero({
 
   // Auto-rotate
   useEffect(() => {
-    if (!autoRotate || items.length <= 1) return;
+    if (!autoRotate || items.length <= 1 || isMobileLayout) return;
 
     const timer = setInterval(() => {
       nextSlide();
     }, rotateInterval * 1000);
 
     return () => clearInterval(timer);
-  }, [currentIndex, autoRotate, rotateInterval, items.length]);
+  }, [currentIndex, autoRotate, rotateInterval, items.length, isMobileLayout]);
 
   const nextSlide = () => {
     setDirection(1);
@@ -434,13 +466,17 @@ export default function ContentRowWithHero({
   // Get visible items (hero + supporting cards)
   const getVisibleItems = (): VisibleItem[] => {
     const visible: VisibleItem[] = [];
-    const visibleCount = Math.min(items.length, isLargeLayout ? 4 : 3);
+    const visibleCount = isMobileLayout
+      ? items.length
+      : Math.min(items.length, isLargeLayout ? 4 : 3);
+
     for (let i = 0; i < visibleCount; i++) {
-      const index = (currentIndex + i) % items.length;
+      const index = isMobileLayout ? i : (currentIndex + i) % items.length;
+      const position = i === 0 ? 'hero' : 'card';
       visible.push({
         item: items[index],
-        position: i === 0 ? 'hero' : 'card',
-        key: `${items[index].id}-${currentIndex}-${i}`,  // ✅ Unique per rotation + position
+        position,
+        key: isMobileLayout ? `${items[index].id}-${i}` : `${items[index].id}-${currentIndex}-${i}`,
         index: index,
       });
     }
@@ -470,7 +506,7 @@ export default function ContentRowWithHero({
       {/* Carousel Container */}
       <div className="relative">
         {/* Navigation Arrows */}
-        {items.length > 3 && (
+        {!isMobileLayout && items.length > 3 && (
           <>
             <button
               onClick={prevSlide}
@@ -490,7 +526,13 @@ export default function ContentRowWithHero({
         )}
 
         {/* Cards */}
-        <div className="flex gap-3 overflow-hidden px-4 md:px-0 group">
+        <div
+          className={`flex px-4 md:px-0 ${
+            isMobileLayout
+              ? 'gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth'
+              : 'gap-3 overflow-hidden group'
+          }`}
+        >
           <AnimatePresence mode="popLayout" initial={false}>
             {visibleItems.map(({ item, position, key, index }) => (
               <CarouselCard
@@ -500,6 +542,7 @@ export default function ContentRowWithHero({
                 index={index}
                 episodeQueue={items}
                 direction={direction}
+                isMobile={isMobileLayout}
               />
             ))}
           </AnimatePresence>

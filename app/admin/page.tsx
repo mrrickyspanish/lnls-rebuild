@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { fetchAllArticles } from '@/lib/supabase/articles'
+import ArticleRowActions from '@/components/admin/ArticleRowActions'
 
 export const revalidate = 0 // Always fresh for admin
 
@@ -47,20 +48,25 @@ export default async function AdminDashboard() {
                 <td className="px-6 py-4 text-neutral-400">
                   {new Date(article.created_at).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-4 text-right space-x-4">
-                  <Link 
-                    href={`/news/${article.slug}`}
-                    className="text-neutral-400 hover:text-white text-sm"
-                    target="_blank"
-                  >
-                    View
-                  </Link>
-                  <Link 
-                    href={`/admin/submit/${article.slug}`}
-                    className="text-red-500 hover:text-red-400 font-medium text-sm"
-                  >
-                    Edit →
-                  </Link>
+                <td className="px-6 py-4">
+                  <div className="flex flex-col items-end gap-3">
+                    <div className="flex items-center gap-4 text-sm">
+                      <Link 
+                        href={`/news/${article.slug}`}
+                        className="text-neutral-400 hover:text-white"
+                        target="_blank"
+                      >
+                        View
+                      </Link>
+                      <Link 
+                        href={`/admin/submit/${article.slug}`}
+                        className="text-red-500 hover:text-red-400 font-medium"
+                      >
+                        Edit →
+                      </Link>
+                    </div>
+                    <ArticleRowActions slug={article.slug} published={article.published} />
+                  </div>
                 </td>
               </tr>
             ))}
