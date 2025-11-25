@@ -25,7 +25,7 @@ export async function PATCH(
       .from('articles')
       .select('id, published_at')
       .eq('slug', slug)
-      .maybeSingle()
+      .maybeSingle<{ id: string; published_at: string | null }>()
 
     if (fetchError || !existingArticle) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
