@@ -89,10 +89,10 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction, isM
     }
   };
 
-  const heroWidth = isMobile ? 'min(90vw, 360px)' : 'min(60vw, 720px)';
-  const cardWidth = isMobile ? 'min(75vw, 280px)' : 'clamp(220px, 18vw, 320px)';
-  const heroHeightClass = isMobile ? 'h-[320px]' : 'h-[450px]';
-  const cardHeightClass = isMobile ? 'h-[260px]' : 'h-[450px]';
+  const heroWidth = isMobile ? '300px' : 'min(60vw, 720px)';
+  const cardWidth = isMobile ? '300px' : 'clamp(220px, 18vw, 320px)';
+  const heroHeightClass = isMobile ? 'h-[450px]' : 'h-[450px]';
+  const cardHeightClass = isMobile ? 'h-[450px]' : 'h-[450px]';
 
   const cardContent = (
     <motion.div
