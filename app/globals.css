@@ -87,3 +87,61 @@ main {
 .richtext-editor .ProseMirror:focus {
   outline: none;
 }
+
+.article-breadcrumbs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 16px;
+  background: var(--bg-primary);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (min-width: 768px) {
+  .article-breadcrumbs {
+    padding: 8px 24px;
+    font-size: 12px;
+  }
+}
+
+.article-breadcrumbs a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.article-breadcrumbs a:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.article-breadcrumbs__separator {
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 6px;
+}
+
+.article-breadcrumbs__current {
+  color: rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+@media (min-width: 768px) {
+  .article-breadcrumbs__current {
+    max-width: 500px;
+  }
+}
+
+.article-hero {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  overflow: hidden;
+}

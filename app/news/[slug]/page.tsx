@@ -1,5 +1,6 @@
 // app/news/[slug]/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ArticleHero from "@/components/article/ArticleHero";
@@ -28,21 +29,6 @@ function buildHeroArticle(article: Article, slug: string) {
     author: { name: article.author_name },
     publishedAt: article.published_at || article.created_at,
     readTime: article.read_time || 5,
-    topic: article.topic || "Lakers",
-  };
-}
-
-function toHeroCard(article: Article | undefined) {
-  if (!article) return null;
-  return {
-    slug: article.slug,
-    title: article.title,
-    excerpt: article.excerpt || "",
-    heroImage: article.hero_image_url || FALLBACK_IMAGE,
-    imageCredit: article.image_credit,
-    author: { name: article.author_name },
-    publishedAt: article.published_at || article.created_at,
-    readTime: article.read_time || 4,
     topic: article.topic || "Lakers",
   };
 }
@@ -88,10 +74,8 @@ export default async function ArticlePage({ params }: PageProps) {
 
     relatedArticles = [...relatedArticles, ...fillers];
   }
-  const [nextArticle, previewArticle, ...remainingRelated] = relatedArticles;
-
   const currentArticle = buildHeroArticle(article, slug);
-  const relatedRowItems = mapRelatedRow(remainingRelated);
+  const relatedRowItems = mapRelatedRow(relatedArticles);
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -107,11 +91,16 @@ export default async function ArticlePage({ params }: PageProps) {
       <ShareBar url={shareUrl} title={article.title} />
 
       <article>
-        <ArticleHero
-          currentArticle={currentArticle}
-          nextArticle={toHeroCard(nextArticle)}
-          previewArticle={toHeroCard(previewArticle)}
-        />
+        <nav className="article-breadcrumbs" aria-label="Breadcrumb">
+          <Link href="/">Home</Link>
+          <span className="article-breadcrumbs__separator">/</span>
+          <Link href="/news">News</Link>
+          <span className="article-breadcrumbs__separator">/</span>
+          <span className="article-breadcrumbs__current" aria-current="page">
+            {article.title}
+          </span>
+        </nav>
+        <ArticleHero currentArticle={currentArticle} />
 
         {article.body && <ArticleBody content={article.body} />}
 
@@ -125,7 +114,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
         <RelatedRow
           articles={relatedRowItems}
-          title="More Lakers News"
+          title="Keep Digging"
         />
       </article>
     </>
