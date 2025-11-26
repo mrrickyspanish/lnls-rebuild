@@ -1,24 +1,53 @@
 import Link from 'next/link'
+import { Search } from 'lucide-react'
+import AnimatedLogo from '@/components/AnimatedLogo'
+
+const navLinks = [
+  { href: '/news', label: 'News' },
+  { href: '/podcast', label: 'Podcasts' },
+  { href: '/videos', label: 'Videos' },
+  { href: '/about', label: 'About' },
+]
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border-subtle">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold tracking-tighter font-display">TDD</span>
-            <span className="text-primary animate-dots">...</span>
+    <header className="hidden lg:block sticky top-0 z-50 border-b border-white/10 bg-[#050505]/95 backdrop-blur supports-[backdrop-filter]:bg-[#050505]/80">
+      <div className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between text-white">
+        <AnimatedLogo className="text-3xl" />
+
+        <nav className="flex items-center text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
+          {navLinks.map((link, index) => (
+            <div key={link.href} className="flex items-center">
+              <Link
+                href={link.href}
+                className="px-4 py-2 hover:text-white transition-colors"
+              >
+                {link.label}
+              </Link>
+              {index < navLinks.length - 1 && <span className="text-white/30">/</span>}
+            </div>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-4">
+          <Link
+            href="/search"
+            className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5" />
           </Link>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/news" className="text-sm font-medium hover:text-primary transition-all hover:shadow-[0_0_10px_rgba(255,107,53,0.4)]">News</Link>
-            <Link href="/podcast" className="text-sm font-medium hover:text-primary transition-all hover:shadow-[0_0_10px_rgba(255,107,53,0.4)]">Podcasts</Link>
-            <Link href="/videos" className="text-sm font-medium hover:text-primary transition-all hover:shadow-[0_0_10px_rgba(255,107,53,0.4)]">Videos</Link>
-            <Link href="/about" className="text-sm font-medium hover:text-primary transition-all hover:shadow-[0_0_10px_rgba(255,107,53,0.4)]">About</Link>
-          </nav>
-
-          <Link href="/subscribe" className="px-5 py-2 bg-primary text-black font-semibold rounded-full hover:shadow-[var(--glow-orange)] hover:-translate-y-0.5 transition-all">
-            Subscribe
+          <Link
+            href="/login"
+            className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60 hover:text-white transition-colors"
+          >
+            SIGN IN
+          </Link>
+          <Link
+            href="/subscribe"
+            className="px-6 py-2 bg-[var(--netflix-red)] text-white text-xs font-bold uppercase tracking-[0.35em] rounded-full hover:bg-red-700 transition-colors"
+          >
+            SUBSCRIBE
           </Link>
         </div>
       </div>

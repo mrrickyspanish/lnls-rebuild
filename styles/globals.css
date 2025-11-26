@@ -215,4 +215,21 @@ body {
   z-index: 30;
 }
 
+/* Mobile menu gradient background */
+.mobile-menu-gradient {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f1e 100%);
+}
+
+/* Prevent scroll when menu is open */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* Mobile header spacing */
+@media (max-width: 1024px) {
+  body {
+    padding-top: 0;
+  }
+}
+
 

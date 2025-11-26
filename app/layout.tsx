@@ -1,6 +1,7 @@
 import './globals.css'
 import { Inter, Space_Grotesk } from 'next/font/google'
 import Header from '@/components/Header'
+import MobileHeader from '@/components/MobileHeader'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
@@ -28,6 +29,7 @@ export default function RootLayout({
         <SplashScreen />
         <AudioPlayerProvider>
           <Header />
+          <MobileHeader />
           <main className="flex-1">
             {children}
           </main>
