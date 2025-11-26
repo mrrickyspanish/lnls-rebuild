@@ -51,3 +51,39 @@ main {
 .on-deck:hover img {
   filter: none;
 }
+
+.tiptap-article h2 {
+  @apply text-3xl font-bold mt-12 mb-6 font-netflix;
+}
+
+.tiptap-article h3 {
+  @apply text-2xl font-bold mt-8 mb-4 font-netflix;
+}
+
+.tiptap-article p {
+  @apply text-lg leading-relaxed mb-6 text-white/90;
+}
+
+.tiptap-article ul {
+  @apply list-disc pl-6 mb-6;
+}
+
+.tiptap-article ol {
+  @apply list-decimal pl-6 mb-6;
+}
+
+.tiptap-article blockquote {
+  @apply border-l-4 border-red-500/60 pl-4 italic text-white/80 mb-6;
+}
+
+.tiptap-video-wrapper {
+  @apply my-8;
+}
+
+.richtext-editor .ProseMirror {
+  @apply min-h-[400px];
+}
+
+.richtext-editor .ProseMirror:focus {
+  outline: none;
+}

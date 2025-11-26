@@ -6,6 +6,8 @@ export const revalidate = 0 // Always fresh for admin
 
 export default async function AdminDashboard() {
   const articles = await fetchAllArticles()
+  const publishedArticles = articles.filter((article) => article.published)
+  const draftArticles = articles.filter((article) => !article.published)
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
@@ -19,6 +21,25 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
+      <AdminTable title="Published" articles={publishedArticles} emptyLabel="No published articles yet." />
+      <AdminTable title="Drafts" articles={draftArticles} emptyLabel="No drafts yet. Use Send to Draft to keep work in progress." />
+    </div>
+  )
+}
+
+interface AdminTableProps {
+  title: string
+  articles: Awaited<ReturnType<typeof fetchAllArticles>>
+  emptyLabel: string
+}
+
+function AdminTable({ title, articles, emptyLabel }: AdminTableProps) {
+  return (
+    <section className="mt-8">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-2xl font-bold font-netflix">{title}</h2>
+        <span className="text-sm text-neutral-400">{articles.length} {articles.length === 1 ? 'article' : 'articles'}</span>
+      </div>
       <div className="bg-neutral-900 rounded-lg overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-neutral-800 text-neutral-400 uppercase text-sm">
@@ -73,13 +94,13 @@ export default async function AdminDashboard() {
             {articles.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-12 text-center text-neutral-500">
-                  No articles found. Start writing!
+                  {emptyLabel}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   )
 }

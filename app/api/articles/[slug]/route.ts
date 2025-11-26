@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
-import { isArticleBodyBlocks } from '@/lib/articles/body'
+import { isRichTextContent } from '@/lib/articles/body'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
-import type { ArticleBodyBlock, ArticleUpdate } from '@/types/supabase'
+import type { ArticleBody, ArticleUpdate } from '@/types/supabase'
 
 interface UpdateArticlePayload {
   title: string
@@ -15,7 +15,7 @@ interface UpdateArticlePayload {
   authorTwitter?: string
   readTime: number
   topic: string
-  body: ArticleBodyBlock[]
+  body: ArticleBody
   videoUrl?: string
 }
 
@@ -33,7 +33,7 @@ function validatePayload(payload: UpdateArticlePayload) {
   for (const field of REQUIRED_FIELDS) {
     const value = payload[field]
     if (field === 'body') {
-      if (!isArticleBodyBlocks(value)) return 'Article body is required'
+      if (!isRichTextContent(value)) return 'Article body is required'
       continue
     }
 

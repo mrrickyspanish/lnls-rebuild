@@ -12,6 +12,26 @@ export type ArticleBodyBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'heading'; text: string; level?: number };
 
+export type TipTapMark = {
+  type: string;
+  attrs?: { [key: string]: Json | undefined };
+};
+
+export interface TipTapNode {
+  type: string;
+  attrs?: { [key: string]: Json | undefined };
+  content?: TipTapNode[];
+  text?: string;
+  marks?: TipTapMark[];
+}
+
+export interface TipTapDocNode {
+  type: 'doc';
+  content?: TipTapNode[];
+}
+
+export type ArticleBody = ArticleBodyBlock[] | TipTapDocNode;
+
 export interface Database {
   public: {
     Tables: {
@@ -332,15 +352,15 @@ type ArticleTableInsert = Database['public']['Tables']['articles']['Insert'];
 type ArticleTableUpdate = Database['public']['Tables']['articles']['Update'];
 
 export type Article = Omit<ArticleTableRow, 'body'> & {
-  body: ArticleBodyBlock[];
+  body: ArticleBody;
 };
 
 export type ArticleInsert = Omit<ArticleTableInsert, 'body'> & {
-  body: ArticleBodyBlock[];
+  body: ArticleBody;
 };
 
 export type ArticleUpdate = Omit<ArticleTableUpdate, 'body'> & {
-  body?: ArticleBodyBlock[];
+  body?: ArticleBody;
 };
 
 // Comment with nested user data

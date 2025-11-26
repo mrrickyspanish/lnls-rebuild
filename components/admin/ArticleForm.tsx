@@ -2,12 +2,31 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import type { JSONContent } from '@tiptap/react'
+
+import RichTextEditor from '@/components/admin/RichTextEditor'
+import { blocksToTipTapDoc, isArticleBodyBlocks, isTipTapDoc } from '@/lib/articles/body'
 import { generateSlug } from '@/lib/slug'
 import type { Article } from '@/types/supabase'
 
 interface ArticleFormProps {
   initialData?: Article
   mode: 'create' | 'edit'
+}
+
+const EMPTY_DOC: JSONContent = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: '',
+        },
+      ],
+    },
+  ],
 }
 
 export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
@@ -26,11 +45,14 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     authorTwitter: initialData?.author_twitter || 'lnlssports',
     readTime: initialData?.read_time || 5,
     topic: initialData?.topic || 'Lakers',
-    body: initialData?.body 
-      ? initialData.body.map(b => b.type === 'heading' ? `## ${b.text}` : b.text).join('\n\n')
-      : '',
     videoUrl: initialData?.video_url || ''
   })
+
+  const [bodyContent, setBodyContent] = useState<JSONContent>(
+    toEditorContent(initialData?.body)
+  )
+
+  const handleBodyChange = (content: JSONContent) => setBodyContent(content)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,41 +60,34 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     setError('')
 
     try {
-      const bodyParagraphs = formData.body
-        .split('\n\n')
-        .filter((p) => p.trim())
-        .map((paragraph) => {
-          if (paragraph.startsWith('## ')) {
-            return {
-              type: 'heading',
-              level: 2,
-              text: paragraph.replace('## ', '').trim()
-            }
-          }
-
-          return {
-            type: 'paragraph',
-            text: paragraph.trim()
-          }
-        })
+      if (!hasEditorContent(bodyContent)) {
+        setError('Article body is required')
+        setLoading(false)
+        return
+      }
 
       const payload = {
         ...formData,
-        body: bodyParagraphs
+        body: bodyContent
+      }
+
+      const targetSlug = mode === 'create'
+        ? generateSlug(formData.title)
+        : initialData?.slug
+
+      if (!targetSlug) {
+        throw new Error('Missing slug for article action')
       }
 
       let response
       if (mode === 'create') {
-        const slug = generateSlug(formData.title)
         response = await fetch('/api/articles/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, slug })
+          body: JSON.stringify({ ...payload, slug: targetSlug })
         })
       } else {
-        // Edit mode
-        if (!initialData?.slug) throw new Error('Missing slug for edit')
-        response = await fetch(`/api/articles/${initialData.slug}`, {
+        response = await fetch(`/api/articles/${targetSlug}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -84,9 +99,8 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         throw new Error(data.error || 'Failed to save article')
       }
 
-      setSuccess(true)
-      const targetSlug = mode === 'create' ? generateSlug(formData.title) : initialData?.slug
-      setTimeout(() => router.push(`/news/${targetSlug}`), 2000)
+  setSuccess(true)
+  setTimeout(() => router.push(`/news/${targetSlug}`), 2000)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save article'
       setError(message)
@@ -222,17 +236,14 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           </select>
         </div>
 
-        <div>
+        <div className="space-y-2">
           <label className="block text-sm font-medium mb-2">
-            Article Body * (Use ## for headings, double enter for paragraphs)
+            Article Body *
           </label>
-          <textarea
-            value={formData.body}
-            onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-            className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none h-96 font-mono"
-            required
-            placeholder="Write your article here..."
-          />
+          <RichTextEditor value={bodyContent} onChange={handleBodyChange} />
+          <p className="text-xs text-neutral-500">
+            Use the toolbar to add formatting, links, images/GIFs, and embedded YouTube or Vimeo videos.
+          </p>
         </div>
 
         <button
@@ -245,4 +256,35 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
       </form>
     </div>
   )
+}
+
+function toEditorContent(body?: Article['body']): JSONContent {
+  if (!body) return EMPTY_DOC
+  if (isTipTapDoc(body)) return body as JSONContent
+  if (isArticleBodyBlocks(body)) return blocksToTipTapDoc(body)
+  return EMPTY_DOC
+}
+
+function hasEditorContent(doc: JSONContent | null): boolean {
+  if (!doc || !Array.isArray(doc.content)) return false
+  return doc.content.some(node => nodeHasContent(node))
+}
+
+function nodeHasContent(node?: JSONContent): boolean {
+  if (!node) return false
+  if (!node.type) {
+    if (Array.isArray(node.content)) {
+      return node.content.some(child => nodeHasContent(child))
+    }
+    return false
+  }
+  if (node.type === 'text') {
+    return typeof node.text === 'string' && node.text.trim().length > 0
+  }
+  if (node.type === 'image' && node.attrs?.src) return true
+  if (node.type === 'videoEmbed' && node.attrs?.src) return true
+  if (Array.isArray(node.content)) {
+    return node.content.some(child => nodeHasContent(child))
+  }
+  return false
 }

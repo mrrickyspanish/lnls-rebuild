@@ -1,6 +1,6 @@
 import { normalizeArticleBody } from '@/lib/articles/body'
 import { createSupabaseAnonClient } from '@/lib/supabase/client'
-import type { Article, ArticleBodyBlock, Database } from '@/types/supabase'
+import type { Article, Database } from '@/types/supabase'
 
 const ARTICLE_FIELDS = `
   id,
@@ -26,7 +26,7 @@ type ArticleRow = Database['public']['Tables']['articles']['Row']
 function mapArticle(row: ArticleRow): Article {
   return {
     ...row,
-    body: normalizeArticleBody(row.body) as ArticleBodyBlock[]
+    body: normalizeArticleBody(row.body)
   }
 }
 

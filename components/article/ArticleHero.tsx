@@ -1,10 +1,12 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
+
+import { canUseNextImage } from '@/lib/images';
 
 type Article = {
   slug: string;
@@ -40,6 +42,26 @@ type ArticleCardProps = {
 
 function ArticleCard({ article, isHero, isClickable }: ArticleCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const useOptimizedImage = canUseNextImage(article.heroImage);
+
+  const renderHeroImage = () => (
+    useOptimizedImage ? (
+      <Image
+        src={article.heroImage}
+        alt={article.title}
+        fill
+        className="object-cover group-hover:scale-105 transition-transform duration-500"
+        priority={isHero}
+      />
+    ) : (
+      <img
+        src={article.heroImage}
+        alt={article.title}
+        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        loading={isHero ? 'eager' : 'lazy'}
+      />
+    )
+  );
 
   const renderCard = () => (
     isHero ? (
@@ -50,13 +72,7 @@ function ArticleCard({ article, isHero, isClickable }: ArticleCardProps) {
           <div className="absolute inset-0 rounded-lg overflow-hidden">
             {article.heroImage ? (
               <>
-                <Image
-                  src={article.heroImage}
-                  alt={article.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  priority={isHero}
-                />
+                {renderHeroImage()}
                 {article.imageCredit && isHero && (
                   <div className="absolute bottom-3 right-3 z-20">
                     <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/10">
@@ -118,13 +134,7 @@ function ArticleCard({ article, isHero, isClickable }: ArticleCardProps) {
         } transition-opacity cursor-${isClickable ? 'pointer' : 'default'}`}
       >
         {article.heroImage ? (
-          <Image
-            src={article.heroImage}
-            alt={article.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            priority={isHero}
-          />
+          renderHeroImage()
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
             <BookOpen className={`text-white/10 ${isHero ? 'w-32 h-32' : 'w-24 h-24'}`} />
