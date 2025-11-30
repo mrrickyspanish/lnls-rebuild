@@ -72,7 +72,7 @@ export default function ContentRow({ title, description, items, viewAllHref, car
   };
 
   return (
-    <section className="mb-20 group/row">
+    <section className="mb-0 group/row">
       {/* Row Header */}
       <div className="flex items-center justify-between mb-6 px-4 md:px-0">
         <div>

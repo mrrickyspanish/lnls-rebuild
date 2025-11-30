@@ -158,8 +158,8 @@ export default async function HomePage() {
     });
 
     return (
-      <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[68px]">
-        <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12">
+      <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-4 md:pt-6">
+        <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 space-y-8 md:space-y-12">
           <QueueSetter episodes={podcastContent} />
           
           {heroItems.length > 0 && (
