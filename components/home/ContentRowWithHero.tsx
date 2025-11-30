@@ -530,7 +530,7 @@ export default function ContentRowWithHero({
         {/* Cards */}
         {isMobileLayout ? (
           /* MOBILE: Netflix-Style Hero */
-          <div className="px-4 space-y-4 -mt-8">
+          <div className="px-4 space-y-4 -mt-20">
             {/* Hero Card - Clean Image */}
             <div className="space-y-3">
               {/* Hero Image - No Overlay */}
