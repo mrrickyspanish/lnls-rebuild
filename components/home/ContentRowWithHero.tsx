@@ -487,21 +487,23 @@ export default function ContentRowWithHero({
 
   return (
     <section className="mb-20">
-      {/* Row Header */}
-      <div className="flex items-center justify-between mb-6 px-4 md:px-0">
-        <h2 className="text-2xl md:text-3xl font-bold text-[var(--netflix-text)] font-netflix tracking-tight">
-          {title}
-        </h2>
-        {viewAllHref && (
-          <Link
-            href={viewAllHref}
-            className="flex items-center gap-1 text-[var(--netflix-muted)] hover:text-white transition-colors group"
-          >
-            <span className="text-sm font-medium">View All</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        )}
-      </div>
+      {/* Row Header - Desktop Only */}
+      {!isMobileLayout && (
+        <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+          <h2 className="text-2xl md:text-3xl font-bold text-[var(--netflix-text)] font-netflix tracking-tight">
+            {title}
+          </h2>
+          {viewAllHref && (
+            <Link
+              href={viewAllHref}
+              className="flex items-center gap-1 text-[var(--netflix-muted)] hover:text-white transition-colors group"
+            >
+              <span className="text-sm font-medium">View All</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Carousel Container */}
       <div className="relative">
@@ -528,9 +530,9 @@ export default function ContentRowWithHero({
         {/* Cards */}
         {isMobileLayout ? (
           /* MOBILE: Netflix-Style Hero */
-          <div className="px-4 space-y-6">
+          <div className="px-4 space-y-4 -mt-8">
             {/* Hero Card - Clean Image */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Hero Image - No Overlay */}
               <Link href={items[0].source_url || "#"} className="block">
                 <div className="relative w-full h-[500px] rounded-2xl overflow-hidden">
@@ -577,9 +579,9 @@ export default function ContentRowWithHero({
               </Link>
 
               {/* Content Below Image */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {/* Meta */}
-                <div className="flex items-center gap-2 text-sm text-white/70">
+                <div className="flex items-center gap-2 text-sm text-white/60">
                   {items[0].published_at && <time>{formatDate(items[0].published_at)}</time>}
                   {items[0].duration && (
                     <>
@@ -600,7 +602,7 @@ export default function ContentRowWithHero({
                 </div>
 
                 {/* Title */}
-                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight font-netflix">
+                <h2 className="text-2xl font-bold text-white leading-tight font-netflix">
                   {items[0].title}
                 </h2>
 
