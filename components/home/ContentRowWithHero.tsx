@@ -586,7 +586,7 @@ export default function ContentRowWithHero({
                       <span>•</span>
                       <span>
                         {items[0].content_type === 'podcast' 
-                          ? `${Math.floor(parseInt(items[0].duration) / 60)}m` 
+                          ? `${Math.floor(parseInt(items[0].duration, 10) / 60) || 0}m` 
                           : items[0].duration}
                       </span>
                     </>
@@ -639,7 +639,11 @@ export default function ContentRowWithHero({
                   {/* Share Button */}
                   <button
                     onClick={() => {
-                      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}${items[0].source_url || ''}`;
+                      const sourceUrl = items[0].source_url || '';
+                      // Handle absolute URLs vs relative paths
+                      const url = sourceUrl.startsWith('http') 
+                        ? sourceUrl 
+                        : `${typeof window !== 'undefined' ? window.location.origin : ''}${sourceUrl.startsWith('/') ? '' : '/'}${sourceUrl}`;
                       if (typeof navigator !== 'undefined' && navigator.share) {
                         navigator.share({
                           title: items[0].title,
