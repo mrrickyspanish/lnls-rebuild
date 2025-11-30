@@ -526,27 +526,177 @@ export default function ContentRowWithHero({
         )}
 
         {/* Cards */}
-        <div
-          className={`flex px-4 md:px-0 ${
-            isMobileLayout
-              ? 'gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth'
-              : 'gap-3 overflow-hidden group'
-          }`}
-        >
-          <AnimatePresence mode="popLayout" initial={false}>
-            {visibleItems.map(({ item, position, key, index }) => (
-              <CarouselCard
-                key={key}
-                item={item}
-                position={position as 'hero' | 'card'}
-                index={index}
-                episodeQueue={items}
-                direction={direction}
-                isMobile={isMobileLayout}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+        {isMobileLayout ? (
+          /* MOBILE: Netflix-Style Hero */
+          <div className="px-4 space-y-6">
+            {/* Hero Card - Clean Image */}
+            <div className="space-y-4">
+              {/* Hero Image - No Overlay */}
+              <Link href={items[0].source_url || "#"} className="block">
+                <div className="relative w-full h-[500px] rounded-2xl overflow-hidden">
+                  {items[0].image_url && (
+                    canUseNextImage(items[0].image_url) ? (
+                      <Image
+                        src={items[0].image_url}
+                        alt={items[0].title}
+                        fill
+                        className="object-cover"
+                        sizes="100vw"
+                        priority
+                      />
+                    ) : (
+                      <img
+                        src={items[0].image_url}
+                        alt={items[0].title}
+                        className="w-full h-full object-cover"
+                      />
+                    )
+                  )}
+                  
+                  {/* Category Badge Only */}
+                  <div className="absolute top-4 left-4 z-10">
+                    {(() => {
+                      const topic = detectTopic(items[0]);
+                      const accent = AccentColors[topic];
+                      const badge = getCategoryBadge(topic);
+                      return (
+                        <div
+                          className="px-3 py-1.5 rounded-lg text-sm font-bold backdrop-blur-md shadow-lg"
+                          style={{
+                            backgroundColor: `${accent.primary}40`,
+                            color: accent.primary,
+                            border: `1.5px solid ${accent.primary}`,
+                          }}
+                        >
+                          {badge.label}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </Link>
+
+              {/* Content Below Image */}
+              <div className="space-y-3">
+                {/* Meta */}
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  {items[0].published_at && <time>{formatDate(items[0].published_at)}</time>}
+                  {items[0].duration && (
+                    <>
+                      <span>•</span>
+                      <span>
+                        {items[0].content_type === 'podcast' 
+                          ? `${Math.floor(parseInt(items[0].duration) / 60)}m` 
+                          : items[0].duration}
+                      </span>
+                    </>
+                  )}
+                  {items[0].episode_number && (
+                    <>
+                      <span>•</span>
+                      <span>Episode {items[0].episode_number}</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Title */}
+                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight font-netflix">
+                  {items[0].title}
+                </h2>
+
+                {/* Description */}
+                {items[0].description && (
+                  <p className="text-base text-white/80 leading-relaxed line-clamp-2">
+                    {items[0].description}
+                  </p>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  {/* Primary Action */}
+                  <Link
+                    href={items[0].source_url || "#"}
+                    className="flex-1 flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-lg hover:bg-white/90 transition-colors"
+                  >
+                    {items[0].content_type === 'podcast' ? (
+                      <>
+                        <Mic2 className="w-5 h-5" />
+                        <span>Listen</span>
+                      </>
+                    ) : items[0].content_type === 'video' ? (
+                      <>
+                        <Play className="w-5 h-5 fill-current" />
+                        <span>Watch</span>
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen className="w-5 h-5" />
+                        <span>Read Now</span>
+                      </>
+                    )}
+                  </Link>
+
+                  {/* Share Button */}
+                  <button
+                    onClick={() => {
+                      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}${items[0].source_url || ''}`;
+                      if (typeof navigator !== 'undefined' && navigator.share) {
+                        navigator.share({
+                          title: items[0].title,
+                          url: url
+                        }).catch(() => {});
+                      } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(url);
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 bg-white/20 text-white font-bold py-3.5 px-6 rounded-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
+                    aria-label="Share"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                    <span>Share</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Horizontal Scroll Cards */}
+            {items.length > 1 && (
+              <div className="relative -mx-4">
+                <div className="flex gap-4 px-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth pb-2">
+                  {items.slice(1).map((item, idx) => (
+                    <CarouselCard
+                      key={item.id || idx}
+                      item={item}
+                      position="card"
+                      index={idx + 1}
+                      episodeQueue={items}
+                      direction={0}
+                      isMobile={true}
+                    />
+                  ))}
+                </div>
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent pointer-events-none" />
+              </div>
+            )}
+          </div>
+        ) : (
+          /* DESKTOP: Keep existing */
+          <div className="flex gap-3 overflow-hidden group">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {visibleItems.map(({ item, position, key, index }) => (
+                <CarouselCard
+                  key={key}
+                  item={item}
+                  position={position as 'hero' | 'card'}
+                  index={index}
+                  episodeQueue={items}
+                  direction={direction}
+                  isMobile={isMobileLayout}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Indicators */}
         {items.length > 1 && (
