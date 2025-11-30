@@ -487,21 +487,23 @@ export default function ContentRowWithHero({
 
   return (
     <section className="mb-20">
-      {/* Row Header */}
-      <div className="flex items-center justify-between mb-6 px-4 md:px-0">
-        <h2 className="text-2xl md:text-3xl font-bold text-[var(--netflix-text)] font-netflix tracking-tight">
-          {title}
-        </h2>
-        {viewAllHref && (
-          <Link
-            href={viewAllHref}
-            className="flex items-center gap-1 text-[var(--netflix-muted)] hover:text-white transition-colors group"
-          >
-            <span className="text-sm font-medium">View All</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        )}
-      </div>
+      {/* Row Header - Desktop Only */}
+      {!isMobileLayout && (
+        <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+          <h2 className="text-2xl md:text-3xl font-bold text-[var(--netflix-text)] font-netflix tracking-tight">
+            {title}
+          </h2>
+          {viewAllHref && (
+            <Link
+              href={viewAllHref}
+              className="flex items-center gap-1 text-[var(--netflix-muted)] hover:text-white transition-colors group"
+            >
+              <span className="text-sm font-medium">View All</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Carousel Container */}
       <div className="relative">
@@ -665,21 +667,36 @@ export default function ContentRowWithHero({
 
             {/* Horizontal Scroll Cards */}
             {items.length > 1 && (
-              <div className="relative -mx-4">
-                <div className="flex gap-4 px-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth pb-2">
-                  {items.slice(1).map((item, idx) => (
-                    <CarouselCard
-                      key={item.id || idx}
-                      item={item}
-                      position="card"
-                      index={idx + 1}
-                      episodeQueue={items}
-                      direction={0}
-                      isMobile={true}
-                    />
-                  ))}
+              <div className="space-y-3">
+                {/* View All Link - Mobile */}
+                {viewAllHref && (
+                  <div className="flex justify-end px-4">
+                    <Link
+                      href={viewAllHref}
+                      className="flex items-center gap-1 text-white/70 hover:text-white transition-colors text-sm font-semibold"
+                    >
+                      <span>View All</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                )}
+                
+                <div className="relative -mx-4">
+                  <div className="flex gap-4 px-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth pb-2">
+                    {items.slice(1).map((item, idx) => (
+                      <CarouselCard
+                        key={item.id || idx}
+                        item={item}
+                        position="card"
+                        index={idx + 1}
+                        episodeQueue={items}
+                        direction={0}
+                        isMobile={true}
+                      />
+                    ))}
+                  </div>
+                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent pointer-events-none" />
                 </div>
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent pointer-events-none" />
               </div>
             )}
           </div>
