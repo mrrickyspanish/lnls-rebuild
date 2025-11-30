@@ -535,7 +535,7 @@ export default function ContentRowWithHero({
             <div className="space-y-3">
               {/* Hero Image - No Overlay */}
               <Link href={items[0].source_url || "#"} className="block">
-                <div className="relative w-full h-[500px] rounded-2xl overflow-hidden">
+                <div className="relative w-full h-[400px] rounded-2xl overflow-hidden">
                   {items[0].image_url && (
                     canUseNextImage(items[0].image_url) ? (
                       <Image
