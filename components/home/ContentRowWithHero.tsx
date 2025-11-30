@@ -530,7 +530,7 @@ export default function ContentRowWithHero({
         {/* Cards */}
         {isMobileLayout ? (
           /* MOBILE: Netflix-Style Hero */
-          <div className="px-4 space-y-6">
+          <div className="px-4 space-y-6 -mt-8">
             {/* Hero Card - Clean Image */}
             <div className="space-y-4">
               {/* Hero Image - No Overlay */}
@@ -581,7 +581,7 @@ export default function ContentRowWithHero({
               {/* Content Below Image */}
               <div className="space-y-3">
                 {/* Meta */}
-                <div className="flex items-center gap-2 text-sm text-white/70">
+                <div className="flex items-center gap-2 text-sm text-white/60">
                   {items[0].published_at && <time>{formatDate(items[0].published_at)}</time>}
                   {items[0].duration && (
                     <>
@@ -602,7 +602,7 @@ export default function ContentRowWithHero({
                 </div>
 
                 {/* Title */}
-                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight font-netflix">
+                <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight font-netflix">
                   {items[0].title}
                 </h2>
 
