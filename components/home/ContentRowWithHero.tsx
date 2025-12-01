@@ -52,9 +52,12 @@ type CarouselCardProps = {
 };
 
 function CarouselCard({ item, position, index, episodeQueue = [], direction, isMobile }: CarouselCardProps) {
-  const topic = detectTopic(item);
-  const accent = AccentColors[topic];
-  const badge = getCategoryBadge(topic);
+  // Use item's topic field directly if present, fallback to detectTopic for legacy/external content
+  const topicRaw = item.topic || detectTopic(item);
+  // Normalize topic to lowercase for AccentColors/getCategoryBadge
+  const topic = (typeof topicRaw === 'string' ? topicRaw.toLowerCase() : 'general') as keyof typeof AccentColors;
+  const accent = AccentColors[topic] || AccentColors['general'];
+  const badge = getCategoryBadge(topic as import("@/lib/theme/tokens").TopicType);
   const href = item.source_url || "#";
   const isPodcast = item.content_type === "podcast";
   const isVideo = item.content_type === "video";
