@@ -115,13 +115,17 @@ export default async function HomePage() {
 
     // Merge all content
     // Ensure supabaseItems also have topic if available (for uniformity)
-    const supabaseItemsWithTopic = (supabaseItems || []).map((item: any) => ({
+    const supabaseItemsWithTopic = (supabaseData || []).map((item: any) => ({
       ...item,
       topic: item.topic || undefined,
     }));
     const allContent = [...supabaseItemsWithTopic, ...podcastContent, ...allArticles, ...videoContent];
 
-    const ownedContent = filterOwnedContent(allContent);
+    // Ensure all ownedContent items have topic for badge logic
+    const ownedContent = filterOwnedContent(allContent).map(item => ({
+      ...item,
+      topic: item.topic || undefined,
+    }));
     const externalContent = filterExternalContent(allContent);
 
     // Trending Now - Owned Content Only
