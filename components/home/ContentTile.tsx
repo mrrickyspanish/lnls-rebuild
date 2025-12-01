@@ -61,7 +61,11 @@ export default function ContentTile({
   const [isHovered, setIsHovered] = useState(false);
   const { playEpisode, currentEpisode, isPlaying } = useAudioPlayer();
   
-  const topic = detectTopic({ title, content_type, source });
+  // Use topic prop if present, fallback to detectTopic for legacy/external content
+  const topicRaw = (typeof (arguments[0] as any)?.topic === 'string' && (arguments[0] as any).topic)
+    ? (arguments[0] as any).topic
+    : detectTopic({ title, content_type, source });
+  const topic = (typeof topicRaw === 'string' ? topicRaw.toLowerCase() : 'general') as keyof typeof AccentColors;
   // Override podcast color to purple (neon-purple)
   const accent = topic === 'podcast' 
     ? { primary: "#B857FF", secondary: "#191414" }
