@@ -46,6 +46,7 @@ export default async function HomePage() {
       source: "TDD",
       source_url: `/news/${article.slug}`,
       published_at: article.published_at || article.created_at,
+      topic: article.topic || undefined, // Ensure topic is included for correct badge
     });
 
     const toTimestamp = (value?: string | null) => {
