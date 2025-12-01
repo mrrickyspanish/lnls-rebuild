@@ -339,4 +339,6 @@ Copyright © 2024 Late Night Lake Show. All rights reserved.
 
 **Built by Lakers fans, for Lakers fans.** 💜💛
 
+<!-- Image update redeploy: 2025-12-01 -->
+
 <!-- Trigger redeploy: trivial update -->
