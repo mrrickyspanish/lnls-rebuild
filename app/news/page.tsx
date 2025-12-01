@@ -33,6 +33,13 @@ export const metadata = {
 export default async function NewsPage() {
   const articles = await getArticles();
 
+  // Helper for image rendering (matches ContentRowWithHero)
+  const canUseNextImage = (url: string) => {
+    if (!url) return false;
+    // Only allow next/image for remote images if domain is whitelisted, or for local images
+    return url.startsWith("/") || url.startsWith("https://images.unsplash.com") || url.startsWith("https://cdn.sanity.io");
+  };
+
   return (
     <section className="relative min-h-screen">
       {/* HERO — title top-left, cinematic but clean */}
@@ -66,13 +73,29 @@ export default async function NewsPage() {
                       <article className={`group relative overflow-hidden rounded-2xl bg-surface/95 backdrop-blur-sm border border-[var(--border-subtle)] transition-all hover:border-primary/60 hover:shadow-[var(--glow-orange)] ${isHero ? 'lg:row-span-2 lg:col-span-1' : ''}`}>
                         <div className={`relative ${isHero ? 'aspect-[3/4]' : 'aspect-[4/3]'} overflow-hidden`}>
                           {article.hero_image_url ? (
-                            <>
+                            canUseNextImage(article.hero_image_url) ? (
                               <Image
                                 src={article.hero_image_url}
                                 alt={article.title}
                                 fill
                                 className="object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                               />
+                            ) : (
+                              <img
+                                src={article.hero_image_url}
+                                alt={article.title}
+                                className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                                loading="lazy"
+                              />
+                            )
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                              <BookOpen className="w-16 h-16 text-white/10" />
+                            </div>
+                          )}
+                          {/* Gradient and overlay remain unchanged */}
+                          {article.hero_image_url && (
+                            <>
                               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition" />
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                                 <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -80,10 +103,6 @@ export default async function NewsPage() {
                                 </div>
                               </div>
                             </>
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                              <BookOpen className="w-16 h-16 text-white/10" />
-                            </div>
                           )}
                         </div>
                         <div className="p-6 space-y-3">

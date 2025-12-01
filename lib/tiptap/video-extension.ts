@@ -1,7 +1,19 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import type { CommandProps } from '@tiptap/react'
 
-export type SupportedVideoProvider = 'youtube' | 'vimeo'
+export type SupportedVideoProvider = 'youtube' | 'vimeo' | 'streamable'
+function parseStreamable(url: URL): VideoAttributes | null {
+  const host = url.hostname.replace('www.', '');
+  if (host !== 'streamable.com') return null;
+  // Streamable URLs: https://streamable.com/{id}
+  const videoId = url.pathname.split('/').filter(Boolean)[0];
+  if (!videoId) return null;
+  return {
+    src: `https://streamable.com/e/${videoId}`,
+    provider: 'streamable',
+    title: 'Streamable video',
+  };
+}
 
 export interface VideoAttributes {
   src: string
@@ -45,12 +57,12 @@ function parseVimeo(url: URL): VideoAttributes | null {
 }
 
 function getVideoAttributes(src: string): VideoAttributes | null {
-  if (!src) return null
+  if (!src) return null;
   try {
-    const url = new URL(src)
-    return parseYouTube(url) || parseVimeo(url)
+    const url = new URL(src);
+    return parseYouTube(url) || parseVimeo(url) || parseStreamable(url);
   } catch {
-    return null
+    return null;
   }
 }
 

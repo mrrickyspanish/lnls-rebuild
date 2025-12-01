@@ -1,3 +1,28 @@
+/* Netflix-style Hero + Peek Carousel */
+.carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-right: 16px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.hero-card {
+  flex: 0 0 85vw;
+  width: 85vw;
+  scroll-snap-align: start;
+  aspect-ratio: 16/9;
+}
+@media (min-width: 1024px) {
+  .hero-card {
+    flex: 0 0 70%;
+    width: 70%;
+  }
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

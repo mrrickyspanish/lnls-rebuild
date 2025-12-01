@@ -97,7 +97,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   const handleVideo = useCallback(() => {
     if (!editor) return
-    const src = promptForValue('Paste YouTube or Vimeo URL')
+    const src = promptForValue('Paste a video URL (YouTube, Vimeo, Streamable, etc.)')
     if (!src) return
     editor.chain().focus().setVideo({ src }).run()
   }, [editor, promptForValue])
