@@ -126,18 +126,24 @@ export default async function HomePage() {
 
     const HERO_ITEM_TARGET = 4;
 
-    // Hero Logic: 1 Latest Article + 1 Latest Podcast + Fill with Owned
-    let heroItems: ContentItem[] = [];
-    
-    if (latestArticle) heroItems.push(latestArticle);
-    if (latestPodcastEpisode) heroItems.push(latestPodcastEpisode);
 
-    const usedIds = new Set(heroItems.map(i => i.id));
-    
+    // Hero Logic: Always include latest article (any tag), latest YouTube video, and latest podcast episode
+    let heroItems: ContentItem[] = [];
+
+    // Find latest YouTube video
+    const latestYouTubeVideo = videoContent.length
+      ? [...videoContent].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
+      : null;
+
+    // Add each unique (by id) of the three types if available
+    const heroCandidates = [latestArticle, latestYouTubeVideo, latestPodcastEpisode].filter(Boolean) as ContentItem[];
+    const usedIds = new Set(heroCandidates.map(i => i.id));
+
+    // Fill with owned content (articles/videos) not already included, must have image
     const fillerItems = dedupeById(sortByDateDesc(ownedContent))
       .filter(item => !usedIds.has(item.id) && item.image_url);
 
-    heroItems = [...heroItems, ...fillerItems].slice(0, HERO_ITEM_TARGET);
+    heroItems = [...heroCandidates, ...fillerItems].slice(0, HERO_ITEM_TARGET);
 
     const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
     
