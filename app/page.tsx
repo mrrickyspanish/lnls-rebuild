@@ -104,9 +104,9 @@ export default async function HomePage() {
       duration: undefined, // RSS doesn't provide duration
     }));
 
+    // Ensure all articles have topic field for correct badge logic
     const nbaArticles = (nbaArticlesRaw || []).map(mapArticleToContentItem);
     const lakersArticles = (lakersArticlesRaw || []).map(mapArticleToContentItem);
-    
     const allArticles = [...lakersArticles, ...nbaArticles];
 
     const latestArticle = allArticles.length
@@ -114,13 +114,22 @@ export default async function HomePage() {
       : null;
 
     // Merge all content
-    const allContent = [...supabaseItems, ...podcastContent, ...allArticles, ...videoContent];
+    // Ensure supabaseItems also have topic if available (for uniformity)
+    const supabaseItemsWithTopic = (supabaseItems || []).map((item: any) => ({
+      ...item,
+      topic: item.topic || undefined,
+    }));
+    const allContent = [...supabaseItemsWithTopic, ...podcastContent, ...allArticles, ...videoContent];
 
     const ownedContent = filterOwnedContent(allContent);
     const externalContent = filterExternalContent(allContent);
 
     // Trending Now - Owned Content Only
-    const trendingNow = dedupeById(sortByDateDesc(ownedContent)).slice(0, 10);
+    // Trending Now - Owned Content Only, ensure topic is present
+    const trendingNow = dedupeById(sortByDateDesc(ownedContent)).map(item => ({
+      ...item,
+      topic: item.topic || undefined,
+    })).slice(0, 10);
 
     // Around the League - External Content Only
     const aroundLeagueItems = dedupeById(sortByDateDesc(externalContent)).slice(0, 10);
@@ -147,13 +156,15 @@ export default async function HomePage() {
     heroItems = [...heroCandidates, ...fillerItems].slice(0, HERO_ITEM_TARGET);
 
     const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
-    
     const purpleGoldItems = purpleGoldArticles.length > 0
       ? purpleGoldArticles.map(mapArticleToContentItem)
       : ownedContent.filter(item => 
           (item.title || '').toLowerCase().includes('laker') || 
           (item.source || '').toLowerCase().includes('laker')
-        ).slice(0, 10);
+        ).map(item => ({
+          ...item,
+          topic: item.topic || undefined,
+        })).slice(0, 10);
 
     // Debug logging
     console.log('🔍 Data Check:', {
