@@ -30,7 +30,7 @@ function formatDate(dateString: string): string {
 }
 
 function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
-  // Always use <img> for /uploads/ images
+  // Always use <img> for /uploads/ images for reliability
   if (src.startsWith('/uploads/')) {
     return (
       <img
@@ -38,29 +38,19 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
         alt={alt}
         className="absolute inset-0 h-full w-full object-cover"
         loading={priority ? 'eager' : 'lazy'}
+        style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
       />
     );
   }
-  // Otherwise, use Next.js <Image> if possible
-  const optimized = canUseNextImage(src);
-  if (optimized) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        priority={priority}
-        className="object-cover"
-      />
-    );
-  }
-  // Fallback to <img> for anything else
+  // Use Next.js <Image> for all other images
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
-      className="absolute inset-0 h-full w-full object-cover"
-      loading={priority ? 'eager' : 'lazy'}
+      fill
+      priority={priority}
+      className="object-cover"
+      style={{ borderRadius: '12px' }}
     />
   );
 }
