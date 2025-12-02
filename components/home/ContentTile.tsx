@@ -23,6 +23,7 @@ type ContentTileProps = {
   audio_url?: string;
   episodeQueue?: any[];
   size?: 'default' | 'small';
+  topic?: string;
 };
 
 function formatDate(dateString: string): string {
@@ -57,20 +58,21 @@ export default function ContentTile({
   audio_url,
   episodeQueue = [],
   size = 'default',
+  topic,
 }: ContentTileProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { playEpisode, currentEpisode, isPlaying } = useAudioPlayer();
   
   // Use topic prop if present, fallback to detectTopic for legacy/external content
-  const topicRaw = (typeof (arguments[0] as any)?.topic === 'string' && (arguments[0] as any).topic)
-    ? (arguments[0] as any).topic
+  const topicRaw = (typeof topic === 'string' && topic)
+    ? topic
     : detectTopic({ title, content_type, source });
-  const topic = (typeof topicRaw === 'string' ? topicRaw.toLowerCase() : 'general') as keyof typeof AccentColors;
+  const topicKey = (typeof topicRaw === 'string' ? topicRaw.toLowerCase() : 'general') as keyof typeof AccentColors;
   // Override podcast color to purple (neon-purple)
-  const accent = topic === 'podcast' 
+  const accent = topicKey === 'podcast' 
     ? { primary: "#B857FF", secondary: "#191414" }
-    : AccentColors[topic];
-  const badge = getCategoryBadge(topic);
+    : AccentColors[topicKey];
+  const badge = getCategoryBadge(topicKey);
   const href = source_url || "#";
   const isPodcast = content_type === "podcast";
   const isVideo = content_type === "video";
