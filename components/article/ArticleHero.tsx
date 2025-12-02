@@ -30,6 +30,18 @@ function formatDate(dateString: string): string {
 }
 
 function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
+  // Always use <img> for /uploads/ images
+  if (src.startsWith('/uploads/')) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className="absolute inset-0 h-full w-full object-cover"
+        loading={priority ? 'eager' : 'lazy'}
+      />
+    );
+  }
+  // Otherwise, use Next.js <Image> if possible
   const optimized = canUseNextImage(src);
   if (optimized) {
     return (
@@ -42,6 +54,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       />
     );
   }
+  // Fallback to <img> for anything else
   return (
     <img
       src={src}
