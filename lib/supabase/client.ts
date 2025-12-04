@@ -35,12 +35,16 @@ export async function subscribeToNewsletter(
   email: string,
   source: string = "site"
 ): Promise<{ data: unknown; error: PostgrestError | null }> {
+  console.log("subscribeToNewsletter called with", email, source);
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
-    .from("newsletter_subscribers")
+    .from("newsletter_subs")
     // @ts-expect-error - Supabase types inference issue
     .insert([{ email, source }]);
 
+  if (error) {
+    console.error("Supabase insert error:", error);
+  }
   return { data, error };
 }
 
