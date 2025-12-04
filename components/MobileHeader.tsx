@@ -39,7 +39,7 @@ export default function MobileHeader() {
           <div className="flex items-center gap-3">
             <Link
               href="/subscribe"
-              className="px-4 py-2 bg-[var(--netflix-red)] text-white text-sm font-bold rounded hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-[var(--netflix-red)] text-white text-sm font-bold rounded hover:shadow-[0_0_20px_rgba(229,9,20,0.6)] transition-all duration-300"
             >
               SUBSCRIBE
             </Link>

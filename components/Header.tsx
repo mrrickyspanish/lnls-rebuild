@@ -45,7 +45,7 @@ export default function Header() {
           </Link>
           <Link
             href="/subscribe"
-            className="px-6 py-2 bg-[var(--netflix-red)] text-white text-xs font-bold uppercase tracking-[0.35em] rounded-full hover:bg-red-700 transition-colors"
+            className="px-6 py-2 bg-[var(--netflix-red)] text-white text-xs font-bold uppercase tracking-[0.35em] rounded-full hover:shadow-[0_0_20px_rgba(229,9,20,0.6)] transition-all duration-300"
           >
             SUBSCRIBE
           </Link>
