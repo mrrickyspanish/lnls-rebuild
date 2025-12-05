@@ -41,19 +41,19 @@ export default function SubscribePage() {
         Subscribe
       </h1>
       <p className="text-xl text-white/80 mb-8">
-        Never miss a story, episode, or hot take.
+        Never miss a dribble... sports, tech, culture, all unfiltered and to the point.
       </p>
 
       {/* Newsletter Form */}
       <div className="bg-white/5 border border-white/10 rounded-lg p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Newsletter</h2>
         <p className="text-white/60 mb-6">
-          Weekly roundup of Lakers news and analysis.
+          Weekly drops on what's worth talking about... sports, culture, tech, curated and straight to the point.
         </p>
 
         {status === 'success' ? (
           <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400">
-            <p className="text-center font-semibold">{message}</p>
+            <p className="text-center font-semibold">You're in... check your email, we'll be in touch soon.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,9 +88,9 @@ export default function SubscribePage() {
 
       {/* Podcast Links */}
       <div className="bg-white/5 border border-white/10 rounded-lg p-8">
-        <h2 className="text-2xl font-bold mb-4">Podcast</h2>
+        <h2 className="text-2xl font-bold mb-4">Late Night Lake Show</h2>
         <p className="text-white/60 mb-6">
-          Listen on your favorite platform:
+          Lakers talk, uncut... listen wherever you get your podcasts:
         </p>
         <div className="grid grid-cols-2 gap-4">
           <a
