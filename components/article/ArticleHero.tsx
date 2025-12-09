@@ -38,7 +38,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
         alt={alt}
         className="absolute inset-0 h-full w-full object-cover"
         loading={priority ? 'eager' : 'lazy'}
-        style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+        style={{ borderRadius: '12px' }}
       />
     );
   }
