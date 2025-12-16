@@ -57,30 +57,6 @@ const [  error, setError] = useState('')
 
   const handleBodyChange = (content: JSONContent) => setBodyContent(content)
 
-  const addSlide = () => {
-    setSlideshow({
-      ...slideshow,
-      slides: [...slideshow.slides, {
-        image_url: '',
-        caption: '',
-        description: ''
-      }]
-    })
-  }
-
-  const removeSlide = (index: number) => {
-    setSlideshow({
-      ...slideshow,
-      slides: slideshow.slides.filter((_, i) => i !== index)
-    })
-  }
-
-  const updateSlide = (index: number, field: string, value: string) => {
-    const newSlides = [...slideshow.slides]
-    newSlides[index] = { ...newSlides[index], [field]: value }
-    setSlideshow({ ...slideshow, slides: newSlides })
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -95,8 +71,7 @@ const [  error, setError] = useState('')
 
       const payload = {
         ...formData,
-        body: bodyContent,
-        slideshow: slideshow.slides.length > 0 ? slideshow : null
+        body: bodyContent
       }
 
       const targetSlug = mode === 'create'
@@ -275,86 +250,7 @@ const [  error, setError] = useState('')
           </p>
         </div>
 
-        {/* Slideshow Section */}
-        <div className="space-y-4 border-t border-neutral-800 pt-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Photo Slideshow (Optional)</h3>
-            <button
-              type="button"
-              onClick={addSlide}
-              className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded transition-colors"
-            >
-              + Add Slide
-            </button>
-          </div>
 
-          {slideshow.slides.length > 0 && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">
-                  Slideshow Title
-                </label>
-                <input
-                  type="text"
-                  value={slideshow.title}
-                  onChange={(e) => setSlideshow({ ...slideshow, title: e.target.value })}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
-                  placeholder="e.g., Game Highlights, Top Plays, Behind the Scenes"
-                />
-              </div>
-
-              <div className="space-y-4">
-                {slideshow.slides.map((slide, index) => (
-                  <div key={index} className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-white">Slide {index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeSlide(index)}
-                        className="text-red-500 hover:text-red-400 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-neutral-400 mb-1">Image URL *</label>
-                      <input
-                        type="url"
-                        value={slide.image_url}
-                        onChange={(e) => updateSlide(index, 'image_url', e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-red-600"
-                        placeholder="https://..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-neutral-400 mb-1">Caption *</label>
-                      <input
-                        type="text"
-                        value={slide.caption}
-                        onChange={(e) => updateSlide(index, 'caption', e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-red-600"
-                        placeholder="Main caption for this slide"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-neutral-400 mb-1">Description (Optional)</label>
-                      <textarea
-                        value={slide.description}
-                        onChange={(e) => updateSlide(index, 'description', e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-red-600"
-                        placeholder="Additional details about this slide"
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
 
         <button
           type="submit"

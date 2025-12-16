@@ -10,23 +10,11 @@ import TextAlign from '@tiptap/extension-text-align';
 
 import { isArticleBodyBlocks, isTipTapDoc } from '@/lib/articles/body';
 import { VideoEmbed } from '@/lib/tiptap/video-extension';
-import ArticleSlideshow from './ArticleSlideshow';
 import type { ArticleBodyBlock, TipTapDocNode } from '@/types/supabase';
 
-type ArticleSlide = {
-  image_url: string;
-  caption: string;
-  description?: string;
-};
-
-type Slideshow = {
-  title: string;
-  slides: ArticleSlide[];
-};
-
+import type { ArticleBody } from '@/types/supabase';
 type ArticleBodyProps = {
-  content: any;
-  slideshow?: Slideshow;
+  content: ArticleBody;
 };
 
 function renderSupabaseBlock(block: ArticleBodyBlock, index: number) {
@@ -50,19 +38,14 @@ function renderSupabaseBlock(block: ArticleBodyBlock, index: number) {
   );
 }
 
-export default function ArticleBody({ content, slideshow }: ArticleBodyProps) {
+export default function ArticleBody({ content }: ArticleBodyProps) {
   if (!content) return null;
 
   if (isArticleBodyBlocks(content)) {
-    // Calculate midpoint for slideshow insertion (after ~40% of content)
-    const insertIndex = Math.floor(content.length * 0.4);
-    
     return (
       <article className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12 py-8">
-        <div className="max-w-3xl mx-auto">
-          {content.slice(0, insertIndex).map(renderSupabaseBlock)}
-          {slideshow && <ArticleSlideshow data={slideshow} />}
-          {content.slice(insertIndex).map((block, idx) => renderSupabaseBlock(block, insertIndex + idx))}
+        <div className="max-w-4xl mx-auto">
+          {content.map(renderSupabaseBlock)}
         </div>
       </article>
     );
@@ -70,17 +53,9 @@ export default function ArticleBody({ content, slideshow }: ArticleBodyProps) {
 
   if (isTipTapDoc(content)) {
     const html = generateTipTapHTML(content);
-    
-    // For TipTap content, we'll insert slideshow after the HTML
-    // A more sophisticated approach would parse and inject mid-content
     return (
       <article className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12 py-8">
-        <div className="prose prose-invert max-w-3xl mx-auto tiptap-article" dangerouslySetInnerHTML={{ __html: html }} />
-        {slideshow && (
-          <div className="max-w-3xl mx-auto">
-            <ArticleSlideshow data={slideshow} />
-          </div>
-        )}
+        <div className="prose prose-invert max-w-4xl mx-auto tiptap-article" dangerouslySetInnerHTML={{ __html: html }} />
       </article>
     );
   }
