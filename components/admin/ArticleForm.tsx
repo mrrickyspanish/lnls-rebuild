@@ -33,7 +33,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  error, setError] = useState('')
+const [  error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
   const [formData, setFormData] = useState({
