@@ -49,10 +49,7 @@ const [  error, setError] = useState('')
     videoUrl: initialData?.video_url || ''
   })
 
-  const [slideshow, setSlideshow] = useState({
-    title: initialData?.slideshow?.title || '',
-    slides: initialData?.slideshow?.slides || []
-  })
+
 
   const [bodyContent, setBodyContent] = useState<JSONContent>(
     toEditorContent(initialData?.body)
