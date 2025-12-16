@@ -2,6 +2,10 @@
 const nextConfig = {
   images: {
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'rqbrshlalcscpvdtmxvc.supabase.co',
+      },
           {
             protocol: 'https',
             hostname: 'www.reuters.com',
@@ -59,22 +63,7 @@ const nextConfig = {
         hostname: 'a1.espncdn.com',
       },
       {
-        protocol: 'https',
-        hostname: 'www.thesportingtribune.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.gmanews.tv',
-      },
-      {
-        protocol: 'https',
-        hostname: 'a2.espncdn.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'a3.espncdn.com',
-      },
-      {
+                // All allowed domains are now in remotePatterns (domains array removed)
         protocol: 'https',
         hostname: 'espncdn.com',
       },

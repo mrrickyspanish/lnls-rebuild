@@ -116,13 +116,7 @@ export default async function ArticlePage({ params }: PageProps) {
         <ArticleHero currentArticle={currentArticle} />
 
         {article.body && (
-          <ArticleBody 
-            content={article.body} 
-            slideshow={article.slideshow && article.slideshow.slides && article.slideshow.slides.length > 0 
-              ? article.slideshow 
-              : undefined
-            }
-          />
+          <ArticleBody content={article.body} />
         )}
 
         <AuthorCard

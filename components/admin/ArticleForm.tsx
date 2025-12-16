@@ -260,6 +260,7 @@ const [  error, setError] = useState('')
             onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
             className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
           >
+            <option value="FEATURED">FEATURED</option>
             <option value="Lakers">Lakers</option>
             <option value="NBA">NBA</option>
             <option value="Rumors">Rumors</option>

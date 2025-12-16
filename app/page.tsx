@@ -128,9 +128,16 @@ export default async function HomePage() {
     }));
     const externalContent = filterExternalContent(allContent);
 
-    // Trending Now - Owned Content Only
-    // Trending Now - Owned Content Only, ensure topic is present
-    const trendingNow = dedupeById(sortByDateDesc(ownedContent)).map(item => ({
+
+    // --- FEATURED HERO LOGIC ---
+    // Find all featured articles
+    const featuredArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.topic === 'FEATURED' && item.image_url);
+
+    // Trending Now - Owned Content Only, FEATURED always included at the top
+    const trendingNow = [
+      ...featuredArticles,
+      ...dedupeById(sortByDateDesc(ownedContent)).filter(item => item.topic !== 'FEATURED')
+    ].map(item => ({
       ...item,
       topic: item.topic || undefined,
     })).slice(0, 10);
@@ -141,7 +148,8 @@ export default async function HomePage() {
     const HERO_ITEM_TARGET = 4;
 
 
-    // Hero Logic: Always include latest article (any tag), latest YouTube video, and latest podcast episode
+
+    // Hero Logic: FEATURED always first if exists
     let heroItems: ContentItem[] = [];
 
     // Find latest YouTube video
@@ -150,7 +158,12 @@ export default async function HomePage() {
       : null;
 
     // Add each unique (by id) of the three types if available
-    const heroCandidates = [latestArticle, latestYouTubeVideo, latestPodcastEpisode].filter(Boolean) as ContentItem[];
+    const heroCandidates = [
+      ...featuredArticles.slice(0, 1), // Always put the first FEATURED article first if exists
+      latestArticle && (!featuredArticles.length || latestArticle.id !== featuredArticles[0]?.id) ? latestArticle : null,
+      latestYouTubeVideo,
+      latestPodcastEpisode
+    ].filter(Boolean) as ContentItem[];
     const usedIds = new Set(heroCandidates.map(i => i.id));
 
     // Fill with owned content (articles/videos) not already included, must have image
