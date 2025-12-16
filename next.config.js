@@ -2,6 +2,18 @@
 const nextConfig = {
   images: {
     remotePatterns: [
+          {
+            protocol: 'https',
+            hostname: 'www.reuters.com',
+          },
+          {
+            protocol: 'https',
+            hostname: 'preview.redd.it',
+          },
+          {
+            protocol: 'https',
+            hostname: 'fadeawayworld.net',
+          },
       {
         protocol: 'https',
         hostname: 'i.ytimg.com',
@@ -110,6 +122,8 @@ const nextConfig = {
     ],
     // Add legacy domains configuration as fallback
     domains: [
+      'www.reuters.com',
+      'preview.redd.it',
       'i.ytimg.com', 
       'img.youtube.com',
       'images.spreaker.com',
@@ -120,6 +134,7 @@ const nextConfig = {
       'a2.espncdn.com',
       'a3.espncdn.com',
       'espncdn.com',
+      'fadeawayworld.net',
     ],
   },
   experimental: {
