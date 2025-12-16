@@ -28,14 +28,8 @@ const TRUSTED_IMAGE_HOSTS = new Set([
 ]);
 
 export function canUseNextImage(src?: string | null) {
-  if (!src) return false;
-  if (src.startsWith('/')) return true;
-  try {
-    const url = new URL(src);
-    return TRUSTED_IMAGE_HOSTS.has(url.hostname);
-  } catch {
-    return false;
-  }
+  // Allow all images, no domain restrictions
+  return !!src;
 }
 
 export function isLocalImage(src?: string | null) {

@@ -12,6 +12,19 @@ import ReadProgress from "@/components/article/ReadProgress";
 import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
+type ArticleSlide = {
+  image_url: string;
+  caption: string;
+  description?: string;
+};
+
+type ArticleWithSlideshow = Article & {
+  slideshow?: {
+    title: string;
+    slides: ArticleSlide[];
+  } | null;
+};
+
 export const revalidate = 60;
 
 type RouteParams = { slug: string };
@@ -19,7 +32,7 @@ type PageProps = { params: Promise<RouteParams> };
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1200&h=675&fit=crop";
 
-function buildHeroArticle(article: Article, slug: string) {
+function buildHeroArticle(article: ArticleWithSlideshow, slug: string) {
   return {
     slug,
     title: article.title,
@@ -102,7 +115,15 @@ export default async function ArticlePage({ params }: PageProps) {
         </nav>
         <ArticleHero currentArticle={currentArticle} />
 
-        {article.body && <ArticleBody content={article.body} />}
+        {article.body && (
+          <ArticleBody 
+            content={article.body} 
+            slideshow={article.slideshow && article.slideshow.slides && article.slideshow.slides.length > 0 
+              ? article.slideshow 
+              : undefined
+            }
+          />
+        )}
 
         <AuthorCard
           author={{

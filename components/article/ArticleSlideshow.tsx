@@ -41,6 +41,18 @@ export default function ArticleSlideshow({ data }: { data: SlideshowData }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Trigger Card - Shows in article */}
@@ -81,6 +93,7 @@ export default function ArticleSlideshow({ data }: { data: SlideshowData }) {
           <button
             onClick={() => setIsOpen(false)}
             className="absolute top-6 right-6 z-50 text-white/80 hover:text-white transition-colors"
+            aria-label="Close slideshow"
           >
             <X className="w-8 h-8" />
           </button>
@@ -94,6 +107,7 @@ export default function ArticleSlideshow({ data }: { data: SlideshowData }) {
           <button
             onClick={prevSlide}
             className="absolute left-6 top-1/2 -translate-y-1/2 z-50 text-white/80 hover:text-white transition-colors"
+            aria-label="Previous slide"
           >
             <ChevronLeft className="w-12 h-12" />
           </button>
@@ -101,6 +115,7 @@ export default function ArticleSlideshow({ data }: { data: SlideshowData }) {
           <button
             onClick={nextSlide}
             className="absolute right-6 top-1/2 -translate-y-1/2 z-50 text-white/80 hover:text-white transition-colors"
+            aria-label="Next slide"
           >
             <ChevronRight className="w-12 h-12" />
           </button>
@@ -127,6 +142,27 @@ export default function ArticleSlideshow({ data }: { data: SlideshowData }) {
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Thumbnail Strip */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-2 max-w-screen-lg overflow-x-auto px-6">
+            {data.slides.map((slide, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`flex-shrink-0 w-20 h-20 rounded overflow-hidden border-2 transition-all ${
+                  index === currentSlide
+                    ? 'border-[#FF6B35] opacity-100'
+                    : 'border-white/30 opacity-60 hover:opacity-80'
+                }`}
+              >
+                <img
+                  src={slide.image_url}
+                  alt={`Slide ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
           </div>
         </div>
       )}
