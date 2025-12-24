@@ -108,6 +108,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'd1234567890123.cloudfront.net',
       },
+      // Added for basketballforever.com images
+      {
+        protocol: 'https',
+        hostname: 'www.basketballforever.com',
+      },
     ],
     // Add legacy domains configuration as fallback
     domains: [
@@ -124,6 +129,7 @@ const nextConfig = {
       'a3.espncdn.com',
       'espncdn.com',
       'fadeawayworld.net',
+      'www.basketballforever.com',
     ],
   },
   experimental: {

@@ -25,6 +25,7 @@ const TRUSTED_IMAGE_HOSTS = new Set([
   'images.spreaker.com',
   'd3wo5wojvuv7l.cloudfront.net',
   'd1234567890123.cloudfront.net',
+  'www.basketballforever.com',
 ]);
 
 export function canUseNextImage(src?: string | null) {
