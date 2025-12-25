@@ -77,7 +77,10 @@ const navLinks = [
           {/* Centered Logo */}
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 select-none">
             <span className="text-4xl md:text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
-            <span className="flex gap-[2px] ml-1 md:ml-1.5" style={{ position: 'relative', top: '1.1em' }}>
+            <span
+              className="flex gap-[2px] ml-1 md:ml-1.5"
+              style={{ position: 'relative', top: '0.38em' }}
+            >
               <motion.span
                 className="w-2 h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 4px var(--neon-orange, #FD6B0B)' }}
