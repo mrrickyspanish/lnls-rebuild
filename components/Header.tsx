@@ -48,22 +48,22 @@ const navLinks = [
           </div>
         </div>
         {/* Main Branding Row */}
-        <div className="w-full flex items-center justify-between px-6 h-[90px] bg-white relative">
-          {/* Upgraded Hamburger (left) */}
-          <button className="flex items-center justify-center w-10 h-10 rounded transition absolute left-6 top-1/2 -translate-y-1/2 group focus:outline-none" aria-label="Open menu">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect y="7" width="32" height="5.5" rx="2.75" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
-              <rect y="14" width="32" height="5.5" rx="2.75" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
-              <rect y="21" width="32" height="5.5" rx="2.75" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
+        <div className="w-full flex items-center justify-between px-3 md:px-6 h-[60px] md:h-[90px] bg-white relative">
+          {/* Hamburger (left) */}
+          <button className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded transition absolute left-3 md:left-6 top-1/2 -translate-y-1/2 group focus:outline-none" aria-label="Open menu">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect y="7" width="24" height="4" rx="2" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
+              <rect y="14" width="24" height="4" rx="2" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
+              <rect y="21" width="24" height="4" rx="2" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
             </svg>
           </button>
           {/* Topic Pills (left of center) */}
-          <div className="flex-1 flex items-center gap-3 ml-20">
+          <div className="flex-1 flex items-center gap-2 md:gap-3 ml-12 md:ml-20">
             {topicPills.slice(0, 2).map((pill) => (
               <span
                 key={pill.label}
                 className={clsx(
-                  'hidden md:inline-block rounded-full px-4 py-1 text-sm font-semibold transition-all',
+                  'hidden md:inline-block rounded-full px-3 md:px-4 py-0.5 md:py-1 text-xs md:text-sm font-semibold transition-all',
                   pill.active
                     ? 'bg-[var(--neon-orange,#FD6B0B)] text-white shadow-md scale-105'
                     : 'bg-neutral-200 text-neutral-700 hover:bg-[var(--neon-orange,#FD6B0B)] hover:text-white hover:shadow'
@@ -75,23 +75,23 @@ const navLinks = [
             ))}
           </div>
           {/* Centered Logo */}
-          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 select-none">
-            <span className="text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
+          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 md:gap-2 select-none">
+            <span className="text-2xl md:text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
             <span className="flex gap-[2px] ml-1" style={{ position: 'relative', top: '1.1em' }}>
               <motion.span
-                className="w-2 h-2 rounded-full inline-block"
+                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 4px var(--neon-orange, #FD6B0B)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0 }}
               />
               <motion.span
-                className="w-2 h-2 rounded-full inline-block"
+                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 4px var(--neon-blue, #00e6fe)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.18 }}
               />
               <motion.span
-                className="w-2 h-2 rounded-full inline-block"
+                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 4px var(--neon-purple, #a259f7)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.36 }}
@@ -99,12 +99,12 @@ const navLinks = [
             </span>
           </Link>
           {/* Topic Pills (right of center) */}
-          <div className="flex-1 flex items-center justify-end gap-3 mr-20">
+          <div className="flex-1 flex items-center justify-end gap-2 md:gap-3 mr-12 md:mr-20">
             {topicPills.slice(2).map((pill) => (
               <span
                 key={pill.label}
                 className={clsx(
-                  'hidden md:inline-block rounded-full px-4 py-1 text-sm font-semibold transition-all',
+                  'hidden md:inline-block rounded-full px-3 md:px-4 py-0.5 md:py-1 text-xs md:text-sm font-semibold transition-all',
                   pill.active
                     ? 'bg-[var(--neon-orange,#FD6B0B)] text-white shadow-md scale-105'
                     : 'bg-neutral-200 text-neutral-700 hover:bg-[var(--neon-orange,#FD6B0B)] hover:text-white hover:shadow'
@@ -116,8 +116,8 @@ const navLinks = [
             ))}
           </div>
           {/* Bolder Search (right) */}
-          <Link href="/search" className="flex items-center justify-center w-10 h-10 rounded-full border border-neutral-200 hover:border-[var(--neon-orange,#FD6B0B)] hover:bg-neutral-100 transition absolute right-6 top-1/2 -translate-y-1/2 group" aria-label="Search">
-            <svg width="24" height="24" fill="none" stroke="#111" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <Link href="/search" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-neutral-200 hover:border-[var(--neon-orange,#FD6B0B)] hover:bg-neutral-100 transition absolute right-3 md:right-6 top-1/2 -translate-y-1/2 group" aria-label="Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" className="transition-all" strokeWidth="3.2" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
               <circle cx="11" cy="11" r="8" fill="transparent" className="group-hover:fill-[var(--neon-orange,#FD6B0B)] transition-all" />
