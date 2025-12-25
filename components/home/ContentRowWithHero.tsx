@@ -94,8 +94,8 @@ function CarouselCard({
     }
   };
 
-  const heroWidth = isMobile ? "90vw" : "min(90vw, 1100px)";
-  const heroHeightClass = isMobile ? "h-[525px]" : "h-[550px]";
+  const heroWidth = isMobile ? "95vw" : "min(90vw, 1100px)";
+  const heroHeightClass = isMobile ? "h-[320px]" : "h-[550px]";
 
   const cardContent = (
     <motion.div
@@ -106,155 +106,257 @@ function CarouselCard({
       className="group cursor-pointer h-full"
     >
       <div className="p-1">
-        <div
-          className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80`}
-        >
-          <div className="absolute inset-0 rounded-lg overflow-hidden">
-            {item.image_url ? (
-              useOptimizedImage ? (
-                <Image
-                  src={item.image_url}
-                  alt={item.title}
-                  fill
-                  className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                  priority
-                />
-              ) : (
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
-                />
-              )
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                <span className="text-white/10 text-9xl">{badge.icon}</span>
-              </div>
-            )}
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-          </div>
-
-          {/* Category badge */}
-          <div className="absolute top-4 left-4">
-            <motion.div
-              animate={{ opacity: isHovered ? 0 : 1 }}
-              className="px-3 py-1.5 rounded-lg text-sm font-bold backdrop-blur-md shadow-lg"
-              style={{
-                backgroundColor: `${accent.primary}40`,
-                color: accent.primary,
-                border: `1.5px solid ${accent.primary}`,
-              }}
-            >
-              {badge.label}
-            </motion.div>
-          </div>
-
-          {/* Play button */}
-          <AnimatePresence>
-            {(isHovered || isCurrentlyPlaying) && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <div
-                  className={`rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 w-16 h-16 ${
-                    isCurrentlyPlaying
-                      ? "bg-[var(--netflix-red)] ring-[var(--netflix-red)]/50 animate-pulse"
-                      : "bg-white/95 ring-white/50"
-                  }`}
-                >
-                  {isPodcast ? (
-                    <Mic2
-                      className={`w-8 h-8 ${
-                        isCurrentlyPlaying ? "text-white" : "text-black"
-                      }`}
-                    />
-                  ) : isVideo ? (
-                    <Play
-                      className={`fill-current ml-1 w-8 h-8 ${
-                        isCurrentlyPlaying ? "text-white" : "text-black"
-                      }`}
+        {isMobile ? (
+          <div className="mt-16">
+            <div className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80 overflow-hidden`}>
+              {/* Image only in card for mobile, with category tag overlay */}
+              <div className="relative w-full h-full min-h-[120px]">
+                {item.image_url ? (
+                  useOptimizedImage ? (
+                    <Image
+                      src={item.image_url}
+                      alt={item.title}
+                      fill
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg"
+                      priority
                     />
                   ) : (
-                    <BookOpen
-                      className={`w-8 h-8 ${
-                        isCurrentlyPlaying ? "text-white" : "text-black"
-                      }`}
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg"
+                      loading="lazy"
                     />
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Duration badge */}
-          {item.duration && !isCurrentlyPlaying && (
-            <div className="absolute top-4 right-4 bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded text-sm font-bold text-white shadow-lg">
-              {isPodcast
-                ? `${Math.floor(parseInt(item.duration) / 60)}m`
-                : item.duration}
-            </div>
-          )}
-
-          {/* Now playing badge */}
-          {isCurrentlyPlaying && (
-            <div className="absolute top-4 right-4 flex items-center gap-1 bg-[var(--netflix-red)] px-3 py-1.5 rounded-full">
-              <div className="flex gap-0.5">
-                <div
-                  className="w-0.5 h-3 bg-white animate-pulse"
-                  style={{ animationDelay: "0ms" }}
-                />
-                <div
-                  className="w-0.5 h-3 bg-white animate-pulse"
-                  style={{ animationDelay: "150ms" }}
-                />
-                <div
-                  className="w-0.5 h-3 bg-white animate-pulse"
-                  style={{ animationDelay: "300ms" }}
-                />
+                  )
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center rounded-lg">
+                    <span className="text-white/10 text-7xl">{badge.icon}</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent rounded-lg" />
+                {/* Category badge overlayed in image */}
+                <motion.div
+                  animate={{ opacity: isHovered ? 0 : 1 }}
+                  className="absolute top-3 left-3 px-2 py-1 rounded-lg text-xs font-bold backdrop-blur-md shadow-lg"
+                  style={{
+                    backgroundColor: `${accent.primary}40`,
+                    color: accent.primary,
+                    border: `1.5px solid ${accent.primary}`,
+                  }}
+                >
+                  {badge.label}
+                </motion.div>
               </div>
-              <span className="text-xs font-bold text-white">Playing</span>
             </div>
-          )}
-
-          {/* Metadata */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
-            <div className="flex items-center gap-2 text-xs text-white/80">
-              {item.episode_number && (
-                <span className="font-semibold text-white">
-                  Episode {item.episode_number}
-                </span>
+            {/* Content below card */}
+            <div className="w-full flex flex-col justify-center items-center px-4 py-3">
+              <h3 className="font-extrabold text-white leading-tight font-netflix line-clamp-2 text-2xl mb-2 tracking-tight text-center drop-shadow-lg">
+                {item.title}
+              </h3>
+              <div className="flex items-center gap-2 text-xs text-white/80 mb-1 justify-center">
+                {item.episode_number && (
+                  <span className="font-semibold text-white">Ep {item.episode_number}</span>
+                )}
+                {item.duration && item.episode_number && <span>•</span>}
+                {item.duration && (
+                  <span>{isPodcast ? `${Math.floor(parseInt(item.duration) / 60)}m` : item.duration}</span>
+                )}
+                {/* Show author instead of date */}
+                {item.author && <span>•</span>}
+                {item.author && (
+                  <span className="font-semibold text-white">{item.author}</span>
+                )}
+              </div>
+              {item.description && (
+                <p className="text-xs text-white/90 line-clamp-2 leading-relaxed mb-2 text-center">
+                  {item.description.split('. ')[0] + (item.description.includes('.') ? '.' : '')}
+                </p>
               )}
-              {item.duration && item.episode_number && <span>•</span>}
-              {item.duration && (
-                <span>
-                  {isPodcast
-                    ? `${Math.floor(parseInt(item.duration) / 60)}m`
-                    : item.duration}
-                </span>
-              )}
-              {item.published_at && <span>•</span>}
-              {item.published_at && (
-                <span>{formatDate(item.published_at)}</span>
-              )}
+              {/* Play button and duration badge */}
+              <div className="flex gap-2 items-center justify-center">
+                <AnimatePresence>
+                  {(isHovered || isCurrentlyPlaying) && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 w-10 h-10"
+                      style={{
+                        background: isCurrentlyPlaying ? 'var(--netflix-red)' : 'white',
+                        color: isCurrentlyPlaying ? 'white' : 'black',
+                      }}
+                    >
+                      {isPodcast ? (
+                        <Mic2 className="w-5 h-5" />
+                      ) : isVideo ? (
+                        <Play className="fill-current ml-1 w-5 h-5" />
+                      ) : (
+                        <BookOpen className="w-5 h-5" />
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {item.duration && !isCurrentlyPlaying && (
+                  <div className="bg-black/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white shadow-lg">
+                    {isPodcast ? `${Math.floor(parseInt(item.duration) / 60)}m` : item.duration}
+                  </div>
+                )}
+                {isCurrentlyPlaying && (
+                  <div className="flex items-center gap-1 bg-[var(--netflix-red)] px-2 py-1 rounded-full">
+                    <div className="flex gap-0.5">
+                      <div className="w-0.5 h-3 bg-white animate-pulse" style={{ animationDelay: '0ms' }} />
+                      <div className="w-0.5 h-3 bg-white animate-pulse" style={{ animationDelay: '150ms' }} />
+                      <div className="w-0.5 h-3 bg-white animate-pulse" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-xs font-bold text-white">Playing</span>
+                  </div>
+                )}
+              </div>
             </div>
-
-            <h3 className="font-bold text-white leading-tight font-netflix line-clamp-2 text-xl md:text-2xl">
-              {item.title}
-            </h3>
-
-            {item.description && (
-              <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">
-                {item.description}
-              </p>
-            )}
           </div>
-        </div>
+        ) : (
+          // ...existing code for desktop card layout...
+          <div className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80`}>
+            <div className="absolute inset-0 rounded-lg overflow-hidden">
+              {item.image_url ? (
+                useOptimizedImage ? (
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    fill
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    priority
+                  />
+                ) : (
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                )
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                  <span className="text-white/10 text-9xl">{badge.icon}</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+            </div>
+            {/* Category badge */}
+            <div className="absolute top-4 left-4">
+              <motion.div
+                animate={{ opacity: isHovered ? 0 : 1 }}
+                className="px-3 py-1.5 rounded-lg text-sm font-bold backdrop-blur-md shadow-lg"
+                style={{
+                  backgroundColor: `${accent.primary}40`,
+                  color: accent.primary,
+                  border: `1.5px solid ${accent.primary}`,
+                }}
+              >
+                {badge.label}
+              </motion.div>
+            </div>
+            {/* Play button */}
+            <AnimatePresence>
+              {(isHovered || isCurrentlyPlaying) && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <div
+                    className={`rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 w-16 h-16 ${
+                      isCurrentlyPlaying
+                        ? "bg-[var(--netflix-red)] ring-[var(--netflix-red)]/50 animate-pulse"
+                        : "bg-white/95 ring-white/50"
+                    }`}
+                  >
+                    {isPodcast ? (
+                      <Mic2
+                        className={`w-8 h-8 ${
+                          isCurrentlyPlaying ? "text-white" : "text-black"
+                        }`}
+                      />
+                    ) : isVideo ? (
+                      <Play
+                        className={`fill-current ml-1 w-8 h-8 ${
+                          isCurrentlyPlaying ? "text-white" : "text-black"
+                        }`}
+                      />
+                    ) : (
+                      <BookOpen
+                        className={`w-8 h-8 ${
+                          isCurrentlyPlaying ? "text-white" : "text-black"
+                        }`}
+                      />
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {/* Duration badge */}
+            {item.duration && !isCurrentlyPlaying && (
+              <div className="absolute top-4 right-4 bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded text-sm font-bold text-white shadow-lg">
+                {isPodcast
+                  ? `${Math.floor(parseInt(item.duration) / 60)}m`
+                  : item.duration}
+              </div>
+            )}
+            {/* Now playing badge */}
+            {isCurrentlyPlaying && (
+              <div className="absolute top-4 right-4 flex items-center gap-1 bg-[var(--netflix-red)] px-3 py-1.5 rounded-full">
+                <div className="flex gap-0.5">
+                  <div
+                    className="w-0.5 h-3 bg-white animate-pulse"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <div
+                    className="w-0.5 h-3 bg-white animate-pulse"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <div
+                    className="w-0.5 h-3 bg-white animate-pulse"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+                <span className="text-xs font-bold text-white">Playing</span>
+              </div>
+            )}
+            {/* Metadata */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-white/80">
+                {item.episode_number && (
+                  <span className="font-semibold text-white">
+                    Episode {item.episode_number}
+                  </span>
+                )}
+                {item.duration && item.episode_number && <span>•</span>}
+                {item.duration && (
+                  <span>
+                    {isPodcast
+                      ? `${Math.floor(parseInt(item.duration) / 60)}m`
+                      : item.duration}
+                  </span>
+                )}
+                {item.published_at && <span>•</span>}
+                {item.published_at && (
+                  <span>{formatDate(item.published_at)}</span>
+                )}
+              </div>
+              <h3 className="font-bold text-white leading-tight font-netflix line-clamp-2 text-xl md:text-2xl">
+                {item.title}
+              </h3>
+              {item.description && (
+                <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">
+                  {item.description}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

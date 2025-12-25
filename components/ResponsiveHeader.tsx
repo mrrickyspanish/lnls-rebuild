@@ -7,6 +7,6 @@ const Header = dynamic(() => import("@/components/Header"), { ssr: false });
 const MobileHeader = dynamic(() => import("@/components/MobileHeader"), { ssr: false });
 
 export default function ResponsiveHeader() {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileHeader /> : <Header />;
+  // Use the same Header for all views, proportioned responsively
+  return <Header />;
 }
