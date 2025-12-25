@@ -23,19 +23,28 @@ const navLinks = [
     return (
       <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-neutral-200 shadow-sm">
         {/* Top Network Bar with trending hashtags */}
-        <div className="w-full h-[42px] flex items-center justify-between px-6 bg-neutral-100 text-xs uppercase tracking-wide text-neutral-700 border-b border-neutral-200">
-          <div className="flex items-center gap-3">
-            <a href="https://twitter.com/hashtag/NBAChristmas" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors">#NBAChristmas</a>
-            <span className="mx-1 text-neutral-300">|</span>
-            <a href="https://twitter.com/hashtag/CFBPlayoff" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors">#CFBPlayoff</a>
-          </div>
-          <div className="flex items-center justify-center">
-            <Image src="/uploads/articles/creative-eye-studios_footer.png" alt="Creative Eye Studios" width={130} height={26} className="object-contain h-[26px] w-auto" />
-          </div>
-          <div className="flex items-center gap-3">
-            <a href="https://twitter.com/hashtag/AI" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors">#AI</a>
-            <span className="mx-1 text-neutral-300">|</span>
-            <a href="https://twitter.com/hashtag/HolidayMovies" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors">#HolidayMovies</a>
+        <div className="w-full h-[42px] flex items-center justify-center px-6 bg-neutral-100 text-xs uppercase tracking-wide text-neutral-700 border-b border-neutral-200">
+          {/* Top bar: subscribe left, centered logo, hashtags right */}
+          <div className="flex w-full items-center justify-center">
+            {/* Subscribe link left */}
+            <div className="flex items-center flex-1 justify-start">
+              <a href="/subscribe" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors font-semibold relative" style={{paddingBottom: '2px'}}>
+                Subscribe
+                <span className="block w-full h-[2px] bg-[var(--neon-orange,#FD6B0B)] absolute left-0 -bottom-0.5 rounded" />
+              </a>
+              <span className="mx-1 text-neutral-300 hidden md:inline">|</span>
+              <a href="https://twitter.com/hashtag/CFBPlayoff" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors hidden md:inline">#CFBPlayoff</a>
+            </div>
+            {/* Centered logo */}
+            <div className="flex items-center justify-center flex-1">
+              <Image src="/uploads/articles/creative-eye-studios_footer.png" alt="Creative Eye Studios" width={130} height={26} className="object-contain h-[26px] w-auto mx-auto" />
+            </div>
+            {/* Hashtags right */}
+            <div className="flex items-center flex-1 justify-end">
+              <a href="https://twitter.com/hashtag/AI" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors block md:inline">#AI</a>
+              <span className="mx-1 text-neutral-300 hidden md:inline">|</span>
+              <a href="https://twitter.com/hashtag/HolidayMovies" target="_blank" rel="noopener" className="hover:text-[var(--neon-orange,#FD6B0B)] transition-colors hidden md:inline">#HolidayMovies</a>
+            </div>
           </div>
         </div>
         {/* Main Branding Row */}
