@@ -1,4 +1,5 @@
 import ContentRowWithHero from "@/components/home/ContentRowWithHero";
+import HeroCarousel from "@/components/home/HeroCarousel";
 import ContentRow from "@/components/home/ContentRow";
 import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
@@ -194,17 +195,17 @@ export default async function HomePage() {
 
     return (
       <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[68px]">
+        {/* Hero section: no horizontal padding or max-width */}
+        {heroItems.length > 0 && (
+          <ContentRowWithHero
+            title="Only on TDD"
+            items={heroItems}
+            viewAllHref="/podcast"
+          />
+        )}
+        {/* Main content container with padding and max-width */}
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12">
           <QueueSetter episodes={podcastContent} />
-          
-          {heroItems.length > 0 && (
-            <ContentRowWithHero
-              title="Only on TDD"
-              items={heroItems}
-              viewAllHref="/podcast"
-            />
-          )}
-
           {/* What's Happening Now - Last 24h */}
           {trendingNow.length > 0 && (
             <ContentRow
@@ -213,7 +214,6 @@ export default async function HomePage() {
               viewAllHref="/news?filter=trending"
             />
           )}
-
           {/* Purple & Gold - Lakers Universe */}
           {purpleGoldItems.length > 0 && (
             <ContentRow
@@ -222,7 +222,6 @@ export default async function HomePage() {
               viewAllHref="/news?topic=lakers"
             />
           )}
-
           {/* Around the League - NBA Wide */}
           {aroundLeagueItems.length > 0 && (
             <ContentRow
@@ -233,7 +232,6 @@ export default async function HomePage() {
               cardSize="small"
             />
           )}
-
           {/* Latest Videos */}
           {videoContent.length > 0 ? (
             <ContentRow
@@ -248,13 +246,11 @@ export default async function HomePage() {
               description="Exclusive video content from our YouTube channel"
             />
           )}
-
           {/* Coming Soon Rows */}
           <ComingSoonRow 
             title="Tech & Innovation"
             description="The latest in technology, AI, and innovation"
           />
-
           <ComingSoonRow 
             title="The Culture"
             description="Entertainment, music, and lifestyle beyond basketball"

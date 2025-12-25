@@ -1,7 +1,6 @@
 import './globals.css'
 import { Inter, Space_Grotesk } from 'next/font/google'
-import Header from '@/components/Header'
-import MobileHeader from '@/components/MobileHeader'
+import ResponsiveHeader from '@/components/ResponsiveHeader'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
@@ -15,6 +14,8 @@ export const metadata = {
   description: 'Court. Code. Culture.',
 }
 
+
+
 export default function RootLayout({
   children,
 }: {
@@ -24,12 +25,12 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <head>
         <meta name="view-transition" content="same-origin" />
+        <link rel="icon" type="image/png" href="/uploads/articles/dribbles_favicon_1.png" />
       </head>
       <body className={`${inter.variable} ${space.variable} font-sans min-h-screen flex flex-col`}>
         <SplashScreen />
         <AudioPlayerProvider>
-          <Header />
-          <MobileHeader />
+          <ResponsiveHeader />
           <main className="flex-1">
             {children}
           </main>

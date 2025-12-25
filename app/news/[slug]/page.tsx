@@ -102,9 +102,9 @@ export default async function ArticlePage({ params }: PageProps) {
     <>
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} />
-
-      <article>
-        <nav className="article-breadcrumbs" aria-label="Breadcrumb">
+      <article className="px-4 md:px-8 lg:px-24 xl:px-48">
+        {/* Breadcrumbs */}
+        <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
           <span className="article-breadcrumbs__separator">/</span>
           <Link href="/news">News</Link>
@@ -113,20 +113,22 @@ export default async function ArticlePage({ params }: PageProps) {
             {article.title}
           </span>
         </nav>
+        {/* Title */}
+        <h1 className="text-3xl md:text-5xl font-bold mb-2 mt-2 leading-tight">{article.title}</h1>
+        {/* Author, Date, Read Time */}
+        <div className="mb-4 text-base text-gray-600 flex flex-wrap gap-2 items-center">
+          <span>By {article.author_name}</span>
+          <span>•</span>
+          <span>{currentArticle.publishedAt ? new Date(currentArticle.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
+          <span>•</span>
+          <span>{currentArticle.readTime} min read</span>
+        </div>
+        {/* Image (with credit handled in ArticleHero) */}
         <ArticleHero currentArticle={currentArticle} />
-
+        {/* Article Body */}
         {article.body && (
           <ArticleBody content={article.body} />
         )}
-
-        <AuthorCard
-          author={{
-            name: article.author_name,
-            bio: article.author_bio || undefined,
-            twitter: article.author_twitter || undefined,
-          }}
-        />
-
         <RelatedRow
           articles={relatedRowItems}
           title="Keep Digging"

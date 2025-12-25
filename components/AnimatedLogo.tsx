@@ -12,21 +12,44 @@ interface AnimatedLogoProps {
 export default function AnimatedLogo({ href = '/', className }: AnimatedLogoProps) {
   return (
     <Link href={href} className={clsx('flex items-center group', className)}>
-      <span className="text-2xl font-bold tracking-tighter">
-        <span className="text-white group-hover:text-[var(--netflix-red)] transition-colors">T</span>
-        <span className="text-white group-hover:text-[var(--netflix-red)] transition-colors delay-75">D</span>
-        <span className="text-white group-hover:text-[var(--netflix-red)] transition-colors delay-100">D</span>
-      </span>
-      <motion.div className="ml-2 flex gap-0.5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        {[0, 0.2, 0.4].map((delay) => (
-          <motion.div
-            key={delay}
-            className="w-1 h-1 rounded-full bg-[var(--netflix-red)]"
+      <span className="text-2xl font-bold tracking-tighter flex items-center">
+        <span className="text-white">itsDribbles</span>
+        <span
+          className="flex items-end ml-2"
+          style={{ alignItems: 'flex-end' }}
+        >
+          <motion.span
+            className="inline-block rounded-full mr-1 w-2 h-2 md:w-2 md:h-2 align-bottom"
+            style={{
+              background: 'var(--neon-orange)',
+              boxShadow: '0 0 12px var(--neon-orange)',
+              verticalAlign: 'bottom',
+            }}
             animate={{ scale: [1, 1.5, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity, delay }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
           />
-        ))}
-      </motion.div>
+          <motion.span
+            className="inline-block rounded-full mr-1 w-2 h-2 md:w-2 md:h-2 align-bottom"
+            style={{
+              background: 'var(--neon-blue)',
+              boxShadow: '0 0 12px var(--neon-blue)',
+              verticalAlign: 'bottom',
+            }}
+            animate={{ scale: [1, 1.5, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+          />
+          <motion.span
+            className="inline-block rounded-full w-2 h-2 md:w-2 md:h-2 align-bottom"
+            style={{
+              background: 'var(--neon-purple)',
+              boxShadow: '0 0 12px var(--neon-purple)',
+              verticalAlign: 'bottom',
+            }}
+            animate={{ scale: [1, 1.5, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+          />
+        </span>
+      </span>
     </Link>
   )
 }

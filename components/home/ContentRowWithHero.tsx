@@ -92,9 +92,11 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction, isM
     }
   };
 
-  const heroWidth = isMobile ? '300px' : 'min(60vw, 720px)';
+  // Stretch hero card: wider but not full bleed
+  const heroWidth = isMobile ? '90vw' : 'min(90vw, 1100px)';
   const cardWidth = isMobile ? '300px' : 'clamp(220px, 18vw, 320px)';
-  const heroHeightClass = isMobile ? 'h-[450px]' : 'h-[450px]';
+  // Set hero card height halfway between previous and current
+  const heroHeightClass = isMobile ? 'h-[525px]' : 'h-[550px]';
   const cardHeightClass = isMobile ? 'h-[450px]' : 'h-[450px]';
 
   const cardContent = (
@@ -116,14 +118,14 @@ function CarouselCard({ item, position, index, episodeQueue = [], direction, isM
                     src={item.image_url}
                     alt={item.title}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     priority={isHero}
                   />
                 ) : (
                   <img
                     src={item.image_url}
                     alt={item.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
                 )
@@ -420,72 +422,65 @@ export default function ContentRowWithHero({
   items, 
   viewAllHref,
   autoRotate = true,
-  rotateInterval = 8
+  rotateInterval = 7
 }: ContentRowWithHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [viewportWidth, setViewportWidth] = useState<number>(() => {
     if (typeof window === 'undefined') return 1920;
-    return window.innerWidth;
-  });
-
-  const isMobileLayout = viewportWidth < 768;
-  const isLargeLayout = viewportWidth >= 1440;
-
-  useEffect(() => {
-    const checkViewport = () => {
-      if (typeof window === 'undefined') return;
-      setViewportWidth(window.innerWidth);
-    };
-
-    checkViewport();
-    window.addEventListener('resize', checkViewport);
-    return () => window.removeEventListener('resize', checkViewport);
-  }, []);
-
-  // Auto-rotate
-  useEffect(() => {
-    if (!autoRotate || items.length <= 1 || isMobileLayout) return;
-
-    const timer = setInterval(() => {
-      nextSlide();
-    }, rotateInterval * 1000);
-
-    return () => clearInterval(timer);
-  }, [currentIndex, autoRotate, rotateInterval, items.length, isMobileLayout]);
-
-  const nextSlide = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % items.length);
-  };
-
-  const prevSlide = () => {
-    setDirection(-1);
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
-  };
-
-  if (items.length === 0) return null;
-
-  // Get visible items (hero + supporting cards)
-  const getVisibleItems = (): VisibleItem[] => {
-    const visible: VisibleItem[] = [];
-    const visibleCount = isMobileLayout
-      ? items.length
-      : Math.min(items.length, isLargeLayout ? 4 : 3);
-
-    for (let i = 0; i < visibleCount; i++) {
-      const index = isMobileLayout ? i : (currentIndex + i) % items.length;
-      const position = i === 0 ? 'hero' : 'card';
-      visible.push({
-        item: items[index],
-        position,
-        key: isMobileLayout ? `${items[index].id}-${i}` : `${items[index].id}-${currentIndex}-${i}`,
-        index: index,
-      });
-    }
-    return visible;
-  };
-
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ 
+          opacity: 1, 
+          x: 0,
+          scale: isHero ? 1 : 0.98,
+        }}
+        exit={{ 
+          opacity: position === 'hero' ? 0 : 1,  // Only hero fades out
+          x: -100 
+        }}
+        transition={{ 
+          layout: { 
+            duration: 0.7,
+            ease: [0.23, 1, 0.32, 1] 
+          },
+          opacity: { 
+            duration: 0.7,
+            ease: "easeOut"
+          },
+          x: { 
+            duration: 0.7, 
+            ease: [0.23, 1, 0.32, 1] 
+          },
+          scale: {
+            duration: 0.7,
+            ease: [0.23, 1, 0.32, 1]
+          },
+          zIndex: {
+            duration: 0.35,
+            delay: 0.15
+          }
+        }}
+        className="flex-shrink-0 snap-start"
+        style={{ 
+          zIndex: isHero ? 10 : (position === 'card' && index === 1) ? 5 : 1,
+          width: isHero ? heroWidth : cardWidth,
+          flex: '0 0 auto',
+        }}
+      >
+        {isPodcast && (item.audio_url || item.source_url) ? (
+          <div onClick={handlePodcastClick} className="cursor-pointer">
+            {cardContent}
+          </div>
+        ) : (
+          <Link href={href} target={href.startsWith("http") ? "_blank" : "_self"}>
+            {cardContent}
+          </Link>
+        )}
+      </motion.div>
+    );
   const visibleItems = getVisibleItems();
 
   return (
@@ -530,182 +525,17 @@ export default function ContentRowWithHero({
           </>
         )}
 
-        {/* Cards */}
-        {isMobileLayout ? (
-          /* MOBILE: Netflix-Style Hero */
-          <div className="px-4 space-y-4 -mt-20">
-            {/* Hero Card - Clean Image */}
-            <div className="space-y-3">
-              {/* Hero Image - No Overlay */}
-              <Link href={items[0].source_url || "#"} className="block">
-                <div className="relative w-full h-[500px] rounded-2xl overflow-hidden">
-                  {items[0].image_url && (
-                    canUseNextImage(items[0].image_url) ? (
-                      <Image
-                        src={items[0].image_url}
-                        alt={items[0].title}
-                        fill
-                        className="object-cover"
-                        sizes="100vw"
-                        priority
-                      />
-                    ) : (
-                      <img
-                        src={items[0].image_url}
-                        alt={items[0].title}
-                        className="w-full h-full object-cover"
-                      />
-                    )
-                  )}
-                  
-                  {/* Category Badge Only */}
-                  <div className="absolute top-4 left-4 z-10">
-                    {(() => {
-                      const topic = detectTopic(items[0]);
-                      const accent = AccentColors[topic];
-                      const badge = getCategoryBadge(topic);
-                      return (
-                        <div
-                          className="px-3 py-1.5 rounded-lg text-sm font-bold backdrop-blur-md shadow-lg"
-                          style={{
-                            backgroundColor: `${accent.primary}40`,
-                            color: accent.primary,
-                            border: `1.5px solid ${accent.primary}`,
-                          }}
-                        >
-                          {badge.label}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </Link>
-
-              {/* Content Below Image */}
-              <div className="space-y-2">
-                {/* Meta */}
-                <div className="flex items-center gap-2 text-sm text-white/60">
-                  {items[0].published_at && <time>{formatDate(items[0].published_at)}</time>}
-                  {items[0].duration && (
-                    <>
-                      <span>•</span>
-                      <span>
-                        {items[0].content_type === 'podcast' 
-                          ? `${Math.floor(parseInt(items[0].duration, 10) / 60) || 0}m` 
-                          : items[0].duration}
-                      </span>
-                    </>
-                  )}
-                  {items[0].episode_number && (
-                    <>
-                      <span>•</span>
-                      <span>Episode {items[0].episode_number}</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Title */}
-                <h2 className="text-2xl font-bold text-white leading-tight font-netflix">
-                  {items[0].title}
-                </h2>
-
-                {/* Description */}
-                {items[0].description && (
-                  <p className="text-base text-white/80 leading-relaxed line-clamp-2">
-                    {items[0].description}
-                  </p>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  {/* Primary Action */}
-                  <Link
-                    href={items[0].source_url || "#"}
-                    className="flex-1 flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-lg hover:bg-white/90 transition-colors"
-                  >
-                    {items[0].content_type === 'podcast' ? (
-                      <>
-                        <Mic2 className="w-5 h-5" />
-                        <span>Listen</span>
-                      </>
-                    ) : items[0].content_type === 'video' ? (
-                      <>
-                        <Play className="w-5 h-5 fill-current" />
-                        <span>Watch</span>
-                      </>
-                    ) : (
-                      <>
-                        <BookOpen className="w-5 h-5" />
-                        <span>Read Now</span>
-                      </>
-                    )}
-                  </Link>
-
-                  {/* Share Button */}
-                  <button
-                    onClick={() => {
-                      const sourceUrl = items[0].source_url || '';
-                      // Handle absolute URLs vs relative paths
-                      const url = sourceUrl.startsWith('http') 
-                        ? sourceUrl 
-                        : `${typeof window !== 'undefined' ? window.location.origin : ''}${sourceUrl.startsWith('/') ? '' : '/'}${sourceUrl}`;
-                      if (typeof navigator !== 'undefined' && navigator.share) {
-                        navigator.share({
-                          title: items[0].title,
-                          url: url
-                        }).catch(() => {});
-                      } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                        navigator.clipboard.writeText(url);
-                      }
-                    }}
-                    className="flex items-center justify-center gap-2 bg-white/20 text-white font-bold py-3.5 px-6 rounded-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
-                    aria-label="Share"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                    <span>Share</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Horizontal Scroll Cards */}
-            {items.length > 1 && (
-              <div className="relative -mx-4">
-                <div className="flex gap-4 px-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth pb-2">
-                  {items.slice(1).map((item, idx) => (
-                    <CarouselCard
-                      key={item.id || idx}
-                      item={item}
-                      position="card"
-                      index={idx + 1}
-                      episodeQueue={items}
-                      direction={0}
-                      isMobile={true}
-                    />
-                  ))}
-                </div>
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent pointer-events-none" />
-              </div>
-            )}
-          </div>
-        ) : (
-          /* DESKTOP: Keep existing */
-          <div className="flex gap-3 overflow-hidden group">
-            <AnimatePresence mode="popLayout" initial={false}>
-              {visibleItems.map(({ item, position, key, index }) => (
-                <CarouselCard
-                  key={key}
-                  item={item}
-                  position={position as 'hero' | 'card'}
-                  index={index}
-                  episodeQueue={items}
-                  direction={direction}
-                  isMobile={isMobileLayout}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
+        {/* Cards: Use CarouselCard for both mobile and desktop, rotating all content types */}
+        <div className="w-full flex items-center justify-center" style={{ minHeight: 500 }}>
+          <CarouselCard
+            key={items[currentIndex]?.id || currentIndex}
+            item={items[currentIndex]}
+            position="hero"
+            index={currentIndex}
+            direction={direction}
+            isMobile={isMobileLayout}
+          />
+        </div>
 
         {/* Indicators */}
         {items.length > 1 && (

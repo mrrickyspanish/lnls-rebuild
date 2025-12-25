@@ -4,6 +4,10 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'cdn1.nbaanalysis.net',
+      },
+      {
+        protocol: 'https',
         hostname: 'rqbrshlalcscpvdtmxvc.supabase.co',
       },
           {
