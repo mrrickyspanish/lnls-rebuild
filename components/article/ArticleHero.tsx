@@ -42,6 +42,20 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       />
     );
   }
+
+  // DEBUG: If the image is from basketballforever, try <img> instead of <Image>
+  if (src.includes('basketballforever.com')) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className="absolute inset-0 h-full w-full object-cover"
+        loading={priority ? 'eager' : 'lazy'}
+        style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+      />
+    );
+  }
+
   // Use Next.js <Image> for all other images
   return (
     <Image
