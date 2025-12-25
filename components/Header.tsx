@@ -75,23 +75,23 @@ const navLinks = [
             ))}
           </div>
           {/* Centered Logo */}
-          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 md:gap-2 select-none">
-            <span className="text-2xl md:text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
-            <span className="flex gap-[2px] ml-1" style={{ position: 'relative', top: '1.1em' }}>
+          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 select-none">
+            <span className="text-4xl md:text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
+            <span className="flex gap-[2px] ml-1 md:ml-1.5" style={{ position: 'relative', top: '1.1em' }}>
               <motion.span
-                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full inline-block"
+                className="w-2 h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 4px var(--neon-orange, #FD6B0B)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0 }}
               />
               <motion.span
-                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full inline-block"
+                className="w-2 h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 4px var(--neon-blue, #00e6fe)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.18 }}
               />
               <motion.span
-                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full inline-block"
+                className="w-2 h-2 rounded-full inline-block"
                 style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 4px var(--neon-purple, #a259f7)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.36 }}
@@ -127,13 +127,14 @@ const navLinks = [
 
         {/* Section Links Bar */}
         <nav className="w-full border-t border-neutral-200 bg-white">
-          <ul className="flex items-center justify-center gap-0 py-3">
+          <ul className="flex items-center justify-center gap-0 py-2 md:py-3">
             {navLinks.map((link, idx) => (
               <li key={link.href} className="flex items-center">
                 <Link
                   href={link.href}
                   className={clsx(
-                    "text-black font-bold text-lg uppercase tracking-wider no-underline relative transition-colors duration-300 hover:text-[var(--neon-orange,#FD6B0B)] px-5 py-1",
+                    "text-black font-bold uppercase tracking-wider no-underline relative transition-colors duration-300 hover:text-[var(--neon-orange,#FD6B0B)] px-3 md:px-5 py-0.5 md:py-1 ",
+                    "text-base md:text-lg",
                     link.href === '/' ? 'active' : ''
                   )}
                 >
@@ -142,7 +143,7 @@ const navLinks = [
                     <span className="absolute left-0 -bottom-2 w-full h-[2px] bg-[var(--neon-orange,#FD6B0B)] rounded" />
                   )}
                 </Link>
-                {idx < navLinks.length - 1 && <span className="text-neutral-300 text-xl font-bold px-2 select-none">|</span>}
+                {idx < navLinks.length - 1 && <span className="text-neutral-300 text-lg md:text-xl font-bold px-1 md:px-2 select-none">|</span>}
               </li>
             ))}
           </ul>
