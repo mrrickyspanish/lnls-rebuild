@@ -9,7 +9,7 @@ import RelatedRow from "@/components/article/RelatedRow";
 import AuthorCard from "@/components/article/AuthorCard";
 import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
-import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
+import { fetchArticleBySlug, fetchAllArticles, incrementArticleViews, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
 type ArticleSlide = {
@@ -19,6 +19,7 @@ type ArticleSlide = {
 };
 
 type ArticleWithSlideshow = Article & {
+  views?: number;
   slideshow?: {
     title: string;
     slides: ArticleSlide[];
@@ -97,6 +98,10 @@ export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
+  // Increment view count (fire and forget)
+  incrementArticleViews(slug).catch(err => 
+    console.error('Failed to track view:', err)
+  );
 
   let relatedArticles = await fetchRelatedArticles(article.id, article.topic, 6);
 
@@ -139,7 +144,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} />
-      <article className="px-4 md:px-8 lg:px-24 xl:px-48">
+      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[120px] md:pt-[130px]">
         {/* Breadcrumbs */}
         <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
@@ -154,6 +159,12 @@ export default async function ArticlePage({ params }: PageProps) {
         <h1 className="text-3xl md:text-5xl font-bold mb-2 mt-2 leading-tight">{article.title}</h1>
         {/* Author, Date, Read Time */}
         <div className="mb-4 text-base text-gray-600 flex flex-wrap gap-2 items-center">
+          {typeof article.views === 'number' && (
+            <span className="flex items-center gap-1">
+              <span role="img" aria-label="views">👁️</span> {article.views.toLocaleString()} views
+            </span>
+          )}
+          <span>•</span>
           <span>By {article.author_name}</span>
           <span>•</span>
           <span>{currentArticle.publishedAt ? new Date(currentArticle.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
