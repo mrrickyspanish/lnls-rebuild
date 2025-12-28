@@ -63,9 +63,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return { title: "Article not found" };
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://lnls.media";
+  const url = `${siteUrl.replace(/\/$/, "")}/news/${slug}`;
+  const image = article.hero_image_url || 
+    "https://lnls.media/uploads/articles/dribbles_og_2024.png";
   return {
     title: article.title,
     description: article.excerpt || "TDD article",
+    openGraph: {
+      title: article.title,
+      description: article.excerpt || "TDD article",
+      url,
+      type: "article",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt || "TDD article",
+      images: [image],
+    },
   };
 }
 
@@ -98,8 +122,21 @@ export default async function ArticlePage({ params }: PageProps) {
     ? `${siteUrl.replace(/\/$/, "")}/news/${slug}`
     : `/news/${slug}`;
 
+  // JSON-LD structured data for this article
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.excerpt || '',
+    image: article.hero_image_url ? [article.hero_image_url] : undefined,
+    author: article.author_name ? { '@type': 'Person', name: article.author_name } : undefined,
+    datePublished: article.published_at || article.created_at,
+    url: shareUrl,
+    publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: 'https://lnls.media/uploads/articles/dribbles_favicon_1.png' } },
+  };
   return (
     <>
+      <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} />
       <article className="px-4 md:px-8 lg:px-24 xl:px-48">

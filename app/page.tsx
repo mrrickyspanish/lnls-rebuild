@@ -193,8 +193,65 @@ export default async function HomePage() {
       aroundLeagueCount: aroundLeagueItems.length,
     });
 
+    // --- JSON-LD Structured Data ---
+    const siteUrl = 'https://lnls.media';
+    const orgJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'The Daily Dribble',
+      url: siteUrl,
+      logo: `${siteUrl}/uploads/articles/dribbles_favicon_1.png`,
+      sameAs: [
+        'https://twitter.com/dailydribble',
+        'https://www.youtube.com/@LateNightLakeShow',
+      ],
+    };
+    // Article, Podcast, Video JSON-LD (for hero items only)
+    const heroJsonLd = heroItems.map(item => {
+      if (item.content_type === 'article') {
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: item.title,
+          description: item.description,
+          image: item.image_url ? [item.image_url] : undefined,
+          author: item.author_name ? { '@type': 'Person', name: item.author_name } : undefined,
+          datePublished: item.published_at,
+          url: `${siteUrl}${item.source_url}`,
+          publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
+        };
+      } else if (item.content_type === 'podcast') {
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'PodcastEpisode',
+          name: item.title,
+          description: item.description,
+          url: item.source_url,
+          datePublished: item.published_at,
+          image: item.image_url,
+          partOfSeries: { '@type': 'PodcastSeries', name: 'Late Night Lake Show' },
+        };
+      } else if (item.content_type === 'video') {
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'VideoObject',
+          name: item.title,
+          description: item.description,
+          thumbnailUrl: item.image_url,
+          uploadDate: item.published_at,
+          url: item.source_url,
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
     return (
       <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[68px]">
+        {/* SEO: JSON-LD structured data for org and hero items */}
+        <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(orgJsonLd)}</script>
+        {heroJsonLd.map((obj, i) => (
+          <script key={i} type="application/ld+json" suppressHydrationWarning>{JSON.stringify(obj)}</script>
+        ))}
         {/* Hero section: no horizontal padding or max-width */}
         {heroItems.length > 0 && (
           <ContentRowWithHero

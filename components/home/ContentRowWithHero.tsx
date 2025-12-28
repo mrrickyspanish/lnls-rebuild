@@ -108,7 +108,7 @@ function CarouselCard({
       <div className="p-1">
         {isMobile ? (
           <div className="mt-16">
-            <div className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80 overflow-hidden`}>
+            <div className={`relative ${heroHeightClass} bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80 overflow-hidden`}>
               {/* Image only in card for mobile, with category tag overlay */}
               <div className="relative w-full h-full min-h-[120px]">
                 {item.image_url ? (
@@ -117,23 +117,23 @@ function CarouselCard({
                       src={item.image_url}
                       alt={item.title}
                       fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg"
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       priority
                     />
                   ) : (
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg"
+                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                     />
                   )
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center rounded-lg">
-                    <span className="text-white/10 text-7xl">{badge.icon}</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                    {/* No icon on mobile */}
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent rounded-lg" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                 {/* Category badge overlayed in image */}
                 <motion.div
                   animate={{ opacity: isHovered ? 0 : 1 }}
@@ -168,35 +168,49 @@ function CarouselCard({
                 )}
               </div>
               {item.description && (
-                <p className="text-xs text-white/90 line-clamp-2 leading-relaxed mb-2 text-center">
-                  {item.description.split('. ')[0] + (item.description.includes('.') ? '.' : '')}
-                </p>
+                <>
+                  <p className="text-xs text-white/90 line-clamp-2 leading-relaxed mb-1 text-center">
+                    {item.description.split('. ')[0] + (item.description.includes('.') ? '.' : '')}
+                  </p>
+                  {/* Byline/Source line, always shown if present */}
+                  {(() => {
+                    let byline = null;
+                    // Podcast: show or author_name or author
+                    if (isPodcast && (item.show || item.author_name || item.author)) {
+                      byline = `from ${item.show || item.author_name || item.author}`;
+                    } 
+                    // YouTube: channel or author_name or author
+                    else if (item.content_type === "youtube" && (item.channel || item.author_name || item.author)) {
+                      byline = `from ${item.channel || item.author_name || item.author}`;
+                    } 
+                    // Article: author_name or author
+                    else if (item.author_name || item.author) {
+                      byline = `by ${item.author_name || item.author}`;
+                    }
+                    return byline ? (
+                      <div className="italic text-white/80 text-sm text-center mb-2">{byline}</div>
+                    ) : null;
+                  })()}
+                </>
               )}
-              {/* Play button and duration badge */}
+              {/* If no description, still show byline if present */}
+              {!item.description && (() => {
+                let byline = null;
+                if (isPodcast && (item.show || item.author_name || item.author)) {
+                  byline = `from ${item.show || item.author_name || item.author}`;
+                } 
+                else if (item.content_type === "youtube" && (item.channel || item.author_name || item.author)) {
+                  byline = `from ${item.channel || item.author_name || item.author}`;
+                } 
+                else if (item.author_name || item.author) {
+                  byline = `by ${item.author_name || item.author}`;
+                }
+                return byline ? (
+                  <div className="italic text-white/80 text-sm text-center mb-2">{byline}</div>
+                ) : null;
+              })()}
+              {/* No play button or icon on mobile hero */}
               <div className="flex gap-2 items-center justify-center">
-                <AnimatePresence>
-                  {(isHovered || isCurrentlyPlaying) && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 w-10 h-10"
-                      style={{
-                        background: isCurrentlyPlaying ? 'var(--netflix-red)' : 'white',
-                        color: isCurrentlyPlaying ? 'white' : 'black',
-                      }}
-                    >
-                      {isPodcast ? (
-                        <Mic2 className="w-5 h-5" />
-                      ) : isVideo ? (
-                        <Play className="fill-current ml-1 w-5 h-5" />
-                      ) : (
-                        <BookOpen className="w-5 h-5" />
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
                 {item.duration && !isCurrentlyPlaying && (
                   <div className="bg-black/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white shadow-lg">
                     {isPodcast ? `${Math.floor(parseInt(item.duration) / 60)}m` : item.duration}
@@ -416,12 +430,9 @@ export default function ContentRowWithHero({
   autoRotate = true,
   rotateInterval = 12,
 }: ContentRowWithHeroProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === "undefined" ? 1920 : window.innerWidth
   );
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handleResize = () => setViewportWidth(window.innerWidth);
@@ -430,34 +441,23 @@ export default function ContentRowWithHero({
   }, []);
 
   const isMobileLayout = viewportWidth < 768;
-  const totalItems = items.length;
-
-  useEffect(() => {
-    if (!autoRotate || totalItems <= 1) return;
-
-    const interval = setInterval(() => {
-      setDirection(1);
-      setCurrentIndex((prev) => (prev + 1) % totalItems);
-    }, rotateInterval * 1000);
-
-    return () => clearInterval(interval);
-  }, [autoRotate, rotateInterval, totalItems]);
-
-  const nextSlide = () => {
-    if (totalItems <= 1) return;
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % totalItems);
-  };
-
-  const prevSlide = () => {
-    if (totalItems <= 1) return;
-    setDirection(-1);
-    setCurrentIndex((prev) => (prev - 1 + totalItems) % totalItems);
-  };
-
   if (!items || items.length === 0) return null;
 
-  const currentItem = items[currentIndex];
+  // Find pinned/featured item
+  const featuredIdx = items.findIndex((item) => item.is_featured);
+  const heroItem = featuredIdx > -1 ? items[featuredIdx] : items[0];
+
+  // List: all except hero, podcast first if present
+  let mobileList: any[] = [];
+  if (isMobileLayout) {
+    const list = items.filter((item) => item !== heroItem);
+    const podcastIdx = list.findIndex((item) => item.content_type === "podcast");
+    if (podcastIdx > -1) {
+      mobileList = [list[podcastIdx], ...list.filter((_, i) => i !== podcastIdx)];
+    } else {
+      mobileList = list;
+    }
+  }
 
   return (
     <section className="mb-20">
@@ -479,47 +479,105 @@ export default function ContentRowWithHero({
         </div>
       )}
 
-      {/* Carousel container */}
+      {/* Hero card (no rotation) */}
       <div className="relative group">
-        {/* Arrows removed as requested */}
-
-        {/* Single hero card */}
         <div className="w-full flex items-center justify-center" style={{ minHeight: 500 }}>
-          <AnimatePresence mode="wait" initial={false}>
-            <CarouselCard
-              key={currentItem?.id ?? currentIndex}
-              item={currentItem}
-              index={currentIndex}
-              episodeQueue={items}
-              direction={direction}
-              isMobile={isMobileLayout}
-            />
-          </AnimatePresence>
+          <CarouselCard
+            key={heroItem?.id}
+            item={heroItem}
+            index={0}
+            episodeQueue={items}
+            direction={1}
+            isMobile={isMobileLayout}
+          />
         </div>
 
-        {/* Indicators */}
-        {totalItems > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-4">
-            {items.slice(0, Math.min(totalItems, 10)).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  if (index === currentIndex) return;
-                  setDirection(index > currentIndex ? 1 : -1);
-                  setCurrentIndex(index);
-                }}
-                className="group"
-                aria-label={`Go to slide ${index + 1}`}
-              >
+        {/* No indicators, no arrows */}
+
+        {/* Mobile: Compact featured list below hero */}
+        {isMobileLayout && mobileList.length > 0 && (
+          <div className="mt-4 px-2 flex flex-col gap-2">
+            {mobileList.map((item, idx) => {
+              const isPodcast = item.content_type === "podcast" && (item.audio_url || item.source_url);
+              const handleClick = (e: React.MouseEvent) => {
+                e.preventDefault();
+                if (isPodcast) {
+                  if (typeof window !== "undefined") {
+                    const { playEpisode, openPlayerModal } = require("@/lib/audio/AudioPlayerContext");
+                    const podcastEpisodes = mobileList.filter((ep) => ep.content_type === "podcast").map((ep) => ({
+                      id: ep.id,
+                      title: ep.title,
+                      audio_url: ep.audio_url || ep.source_url,
+                      image_url: ep.image_url || undefined,
+                      episode_number: ep.episode_number,
+                    }));
+                    playEpisode(
+                      {
+                        id: item.id,
+                        title: item.title,
+                        audio_url: item.audio_url || item.source_url,
+                        image_url: item.image_url || undefined,
+                        episode_number: item.episode_number,
+                      },
+                      podcastEpisodes
+                    );
+                    if (typeof openPlayerModal === "function") openPlayerModal();
+                  }
+                } else {
+                  if (item.source_url) {
+                    window.open(item.source_url, item.source_url.startsWith("http") ? "_blank" : "_self");
+                  }
+                }
+              };
+              return (
                 <div
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    index === currentIndex
-                      ? "w-8 bg-white"
-                      : "w-2 bg-white/40 group-hover:bg-white/60"
-                  }`}
-                />
-              </button>
-            ))}
+                  key={item.id}
+                  className="flex items-center gap-3 bg-white/5 rounded-lg px-3 py-2 border border-white/10 cursor-pointer hover:bg-white/10 transition"
+                  tabIndex={0}
+                  role="button"
+                  onClick={handleClick}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick(e as any); }}
+                >
+                  {/* Thumbnail */}
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-14 h-14 object-cover rounded-md flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 bg-slate-800 rounded-md flex items-center justify-center text-2xl text-white/30">
+                      ?
+                    </div>
+                  )}
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 text-xs text-white/80 mb-0.5">
+                      {item.episode_number && (
+                        <span className="font-semibold text-white">Ep {item.episode_number}</span>
+                      )}
+                      {item.duration && item.episode_number && <span>•</span>}
+                      {item.duration && (
+                        <span>{item.content_type === "podcast" ? `${Math.floor(parseInt(item.duration) / 60)}m` : item.duration}</span>
+                      )}
+                      {item.author && <span>•</span>}
+                      {item.author && (
+                        <span className="font-semibold text-white">{item.author}</span>
+                      )}
+                    </div>
+                    <div className="font-bold text-white truncate text-base leading-tight">
+                      {item.title}
+                    </div>
+                    {item.description && (
+                      <div className="text-xs text-white/70 truncate">
+                        {item.description.split('. ')[0] + (item.description.includes('.') ? '.' : '')}
+                      </div>
+                    )}
+                  </div>
+                  {/* No icon on mobile list */}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
