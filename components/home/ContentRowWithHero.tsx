@@ -288,29 +288,27 @@ function CarouselCard({
                         : "bg-white/95 ring-white/50"
                     }`}
                   >
-                    {isPodcast ? (
-                      <Mic2
-                        className={`w-8 h-8 ${
-                          isCurrentlyPlaying ? "text-white" : "text-black"
-                        }`}
-                      />
-                    ) : isVideo ? (
-                      <Play
-                        className={`fill-current ml-1 w-8 h-8 ${
-                          isCurrentlyPlaying ? "text-white" : "text-black"
-                        }`}
-                      />
-                    ) : (
-                      <BookOpen
-                        className={`w-8 h-8 ${
-                          isCurrentlyPlaying ? "text-white" : "text-black"
-                        }`}
-                      />
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    if (isPodcast) {
+                      const { playEpisode, openPlayerModal } = useAudioPlayer();
+                      const podcastEpisodes = mobileList.filter((ep) => ep.content_type === "podcast").map((ep) => ({
+                        id: ep.id,
+                        title: ep.title,
+                        audio_url: ep.audio_url || ep.source_url,
+                        image_url: ep.image_url || undefined,
+                        episode_number: ep.episode_number,
+                      }));
+                      playEpisode(
+                        {
+                          id: item.id,
+                          title: item.title,
+                          audio_url: item.audio_url || item.source_url,
+                          image_url: item.image_url || undefined,
+                          episode_number: item.episode_number,
+                        },
+                        podcastEpisodes
+                      );
+                      if (typeof openPlayerModal === "function") openPlayerModal();
+                    }
             {/* Duration badge */}
             {item.duration && !isCurrentlyPlaying && (
               <div className="absolute top-4 right-4 bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded text-sm font-bold text-white shadow-lg">
