@@ -489,6 +489,7 @@ export default function ContentRowWithHero({
   autoRotate = true,
   rotateInterval = 12,
 }: ContentRowWithHeroProps) {
+  const { playEpisode } = useAudioPlayer();
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === "undefined" ? 1920 : window.innerWidth
   );
@@ -521,8 +522,6 @@ export default function ContentRowWithHero({
       mobileList = list;
     }
   }
-
-  const { playEpisode } = useAudioPlayer();
 
   const handleMobileItemClick = (item: ContentItem, list: ContentItem[]) => {
     const isPodcast =
