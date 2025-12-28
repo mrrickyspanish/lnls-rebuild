@@ -18,7 +18,8 @@ const ARTICLE_FIELDS = `
   published,
   featured,
   published_at,
-  created_at
+  created_at,
+  views
 `
 
 type ArticleRow = Database['public']['Tables']['articles']['Row']
@@ -134,4 +135,28 @@ export async function fetchAllArticles(): Promise<Article[]> {
   }
 
   return (data ?? []).map(mapArticle)
+}
+
+// Increment view count for an article
+export async function incrementArticleViews(slug: string): Promise<void> {
+  const supabase = createSupabaseAnonClient();
+  
+  // First get the current views count
+  const { data: article } = await supabase
+    .from('articles')
+    .select('views')
+    .eq('slug', slug)
+    .single();
+
+  if (article) {
+    // Increment and update
+    const { error } = await supabase
+      .from('articles')
+      .update({ views: (article.views || 0) + 1 } as Partial<Article>)
+      .eq('slug', slug);
+
+    if (error) {
+      console.error('Failed to increment article views:', error);
+    }
+  }
 }

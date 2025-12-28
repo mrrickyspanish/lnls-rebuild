@@ -55,6 +55,7 @@ export interface Database {
           published_at: string | null;
           created_at: string;
           updated_at: string;
+          views: number;
         };
         Insert: {
           id?: string;
@@ -95,6 +96,7 @@ export interface Database {
           published_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          views?: number;
         };
       };
       profiles: {
@@ -353,6 +355,7 @@ type ArticleTableUpdate = Database['public']['Tables']['articles']['Update'];
 
 export type Article = Omit<ArticleTableRow, 'body'> & {
   body: ArticleBody;
+  views: number;
 };
 
 export type ArticleInsert = Omit<ArticleTableInsert, 'body'> & {
