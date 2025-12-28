@@ -131,13 +131,13 @@ export default async function HomePage() {
 
 
     // --- FEATURED HERO LOGIC ---
-    // Find all featured articles
-    const featuredArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.topic === 'FEATURED' && item.image_url);
+    // Find all featured articles (using the 'featured' boolean property)
+    const featuredArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.featured && item.image_url);
 
     // Trending Now - Owned Content Only, FEATURED always included at the top
     const trendingNow = [
       ...featuredArticles,
-      ...dedupeById(sortByDateDesc(ownedContent)).filter(item => item.topic !== 'FEATURED')
+      ...dedupeById(sortByDateDesc(ownedContent)).filter(item => !item.featured)
     ].map(item => ({
       ...item,
       topic: item.topic || undefined,

@@ -46,7 +46,8 @@ const [  error, setError] = useState('')
     authorTwitter: initialData?.author_twitter || 'lnlssports',
     readTime: initialData?.read_time || 5,
     topic: initialData?.topic || 'Lakers',
-    videoUrl: initialData?.video_url || ''
+    videoUrl: initialData?.video_url || '',
+    featured: initialData?.featured || false
   })
 
 
@@ -71,16 +72,13 @@ const [  error, setError] = useState('')
 
       const payload = {
         ...formData,
-        body: bodyContent
+        body: bodyContent,
+        featured: !!formData.featured
       }
 
       const targetSlug = mode === 'create'
         ? generateSlug(formData.title)
         : initialData?.slug
-
-      if (!targetSlug) {
-        throw new Error('Missing slug for article action')
-      }
 
       let response
       if (mode === 'create') {
@@ -131,6 +129,18 @@ const [  error, setError] = useState('')
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <input
+                    id="featured-toggle"
+                    type="checkbox"
+                    checked={!!formData.featured}
+                    onChange={e => setFormData({ ...formData, featured: e.target.checked })}
+                    className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="featured-toggle" className="text-sm font-medium select-none cursor-pointer">
+                    Pin as featured (show in homepage hero)
+                  </label>
+                </div>
         <div>
           <label className="block text-sm font-medium mb-2">Title *</label>
           <input
@@ -215,15 +225,41 @@ const [  error, setError] = useState('')
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Author Bio</label>
+
+        <div className="flex items-center gap-3 mb-4">
           <input
-            type="text"
-            value={formData.authorBio}
-            onChange={(e) => setFormData({ ...formData, authorBio: e.target.value })}
-            className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
+            id="featured-toggle"
+            type="checkbox"
+            checked={!!formData.featured}
+            onChange={e => setFormData({ ...formData, featured: e.target.checked })}
+            className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
           />
+          <label htmlFor="featured-toggle" className="text-sm font-medium select-none cursor-pointer">
+            Pin as featured (show in homepage hero)
+          </label>
         </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                id="featured-toggle"
+                type="checkbox"
+                checked={!!formData.featured}
+                onChange={e => setFormData({ ...formData, featured: e.target.checked })}
+                className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+              />
+              <label htmlFor="featured-toggle" className="text-sm font-medium select-none cursor-pointer">
+                Pin as featured (show in homepage hero)
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Author Bio</label>
+              <input
+                type="text"
+                value={formData.authorBio}
+                onChange={(e) => setFormData({ ...formData, authorBio: e.target.value })}
+                className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
+              />
+            </div>
 
         <div>
           <label className="block text-sm font-medium mb-2">Topic</label>
