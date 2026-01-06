@@ -6,12 +6,8 @@ import type { YouTubeVideoRow } from "@/types/supabase";
 
 export const revalidate = 60;
 
-
-type RouteParams = { slug: string };
-type PageProps = { params: RouteParams };
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   const video: YouTubeVideoRow | null = await getYouTubeVideoBySlug(slug);
   if (!video) return { title: "Video not found" };
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://lnls.media";
@@ -43,9 +39,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-
-export default async function VideoPage({ params }: PageProps) {
-  const { slug } = params;
+export default async function VideoPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const video: YouTubeVideoRow | null = await getYouTubeVideoBySlug(slug);
   if (!video) return notFound();
   // Increment view count (fire and forget)
