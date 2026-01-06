@@ -507,6 +507,7 @@ export default function ContentRowWithHero({
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === "undefined" ? 1920 : window.innerWidth
   );
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -515,11 +516,21 @@ export default function ContentRowWithHero({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Auto-rotation effect
+  useEffect(() => {
+    if (!autoRotate || items.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % items.length);
+    }, rotateInterval * 1000);
+
+    return () => clearInterval(interval);
+  }, [autoRotate, items.length, rotateInterval]);
+
   const isMobileLayout = viewportWidth < 768;
   if (!items || items.length === 0) return null;
 
-  const featuredIdx = items.findIndex((item) => item.is_featured);
-  const heroItem = featuredIdx > -1 ? items[featuredIdx] : items[0];
+  const heroItem = items[currentIndex];
 
   let mobileList: ContentItem[] = [];
   if (isMobileLayout) {
@@ -601,6 +612,24 @@ export default function ContentRowWithHero({
             isMobile={isMobileLayout}
           />
         </div>
+
+        {/* Carousel indicators */}
+        {items.length > 1 && !isMobileLayout && (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            {items.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-2 rounded-full transition-all ${
+                  idx === currentIndex
+                    ? 'w-8 bg-white'
+                    : 'w-2 bg-white/30 hover:bg-white/50'
+                }`}
+                aria-label={`Go to item ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
         {isMobileLayout && mobileList.length > 0 && (
           <div className="mt-4 px-2 flex flex-col gap-2">
