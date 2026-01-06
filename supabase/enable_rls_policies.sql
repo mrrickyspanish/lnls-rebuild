@@ -2,6 +2,19 @@
 -- Run this in your Supabase SQL editor
 
 -- =============================================
+-- FIRST: CHECK COLUMNS IN EACH TABLE
+-- =============================================
+-- Run this query first to see column names for each table:
+
+SELECT table_name, column_name, data_type 
+FROM information_schema.columns 
+WHERE table_schema = 'public' 
+AND table_name IN ('ai_news_stream', 'articles', 'featured_modal_config', 'newsletter_subs', 'subscribers')
+ORDER BY table_name, ordinal_position;
+
+-- Once you confirm columns, uncomment the sections below and adjust as needed
+
+/*
 -- 1. NEWSLETTER_SUBS TABLE
 -- =============================================
 
@@ -216,3 +229,4 @@ SELECT schemaname, tablename, policyname, permissive, roles, cmd
 FROM pg_policies 
 WHERE schemaname = 'public' 
 ORDER BY tablename, policyname;
+*/
