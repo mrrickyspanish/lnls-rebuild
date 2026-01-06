@@ -385,7 +385,12 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      increment_article_views: {
+        Args: {
+          article_slug: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: 'admin' | 'editor' | 'writer' | 'user';
