@@ -15,7 +15,7 @@ export default async function EpisodePage({ params }: EpisodePageProps) {
   const { slug } = await params;
 
   return (
-    <div className="min-h-screen bg-slate-950 py-20">
+    <div className="min-h-screen bg-slate-950 pt-[140px] md:pt-[180px] pb-20">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-white mb-4">Episode: {slug}</h1>
         <p className="text-slate-400">Content coming soon</p>

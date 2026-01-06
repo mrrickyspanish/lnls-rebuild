@@ -27,7 +27,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <section className="relative min-h-screen bg-gradient-to-b from-background via-background/95 to-background overflow-x-hidden">
-      <div className="max-w-6xl mx-auto px-6 pt-32 md:pt-40 pb-32 space-y-24">
+      <div className="max-w-6xl mx-auto px-6 pt-[140px] md:pt-[180px] pb-32 space-y-24">
         
         {/* COURT. CODE. CULTURE. - Lead with value prop */}
         <div className="text-center">

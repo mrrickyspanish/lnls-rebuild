@@ -248,7 +248,7 @@ export default async function HomePage() {
     }).filter(Boolean);
 
     return (
-      <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[68px]">
+      <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[140px] md:pt-[180px]">
         {/* SEO: JSON-LD structured data for org and hero items */}
         <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(orgJsonLd)}</script>
         {heroJsonLd.map((obj, i) => (

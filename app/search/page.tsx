@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 
 export default function SearchPage() {
   return (
-    <div className="min-h-screen bg-[var(--netflix-bg)] text-white">
+    <div className="min-h-screen bg-[var(--netflix-bg)] text-white pt-[140px] md:pt-[180px]">
       <section className="sticky top-0 z-10 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur">
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-4">
           <p className="text-sm uppercase tracking-[0.3em] text-white/50">Search</p>

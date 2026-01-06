@@ -144,7 +144,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} />
-      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[120px] md:pt-[130px]">
+      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[140px] md:pt-[180px]">
         {/* Breadcrumbs */}
         <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
           <Link href="/">Home</Link>

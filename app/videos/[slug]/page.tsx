@@ -56,7 +56,7 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
   };
 
   return (
-    <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[120px] md:pt-[130px]">
+    <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[140px] md:pt-[180px]">
       <VideoModal videoId={video.video_id} onClose={handleClose} />
       {/* Add more video details and related videos here if needed */}
     </main>
