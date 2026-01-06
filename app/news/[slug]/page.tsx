@@ -177,6 +177,14 @@ export default async function ArticlePage({ params }: PageProps) {
         {article.body && (
           <ArticleBody content={article.body} />
         )}
+        {/* Author Bio */}
+        <AuthorCard
+          author={{
+            name: article.author_name,
+            bio: article.author_bio || undefined,
+            twitter: article.author_twitter || undefined,
+          }}
+        />
         <RelatedRow
           articles={relatedRowItems}
           title="Keep Digging"
