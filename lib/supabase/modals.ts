@@ -1,3 +1,5 @@
+import type { FeaturedModalConfigRow } from '@/types/supabase';
+import type { ArticleTableRow } from '@/types/supabase';
 // lib/supabase/modals.ts
 import { createSupabaseAnonClient } from './client';
 
@@ -23,7 +25,7 @@ export async function fetchActiveModalConfig(): Promise<ModalData | null> {
     .or(`expires_on.is.null,expires_on.gte.${new Date().toISOString().split('T')[0]}`)
     .order('created_at', { ascending: false })
     .limit(1)
-    .maybeSingle();
+    .maybeSingle<FeaturedModalConfigRow>();
 
   if (!config) return null;
 
@@ -34,7 +36,7 @@ export async function fetchActiveModalConfig(): Promise<ModalData | null> {
       .eq('featured', true)
       .eq('published', true)
       .limit(1)
-      .maybeSingle();
+      .maybeSingle<ArticleTableRow>();
 
     if (article) {
       return {

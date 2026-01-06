@@ -140,23 +140,8 @@ export async function fetchAllArticles(): Promise<Article[]> {
 // Increment view count for an article
 export async function incrementArticleViews(slug: string): Promise<void> {
   const supabase = createSupabaseAnonClient();
-  
-  // First get the current views count
-  const { data: article } = await supabase
-    .from('articles')
-    .select('views')
-    .eq('slug', slug)
-    .single();
-
-  if (article) {
-    // Increment and update
-    const { error } = await supabase
-      .from('articles')
-      .update({ views: (article.views || 0) + 1 } as Partial<Article>)
-      .eq('slug', slug);
-
-    if (error) {
-      console.error('Failed to increment article views:', error);
-    }
+  const { error } = await supabase.rpc('increment_article_views', { article_slug: slug });
+  if (error) {
+    console.error('Failed to increment article views:', error);
   }
 }

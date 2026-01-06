@@ -1,3 +1,23 @@
+// Featured Modal Config Table Types
+export type FeaturedModalConfigRow = {
+  id: number;
+  enabled: boolean;
+  use_featured_article: boolean;
+  custom_title: string | null;
+  custom_subtitle: string | null;
+  custom_description: string | null;
+  custom_article_slug: string | null;
+  custom_cta_text: string | null;
+  badge_text: string | null;
+  show_on_paths: string[] | null;
+  dismiss_option: 'session' | 'permanent' | null;
+  delay_ms: number | null;
+  expires_on: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+export type FeaturedModalConfigInsert = Partial<FeaturedModalConfigRow> & { id?: number };
+export type FeaturedModalConfigUpdate = Partial<FeaturedModalConfigRow>;
 // Supabase Database Types for LNLS Platform
 
 export type Json =
@@ -35,6 +55,57 @@ export type ArticleBody = ArticleBodyBlock[] | TipTapDocNode;
 export interface Database {
   public: {
     Tables: {
+                  youtube_videos: {
+                    Row: {
+                      id: number;
+                      video_id: string;
+                      title: string;
+                      description: string | null;
+                      published_at: string;
+                      thumbnail_url: string | null;
+                      duration: string | null;
+                      view_count: number;
+                      is_short: boolean;
+                      playlist_ids: string[];
+                      created_at: string;
+                      updated_at: string;
+                    };
+                    Insert: {
+                      id?: number;
+                      video_id: string;
+                      title: string;
+                      description?: string | null;
+                      published_at: string;
+                      thumbnail_url?: string | null;
+                      duration?: string | null;
+                      view_count?: number;
+                      is_short?: boolean;
+                      playlist_ids?: string[];
+                      created_at?: string;
+                      updated_at?: string;
+                    };
+                    Update: {
+                      id?: number;
+                      video_id?: string;
+                      title?: string;
+                      description?: string | null;
+                      published_at?: string;
+                      thumbnail_url?: string | null;
+                      duration?: string | null;
+                      view_count?: number;
+                      is_short?: boolean;
+                      playlist_ids?: string[];
+                      created_at?: string;
+                      updated_at?: string;
+                    };
+                    Relationships: [];
+                  };
+            featured_modal_config: {
+              Row: FeaturedModalConfigRow;
+              Insert: FeaturedModalConfigInsert;
+              Update: FeaturedModalConfigUpdate;
+              Relationships: [];
+            };
       articles: {
         Row: {
           id: string;
@@ -349,7 +420,7 @@ export type YouTubeVideoRow = Database['public']['Tables']['youtube_videos']['Ro
 export type YouTubeVideoInsert = Database['public']['Tables']['youtube_videos']['Insert'];
 export type YouTubeVideoUpdate = Database['public']['Tables']['youtube_videos']['Update'];
 
-type ArticleTableRow = Database['public']['Tables']['articles']['Row'];
+export type ArticleTableRow = Database['public']['Tables']['articles']['Row'];
 type ArticleTableInsert = Database['public']['Tables']['articles']['Insert'];
 type ArticleTableUpdate = Database['public']['Tables']['articles']['Update'];
 

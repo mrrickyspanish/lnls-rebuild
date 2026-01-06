@@ -35,6 +35,8 @@ export default async function HomePage() {
       source: item.source || undefined,
       source_url: item.source_url || null,
       published_at: item.published_at || null,
+      author_name: item.author_name || undefined,
+      author: item.author || undefined,
     }));
 
     const mapArticleToContentItem = (article: Article) => ({
