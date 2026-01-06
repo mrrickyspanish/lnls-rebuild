@@ -2,29 +2,29 @@
 -- Run this in your Supabase SQL editor
 
 -- =============================================
--- 1. NEWSLETTER_SUBSCRIBERS TABLE
+-- 1. NEWSLETTER_SUBS TABLE
 -- =============================================
 
 -- Enable RLS
-ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.newsletter_subs ENABLE ROW LEVEL SECURITY;
 
 -- Allow public to insert (for subscriptions)
 CREATE POLICY "Allow public insert for newsletter subscriptions"
-ON public.newsletter_subscribers
+ON public.newsletter_subs
 FOR INSERT
 TO anon, authenticated
 WITH CHECK (true);
 
--- Allow authenticated users to view their own subscription
-CREATE POLICY "Allow users to view own subscription"
-ON public.newsletter_subscribers
+-- Allow public to view all subscriptions (for display purposes)
+CREATE POLICY "Allow public read access to newsletter_subs"
+ON public.newsletter_subs
 FOR SELECT
-TO authenticated
-USING (auth.uid() = id::uuid OR auth.jwt()->>'role' = 'admin');
+TO anon, authenticated
+USING (true);
 
 -- Allow service role full access (for your backend)
-CREATE POLICY "Allow service role full access to newsletter_subscribers"
-ON public.newsletter_subscribers
+CREATE POLICY "Allow service role full access to newsletter_subs"
+ON public.newsletter_subs
 FOR ALL
 TO service_role
 USING (true)
@@ -158,11 +158,11 @@ WITH CHECK (true);
 SELECT schemaname, tablename, rowsecurity 
 FROM pg_tables 
 WHERE schemaname = 'public' 
-AND tablename IN ('newsletter_subscribers', 'profiles', 'comments', 'ai_news_stream');
+AND tablename IN ('newsletter_subs', 'profiles', 'comments', 'ai_news_stream');
 
 -- List all policies
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
 FROM pg_policies 
 WHERE schemaname = 'public' 
-AND tablename IN ('newsletter_subscribers', 'profiles', 'comments', 'ai_news_stream')
+AND tablename IN ('newsletter_subs', 'profiles', 'comments', 'ai_news_stream')
 ORDER BY tablename, policyname;
