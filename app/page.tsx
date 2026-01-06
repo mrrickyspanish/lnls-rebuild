@@ -257,9 +257,8 @@ export default async function HomePage() {
         {/* Hero section: no horizontal padding or max-width */}
         {heroItems.length > 0 && (
           <ContentRowWithHero
-            title="Only on TDD"
+            title=""
             items={heroItems}
-            viewAllHref="/podcast"
           />
         )}
         {/* Main content container with padding and max-width */}

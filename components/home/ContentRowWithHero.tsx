@@ -147,17 +147,25 @@ function CarouselCard({
                   <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                <motion.div
-                  animate={{ opacity: isHovered ? 0 : 1 }}
-                  className="absolute top-3 left-3 px-2 py-1 rounded-lg text-xs font-bold backdrop-blur-md shadow-lg"
-                  style={{
-                    backgroundColor: `${accent.primary}40`,
-                    color: accent.primary,
-                    border: `1.5px solid ${accent.primary}`,
-                  }}
-                >
-                  {badge.label}
-                </motion.div>
+                <div className="absolute top-3 left-3 flex gap-2">
+                  <motion.div
+                    animate={{ opacity: isHovered ? 0 : 1 }}
+                    className="px-2 py-1 rounded-lg text-xs font-bold backdrop-blur-md shadow-lg"
+                    style={{
+                      backgroundColor: `${accent.primary}40`,
+                      color: accent.primary,
+                      border: `1.5px solid ${accent.primary}`,
+                    }}
+                  >
+                    {badge.label}
+                  </motion.div>
+                  <motion.div
+                    animate={{ opacity: isHovered ? 0 : 1 }}
+                    className="px-2 py-1 rounded-lg text-xs font-bold backdrop-blur-md shadow-lg bg-white/10 text-white border border-white/30"
+                  >
+                    TDD
+                  </motion.div>
+                </div>
               </div>
             </div>
             <div className="w-full flex flex-col justify-center items-center px-4 py-3">
@@ -311,7 +319,7 @@ function CarouselCard({
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
             </div>
 
-            <div className="absolute top-4 left-4">
+            <div className="absolute top-4 left-4 flex gap-2">
               <motion.div
                 animate={{ opacity: isHovered ? 0 : 1 }}
                 className="px-3 py-1.5 rounded-lg text-sm font-bold backdrop-blur-md shadow-lg"
@@ -322,6 +330,12 @@ function CarouselCard({
                 }}
               >
                 {badge.label}
+              </motion.div>
+              <motion.div
+                animate={{ opacity: isHovered ? 0 : 1 }}
+                className="px-3 py-1.5 rounded-lg text-sm font-bold backdrop-blur-md shadow-lg bg-white/10 text-white border border-white/30"
+              >
+                TDD
               </motion.div>
             </div>
 
@@ -556,7 +570,7 @@ export default function ContentRowWithHero({
 
   return (
     <section className="mb-20">
-      {!isMobileLayout && (
+      {!isMobileLayout && title && (
         <div className="flex items-center justify-between mb-6 px-4 md:px-0">
           <h2 className="text-2xl md:text-3xl font-bold text-[var(--netflix-text)] font-netflix tracking-tight">
             {title}
