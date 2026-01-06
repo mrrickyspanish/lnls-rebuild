@@ -38,9 +38,8 @@ export async function subscribeToNewsletter(
   console.log("subscribeToNewsletter called with", email, source);
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
-    .from("newsletter_subs")
-    // @ts-expect-error - Supabase types inference issue
-    .insert([{ email, source }]);
+    .from("newsletter_subscribers")
+    .insert([{ email, status: 'active' }]);
 
   if (error) {
     console.error("Supabase insert error:", error);

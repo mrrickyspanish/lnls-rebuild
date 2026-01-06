@@ -93,7 +93,6 @@ export async function PATCH(
 
     const { error: updateError } = await supabase
       .from('articles')
-      // @ts-expect-error - Supabase types are tricky with JSON columns
       .update(updatePayload as any)
       .eq('slug', slug)
 

@@ -79,7 +79,6 @@ export async function GET() {
 
       const { error } = await supabase
         .from('youtube_videos')
-        // @ts-expect-error - Supabase types are tricky with upsert
         .upsert(videoDoc, { onConflict: 'video_id' })
 
       if (error) {
@@ -94,7 +93,6 @@ export async function GET() {
         .single()
 
       if (existing) {
-        // @ts-expect-error - Supabase types inference issue
         if (existing.created_at === existing.updated_at) {
           syncedCount++
         } else {

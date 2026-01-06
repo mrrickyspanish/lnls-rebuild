@@ -55,52 +55,7 @@ export type ArticleBody = ArticleBodyBlock[] | TipTapDocNode;
 export interface Database {
   public: {
     Tables: {
-                  youtube_videos: {
-                    Row: {
-                      id: number;
-                      video_id: string;
-                      title: string;
-                      description: string | null;
-                      published_at: string;
-                      thumbnail_url: string | null;
-                      duration: string | null;
-                      view_count: number;
-                      is_short: boolean;
-                      playlist_ids: string[];
-                      created_at: string;
-                      updated_at: string;
-                    };
-                    Insert: {
-                      id?: number;
-                      video_id: string;
-                      title: string;
-                      description?: string | null;
-                      published_at: string;
-                      thumbnail_url?: string | null;
-                      duration?: string | null;
-                      view_count?: number;
-                      is_short?: boolean;
-                      playlist_ids?: string[];
-                      created_at?: string;
-                      updated_at?: string;
-                    };
-                    Update: {
-                      id?: number;
-                      video_id?: string;
-                      title?: string;
-                      description?: string | null;
-                      published_at?: string;
-                      thumbnail_url?: string | null;
-                      duration?: string | null;
-                      view_count?: number;
-                      is_short?: boolean;
-                      playlist_ids?: string[];
-                      created_at?: string;
-                      updated_at?: string;
-                    };
-                    Relationships: [];
-                  };
-            featured_modal_config: {
+      featured_modal_config: {
               Row: FeaturedModalConfigRow;
               Insert: FeaturedModalConfigInsert;
               Update: FeaturedModalConfigUpdate;
@@ -169,6 +124,7 @@ export interface Database {
           updated_at?: string;
           views?: number;
         };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -198,6 +154,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       comments: {
         Row: {
@@ -230,6 +187,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       analytics_events: {
         Row: {
@@ -259,6 +217,7 @@ export interface Database {
           metadata?: Json | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       youtube_videos: {
         Row: {
@@ -303,6 +262,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       newsletter_subscribers: {
         Row: {
@@ -329,6 +289,7 @@ export interface Database {
           subscribed_at?: string;
           unsubscribed_at?: string | null;
         };
+        Relationships: [];
       };
       ai_news_stream: {
         Row: {
@@ -379,6 +340,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: {
@@ -389,7 +351,7 @@ export interface Database {
         Args: {
           article_slug: string;
         };
-        Returns: undefined;
+        Returns: void;
       };
     };
     Enums: {

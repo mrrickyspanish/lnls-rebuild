@@ -8,6 +8,7 @@ const ARTICLE_FIELDS = `
   slug,
   excerpt,
   hero_image_url,
+  image_credit,
   author_name,
   author_bio,
   author_twitter,
@@ -19,6 +20,7 @@ const ARTICLE_FIELDS = `
   featured,
   published_at,
   created_at,
+  updated_at,
   views
 `
 
