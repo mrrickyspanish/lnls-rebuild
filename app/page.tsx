@@ -291,13 +291,18 @@ export default async function HomePage() {
             />
           )}
           {/* Recruit Ready - Athlete features and recruiting content */}
-          {recruitReadyItems.length > 0 && (
+          {recruitReadyItems.length > 0 ? (
             <ContentRow
               title="Recruit Ready"
               description="Athlete spotlights and recruiting coverage"
               items={recruitReadyItems}
               viewAllHref="/news?topic=recruit-ready"
             />
+          ) : (
+            <div className="my-8 p-4 bg-red-900/20 border border-red-500 rounded">
+              <p className="text-white">DEBUG: No Recruit Ready items found. Count: {recruitReadyItems.length}</p>
+              <p className="text-white text-sm">Fetched from DB: {recruitReadyArticlesFromDB.length}</p>
+            </div>
           )}
           {/* Purple & Gold - Lakers Universe */}
           {purpleGoldItems.length > 0 && (
