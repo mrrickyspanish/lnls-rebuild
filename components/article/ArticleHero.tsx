@@ -71,8 +71,8 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
 
 export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
   return (
-    <section className="article-hero w-full flex justify-center">
-      <div className="relative w-full max-w-5xl aspect-[16/9] md:aspect-[16/7] rounded-xl overflow-hidden">
+    <section className="article-hero w-full flex justify-center px-4 md:px-8 lg:px-16 xl:px-32">
+      <div className="relative w-full max-w-6xl aspect-[16/9] md:aspect-[16/7] rounded-xl overflow-hidden">
         <motion.div
           className="absolute inset-0"
           initial={{ scale: 1.08, opacity: 0 }}

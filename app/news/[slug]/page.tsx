@@ -158,7 +158,7 @@ export default async function ArticlePage({ params }: PageProps) {
         {/* Title */}
         <h1 className="text-3xl md:text-5xl font-bold mb-2 mt-2 leading-tight">{article.title}</h1>
         {/* Author, Date, Read Time */}
-        <div className="mb-4 text-base text-gray-600 flex flex-wrap gap-2 items-center">
+        <div className="mb-6 text-base text-gray-600 flex flex-wrap gap-2 items-center">
           {typeof article.views === 'number' && (
             <span className="flex items-center gap-1">
               <span role="img" aria-label="views">👁️</span> {article.views.toLocaleString()} views
@@ -171,8 +171,12 @@ export default async function ArticlePage({ params }: PageProps) {
           <span>•</span>
           <span>{currentArticle.readTime} min read</span>
         </div>
-        {/* Image (with credit handled in ArticleHero) */}
+      </article>
+      {/* Hero Image - Full Width (breaks out of article padding) */}
+      <div className="w-full mb-8">
         <ArticleHero currentArticle={currentArticle} />
+      </div>
+      <article className="px-4 md:px-8 lg:px-24 xl:px-48">
         {/* Article Body */}
         {article.body && (
           <ArticleBody content={article.body} />
