@@ -192,6 +192,11 @@ export default async function HomePage() {
           topic: item.topic || undefined,
         })).slice(0, 10);
 
+    // Recruit Ready - Athlete features and recruiting content
+    const recruitReadyItems = dedupeById(sortByDateDesc(ownedContent))
+      .filter(item => item.topic === 'Recruit Ready')
+      .slice(0, 10);
+
     // Debug logging
     console.log('🔍 Data Check:', {
       allContentCount: allContent.length,
@@ -276,6 +281,15 @@ export default async function HomePage() {
               title="What's Happening Now"
               items={trendingNow}
               viewAllHref="/news?filter=trending"
+            />
+          )}
+          {/* Recruit Ready - Athlete features and recruiting content */}
+          {recruitReadyItems.length > 0 && (
+            <ContentRow
+              title="Recruit Ready"
+              description="Athlete spotlights and recruiting coverage"
+              items={recruitReadyItems}
+              viewAllHref="/news?topic=recruit-ready"
             />
           )}
           {/* Purple & Gold - Lakers Universe */}
