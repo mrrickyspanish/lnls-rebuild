@@ -40,18 +40,26 @@ export default async function HomePage() {
       author: item.author || undefined,
     }));
 
-    const mapArticleToContentItem = (article: Article) => ({
-      id: article.id,
-      title: article.title,
-      excerpt: article.excerpt || undefined,
-      description: article.excerpt || undefined,
-      image_url: article.hero_image_url || null,
-      content_type: "article" as const,
-      source: "TDD",
-      source_url: `/news/${article.slug}`,
-      published_at: article.published_at || article.created_at,
-      topic: article.topic || undefined, // Ensure topic is included for correct badge
-    });
+    const mapArticleToContentItem = (article: Article) => {
+      // Normalize image URL - ensure relative paths start with /
+      let imageUrl = article.hero_image_url || null;
+      if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+        imageUrl = `/${imageUrl}`;
+      }
+      
+      return {
+        id: article.id,
+        title: article.title,
+        excerpt: article.excerpt || undefined,
+        description: article.excerpt || undefined,
+        image_url: imageUrl,
+        content_type: "article" as const,
+        source: "TDD",
+        source_url: `/news/${article.slug}`,
+        published_at: article.published_at || article.created_at,
+        topic: article.topic || undefined, // Ensure topic is included for correct badge
+      };
+    };
 
     const toTimestamp = (value?: string | null) => {
       if (!value) return 0;
