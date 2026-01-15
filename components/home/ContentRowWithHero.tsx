@@ -70,11 +70,16 @@ function CarouselCard({
   isMobile,
 }: CarouselCardProps) {
   const topicRaw = item.topic || detectTopic(item as any);
-  const topic = (typeof topicRaw === "string"
+  // Normalize topic to lowercase for matching
+  let topic = (typeof topicRaw === "string"
     ? topicRaw.toLowerCase()
-    : "general") as keyof typeof AccentColors;
-  const accent = AccentColors[topic] || AccentColors["general"];
-  const badge = getCategoryBadge(topic as TopicType);
+    : "general");
+  // Ensure topic exists in AccentColors, fallback to general
+  if (!AccentColors[topic as keyof typeof AccentColors]) {
+    topic = "general";
+  }
+  const accent = AccentColors[topic as keyof typeof AccentColors] || AccentColors["general"];
+  const badge = getCategoryBadge(topic as TopicType) || getCategoryBadge("general");
   const isPodcast = item.content_type === "podcast";
   const isVideo = item.content_type === "video";
   const [isHovered, setIsHovered] = useState(false);
