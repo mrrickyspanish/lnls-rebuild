@@ -174,7 +174,7 @@ function CarouselCard({
               </div>
             </div>
             <div className="w-full flex flex-col justify-center items-center px-4 py-3">
-              <h3 className="font-extrabold text-white leading-tight font-netflix line-clamp-2 text-2xl mb-2 tracking-tight text-center drop-shadow-lg max-w-[90%] [text-wrap:balance]">
+              <h3 className="font-extrabold text-white leading-tight font-netflix line-clamp-2 text-2xl mb-2 tracking-tight text-center drop-shadow-lg max-w-[80%] [text-wrap:balance]">
                 {item.title}
               </h3>
               <div className="flex items-center gap-2 text-xs text-white/80 mb-1 justify-center">
