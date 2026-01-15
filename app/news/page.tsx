@@ -9,6 +9,7 @@ async function getArticles(): Promise<Article[]> {
 }
 
 const categoryColors: Record<string, string> = {
+  'Recruit Ready': 'border-green-500 text-green-500',
   Lakers: 'border-orange-500 text-orange-500',
   NBA: 'border-blue-500 text-blue-500',
   Tech: 'border-purple-500 text-purple-500',

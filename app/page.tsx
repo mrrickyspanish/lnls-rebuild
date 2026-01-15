@@ -135,11 +135,15 @@ export default async function HomePage() {
     // --- FEATURED HERO LOGIC ---
     // Find all featured articles (using the 'featured' boolean property)
     const featuredArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.featured && item.image_url);
+    
+    // Find all "Recruit Ready" articles - always prioritized for hero
+    const recruitReadyArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.topic === 'Recruit Ready' && item.image_url);
 
-    // Trending Now - Owned Content Only, FEATURED always included at the top
+    // Trending Now - Owned Content Only, FEATURED and RECRUIT READY always included at the top
     const trendingNow = [
       ...featuredArticles,
-      ...dedupeById(sortByDateDesc(ownedContent)).filter(item => !item.featured)
+      ...recruitReadyArticles.filter(item => !featuredArticles.find(f => f.id === item.id)), // Add Recruit Ready not already featured
+      ...dedupeById(sortByDateDesc(ownedContent)).filter(item => !item.featured && item.topic !== 'Recruit Ready')
     ].map(item => ({
       ...item,
       topic: item.topic || undefined,
@@ -152,7 +156,7 @@ export default async function HomePage() {
 
 
 
-    // Hero Logic: FEATURED always first if exists
+    // Hero Logic: FEATURED and RECRUIT READY always prioritized
     let heroItems: ContentItem[] = [];
 
     // Find latest YouTube video
@@ -161,9 +165,11 @@ export default async function HomePage() {
       : null;
 
     // Add each unique (by id) of the three types if available
+    // Priority: Featured articles, Recruit Ready articles, latest content
     const heroCandidates = [
       ...featuredArticles.slice(0, 1), // Always put the first FEATURED article first if exists
-      latestArticle && (!featuredArticles.length || latestArticle.id !== featuredArticles[0]?.id) ? latestArticle : null,
+      ...recruitReadyArticles.slice(0, 2), // Always include up to 2 Recruit Ready articles
+      latestArticle && (!featuredArticles.length || latestArticle.id !== featuredArticles[0]?.id) && !recruitReadyArticles.find(r => r.id === latestArticle.id) ? latestArticle : null,
       latestYouTubeVideo,
       latestPodcastEpisode
     ].filter(Boolean) as ContentItem[];
