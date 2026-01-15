@@ -75,26 +75,26 @@ const navLinks = [
             ))}
           </div>
           {/* Centered Logo */}
-          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-end gap-2 select-none">
+          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-end gap-1 select-none">
             <span className="text-4xl md:text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
             <span
-              className="flex gap-[2px] ml-1 md:ml-1.5 mb-[0.15em]"
+              className="flex gap-[1.5px] ml-0.5 md:ml-1 mb-[0.15em]"
             >
               <motion.span
-                className="w-2 h-2 rounded-full inline-block"
-                style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 4px var(--neon-orange, #FD6B0B)' }}
+                className="w-1.5 h-1.5 rounded-full inline-block"
+                style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 3px var(--neon-orange, #FD6B0B)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0 }}
               />
               <motion.span
-                className="w-2 h-2 rounded-full inline-block"
-                style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 4px var(--neon-blue, #00e6fe)' }}
+                className="w-1.5 h-1.5 rounded-full inline-block"
+                style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 3px var(--neon-blue, #00e6fe)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.18 }}
               />
               <motion.span
-                className="w-2 h-2 rounded-full inline-block"
-                style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 4px var(--neon-purple, #a259f7)' }}
+                className="w-1.5 h-1.5 rounded-full inline-block"
+                style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 3px var(--neon-purple, #a259f7)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.36 }}
               />
