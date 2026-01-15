@@ -1,4 +1,4 @@
-export type TopicType = "lakers" | "nba" | "podcast" | "video" | "article" | "general";
+export type TopicType = "lakers" | "nba" | "podcast" | "video" | "article" | "general" | "recruit ready";
 
 export const AccentColors = {
   lakers: { primary: "#FDB927", secondary: "#552583" }, // Lakers gold & purple
@@ -7,6 +7,7 @@ export const AccentColors = {
   video: { primary: "#FF0000", secondary: "#282828" },   // YouTube red
   article: { primary: "#0070F3", secondary: "#F5F5F5" }, // Blue
   general: { primary: "#8B5CF6", secondary: "#1F2937" }, // Purple
+  "recruit ready": { primary: "#10B981", secondary: "#064E3B" }, // Green
 };
 
 export function detectTopic(item: any): TopicType {
@@ -30,7 +31,8 @@ export function getCategoryBadge(topic: TopicType) {
     video: { label: "Video", icon: "📺" },
     article: { label: "Article", icon: "📰" },
     general: { label: "News", icon: "📢" },
+    "recruit ready": { label: "Recruit Ready", icon: "⭐" },
   };
   
-  return badges[topic];
+  return badges[topic] || badges.general;
 }
