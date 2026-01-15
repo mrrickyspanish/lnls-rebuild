@@ -38,6 +38,8 @@ export default async function HomePage() {
       published_at: item.published_at || null,
       author_name: item.author_name || undefined,
       author: item.author || undefined,
+      topic: item.topic || undefined,
+      featured: item.featured || undefined,
     }));
 
     const mapArticleToContentItem = (article: Article) => {
