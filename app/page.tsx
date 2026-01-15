@@ -204,6 +204,11 @@ export default async function HomePage() {
       externalContentCount: externalContent.length,
       trendingNowCount: trendingNow.length,
       aroundLeagueCount: aroundLeagueItems.length,
+      recruitReadyArticlesCount: recruitReadyArticles.length,
+      recruitReadyItemsCount: recruitReadyItems.length,
+      heroItemsCount: heroItems.length,
+      heroItems: heroItems.map(h => ({ id: h.id, title: h.title, topic: h.topic, featured: h.featured })),
+      recruitReadySample: recruitReadyArticles.slice(0, 2).map(r => ({ id: r.id, title: r.title, topic: r.topic })),
     });
 
     // --- JSON-LD Structured Data ---
