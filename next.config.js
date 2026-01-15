@@ -117,6 +117,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'www.basketballforever.com',
       },
+      // Added for Bleacher Report images
+      {
+        protocol: 'https',
+        hostname: 'gsp-image-cdn.wmsports.io',
+      },
     ],
     // Add legacy domains configuration as fallback
     domains: [
