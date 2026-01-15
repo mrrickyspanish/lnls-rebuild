@@ -156,32 +156,25 @@ export default async function HomePage() {
 
     const HERO_ITEM_TARGET = 4;
 
-
-
-    // Hero Logic: FEATURED and RECRUIT READY always prioritized
+    // SIMPLIFIED Hero Logic: Latest featured article first, then everything else by date
     let heroItems: ContentItem[] = [];
 
-    // Find latest YouTube video
-    const latestYouTubeVideo = videoContent.length
-      ? [...videoContent].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
-      : null;
+    // Get the single latest featured article if it exists
+    const latestFeatured = featuredArticles.length > 0 ? featuredArticles[0] : null;
 
-    // Add each unique (by id) of the three types if available
-    // Priority: Featured articles, Recruit Ready articles, latest content
-    const heroCandidates = [
-      ...featuredArticles.slice(0, 1), // Always put the first FEATURED article first if exists
-      ...recruitReadyArticles.slice(0, 2), // Always include up to 2 Recruit Ready articles
-      latestArticle && (!featuredArticles.length || latestArticle.id !== featuredArticles[0]?.id) && !recruitReadyArticles.find(r => r.id === latestArticle.id) ? latestArticle : null,
-      latestYouTubeVideo,
-      latestPodcastEpisode
-    ].filter(Boolean) as ContentItem[];
-    const usedIds = new Set(heroCandidates.map(i => i.id));
+    // Get all owned content with images, sorted by date
+    const ownedWithImages = dedupeById(sortByDateDesc(ownedContent))
+      .filter(item => item.image_url);
 
-    // Fill with owned content (articles/videos) not already included, must have image
-    const fillerItems = dedupeById(sortByDateDesc(ownedContent))
-      .filter(item => !usedIds.has(item.id) && item.image_url);
-
-    heroItems = [...heroCandidates, ...fillerItems].slice(0, HERO_ITEM_TARGET);
+    // Build hero: featured first (if exists), then rest by date
+    if (latestFeatured) {
+      // Featured article first, then other content (excluding the featured one)
+      const otherContent = ownedWithImages.filter(item => item.id !== latestFeatured.id);
+      heroItems = [latestFeatured, ...otherContent].slice(0, HERO_ITEM_TARGET);
+    } else {
+      // No featured article, just use latest content by date
+      heroItems = ownedWithImages.slice(0, HERO_ITEM_TARGET);
+    }
 
     const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
     const purpleGoldItems = purpleGoldArticles.length > 0
