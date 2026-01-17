@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
 import SplashScreen from '@/components/splash/SplashScreen'
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })
@@ -37,6 +38,7 @@ export default function RootLayout({
           <Footer />
           <GlobalAudioPlayer />
         </AudioPlayerProvider>
+        <Analytics />
       </body>
     </html>
   )
