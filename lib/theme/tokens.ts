@@ -1,8 +1,9 @@
-export type TopicType = "lakers" | "nba" | "podcast" | "video" | "article" | "general" | "recruit ready";
+export type TopicType = "lakers" | "nba" | "football" | "podcast" | "video" | "article" | "general" | "recruit ready";
 
 export const AccentColors = {
   lakers: { primary: "#FDB927", secondary: "#552583" }, // Lakers gold & purple
   nba: { primary: "#FF6B35", secondary: "#004225" },     // NBA orange & green
+  football: { primary: "#FF6B35", secondary: "#0C2340" }, // NFL orange & navy
   podcast: { primary: "#1DB954", secondary: "#191414" }, // Spotify green
   video: { primary: "#FF0000", secondary: "#282828" },   // YouTube red
   article: { primary: "#0070F3", secondary: "#F5F5F5" }, // Blue
@@ -27,6 +28,7 @@ export function getCategoryBadge(topic: TopicType) {
   const badges = {
     lakers: { label: "Lakers", icon: "🏀" },
     nba: { label: "NBA", icon: "🏆" },
+    football: { label: "Football", icon: "🏈" },
     podcast: { label: "Podcast", icon: "🎙️" },
     video: { label: "Video", icon: "📺" },
     article: { label: "Article", icon: "📰" },

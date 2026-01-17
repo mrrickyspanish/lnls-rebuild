@@ -272,6 +272,7 @@ const [  error, setError] = useState('')
             <option value="Recruit Ready">Recruit Ready</option>
             <option value="Lakers">Lakers</option>
             <option value="NBA">NBA</option>
+            <option value="Football">Football</option>
             <option value="Rumors">Rumors</option>
             <option value="Analysis">Analysis</option>
           </select>
