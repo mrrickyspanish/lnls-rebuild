@@ -13,11 +13,12 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   try {
-    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw, recruitReadyArticlesRaw, youtubeVideos] = await Promise.all([
+    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw, recruitReadyArticlesRaw, footballArticlesRaw, youtubeVideos] = await Promise.all([
       getNewsStream(50),
       getPublishedArticles(12, "Lakers"),
       getPublishedArticles(12, "NBA"),
       getPublishedArticles(12, "Recruit Ready"),
+      getPublishedArticles(12, "Football"),
       getYouTubeRSS(),
     ]);
     const podcastResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
@@ -121,8 +122,9 @@ export default async function HomePage() {
     // Ensure all articles have topic field for correct badge logic
     const nbaArticles = (nbaArticlesRaw || []).map(mapArticleToContentItem);
     const lakersArticles = (lakersArticlesRaw || []).map(mapArticleToContentItem);
+    const footballArticles = (footballArticlesRaw || []).map(mapArticleToContentItem);
     const recruitReadyArticlesFromDB = (recruitReadyArticlesRaw || []).map(mapArticleToContentItem);
-    const allArticles = [...lakersArticles, ...nbaArticles, ...recruitReadyArticlesFromDB];
+    const allArticles = [...lakersArticles, ...nbaArticles, ...footballArticles, ...recruitReadyArticlesFromDB];
 
     const latestArticle = allArticles.length
       ? [...allArticles].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
