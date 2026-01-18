@@ -16,7 +16,7 @@ export default function StreamTabs({
   return (
     <div className="relative pt-3 pb-0">
       {/* Full-width divider line */}
-      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-white/10" />
+      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-white/20" />
       
       <div className="relative mx-auto w-full max-w-[360px] px-4 bg-black">
         <div className="relative rounded-full bg-black bg-white/15 p-[3px]">
