@@ -4,6 +4,7 @@ import ResponsiveHeader from '@/components/ResponsiveHeader'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
+import ViewTransition from '@/components/ViewTransition';
 import dynamic from 'next/dynamic';
 
 // Lazy load SplashScreen for better initial page load
@@ -32,6 +33,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${space.variable} font-sans min-h-screen flex flex-col`}>
         <SplashScreen />
+        <ViewTransition />
         <AudioPlayerProvider>
           <ResponsiveHeader />
           <main className="flex-1">
