@@ -145,7 +145,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} slug={slug} initialLikes={article.likes || 0} />
       <BackToTop />
-      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[140px] md:pt-[180px]">
+      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[30px] md:pt-[180px]">
         {/* Breadcrumbs */}
         <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
           <Link href="/">Home</Link>

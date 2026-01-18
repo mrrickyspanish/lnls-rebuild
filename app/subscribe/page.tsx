@@ -36,7 +36,7 @@ export default function SubscribePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-6 pt-[140px] md:pt-[180px] pb-12">
+    <div className="max-w-2xl mx-auto px-6 pt-[30px] md:pt-[180px] pb-12">
       <h1 className="text-4xl md:text-5xl font-bold mb-6 font-netflix">
         Subscribe
       </h1>

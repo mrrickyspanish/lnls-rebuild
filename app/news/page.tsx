@@ -45,7 +45,7 @@ export default async function NewsPage() {
     <section className="relative min-h-screen">
       {/* HERO — title top-left, cinematic but clean */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
-        <div className="relative z-10 max-w-7xl mx-auto px-6 pt-[140px] md:pt-[180px]">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 pt-[30px] md:pt-[180px]">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
             News
           </h1>
