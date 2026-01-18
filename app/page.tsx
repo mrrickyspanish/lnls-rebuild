@@ -2,6 +2,7 @@ import ContentRowWithHero from "@/components/home/ContentRowWithHero";
 import ContentRow from "@/components/home/ContentRow";
 import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
+import HomePageClient, { TabProvider } from "@/components/home/HomePageClient";
 import { getPublishedArticles } from "@/lib/articles";
 import { getNewsStream } from "@/lib/supabase/client";
 import { getYouTubeRSS } from "@/lib/youtube-rss";
@@ -270,20 +271,18 @@ export default async function HomePage() {
     }).filter(Boolean);
 
     return (
-      <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[30px] md:pt-[180px]">
-        {/* SEO: JSON-LD structured data for org and hero items */}
-        <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(orgJsonLd)}</script>
-        {heroJsonLd.map((obj, i) => (
-          <script key={i} type="application/ld+json" suppressHydrationWarning>{JSON.stringify(obj)}</script>
-        ))}
-        {/* Hero section: no horizontal padding or max-width */}
-        {heroItems.length > 0 && (
-          <ContentRowWithHero
-            title=""
-            items={heroItems}
-          />
-        )}
-        {/* Main content container with padding and max-width */}
+      <TabProvider>
+        <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-0 md:pt-[180px]">
+          {/* SEO: JSON-LD structured data for org and hero items */}
+          <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(orgJsonLd)}</script>
+          {heroJsonLd.map((obj, i) => (
+            <script key={i} type="application/ld+json" suppressHydrationWarning>{JSON.stringify(obj)}</script>
+          ))}
+
+          {/* Hero section with client-side tab filtering */}
+          <HomePageClient allHeroItems={heroItems} />
+
+          {/* Main content container with padding and max-width */}
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12">
           <QueueSetter episodes={podcastContent} />
           {/* What's Happening Now - Last 24h */}
@@ -351,6 +350,7 @@ export default async function HomePage() {
           />
         </div>
       </main>
+    </TabProvider>
     );
   } catch (error) {
     console.error("Error fetching content:", error);

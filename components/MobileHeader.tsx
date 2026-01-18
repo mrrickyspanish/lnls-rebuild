@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Menu, X, Search } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import AnimatedLogo from '@/components/AnimatedLogo'
+import StreamTabs from '@/components/StreamTabs'
+import { useTabContext } from '@/components/home/HomePageClient'
 
 interface MenuSection {
   name: string
@@ -14,6 +16,7 @@ interface MenuSection {
 
 export default function MobileHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { activeTab, setActiveTab } = useTabContext()
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -32,30 +35,38 @@ export default function MobileHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a] border-b border-white/10 lg:hidden">
-        <div className="flex items-center justify-between px-4 h-16">
-          <AnimatedLogo />
-
-          <div className="flex items-center gap-3">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black lg:hidden">
+        {/* Sticky Utility Bar */}
+        <div className="sticky top-0 bg-black">
+          <div className="flex items-center justify-end gap-3 h-14 px-4">
             <Link
               href="/subscribe"
-              className="px-4 py-2 bg-[var(--netflix-red)] text-white text-sm font-bold rounded hover:shadow-[0_0_20px_rgba(229,9,20,0.6)] transition-all duration-300"
+              className="text-black text-sm font-semibold bg-[#2FE6C8] px-3 py-1.5 rounded hover:opacity-90 transition-opacity"
             >
-              SUBSCRIBE
+              Subscribe
             </Link>
-
             <button
               onClick={() => setIsMenuOpen(true)}
               className="p-2 text-white hover:bg-white/10 rounded transition-colors"
               aria-label="Open menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
+
+        {/* Masthead Section */}
+        <div>
+          <div className="px-4">
+            <AnimatedLogo size="lg" />
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <StreamTabs value={activeTab} onChange={setActiveTab} />
       </header>
 
-      <div className="h-16 lg:hidden" />
+      <div className="h-[165px] lg:hidden" />
 
       <AnimatePresence>
         {isMenuOpen && (

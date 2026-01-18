@@ -126,11 +126,11 @@ function CarouselCard({
       transition={{ duration: 0.3 }}
       className="group cursor-pointer h-full"
     >
-      <div className="p-1">
+      <div className="p-0 md:p-1">
         {isMobile ? (
-          <div className="mt-16">
+          <div className="-mt-16">
             <div
-              className={`relative ${heroHeightClass} bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80 overflow-hidden`}
+              className={`relative ${heroHeightClass} bg-[var(--netflix-bg)] shadow-2xl overflow-hidden`}
             >
               <div className="relative w-full h-full min-h-[120px]">
                 {item.image_url ? (

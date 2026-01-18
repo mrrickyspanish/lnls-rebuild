@@ -7,46 +7,60 @@ import clsx from 'clsx'
 interface AnimatedLogoProps {
   href?: string
   className?: string
+  size?: 'sm' | 'lg'
 }
 
-export default function AnimatedLogo({ href = '/', className }: AnimatedLogoProps) {
+export default function AnimatedLogo({ href = '/', className, size = 'sm' }: AnimatedLogoProps) {
   return (
-    <Link href={href} className={clsx('flex items-center group', className)}>
-      <span className="text-2xl font-bold tracking-tighter flex items-center">
+    <Link 
+      href={href} 
+      className={clsx('inline-flex items-center group', className)}
+      aria-label="itsDribbles home"
+    >
+      <span className={clsx(
+        'flex items-baseline font-extrabold tracking-tight leading-none',
+        size === 'lg' ? 'text-[65px]' : 'text-2xl'
+      )}>
         <span className="text-white">itsDribbles</span>
-        <span
-          className="flex items-end ml-2"
-          style={{ alignItems: 'flex-end' }}
-        >
+        <span className="inline-flex items-center gap-[0.08em] ml-[0.05em]">
           <motion.span
-            className="inline-block rounded-full mr-1 w-2 h-2 md:w-2 md:h-2 align-bottom"
+            className={clsx(
+              'inline-block rounded-full',
+              size === 'lg' ? 'w-[4px] h-[4px]' : 'w-[2.5px] h-[2.5px]'
+            )}
             style={{
               background: 'var(--neon-orange)',
-              boxShadow: '0 0 12px var(--neon-orange)',
-              verticalAlign: 'bottom',
+              boxShadow: '0 0 8px var(--neon-orange)',
             }}
             animate={{ scale: [1, 1.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+            aria-hidden="true"
           />
           <motion.span
-            className="inline-block rounded-full mr-1 w-2 h-2 md:w-2 md:h-2 align-bottom"
+            className={clsx(
+              'inline-block rounded-full',
+              size === 'lg' ? 'w-[4px] h-[4px]' : 'w-[2.5px] h-[2.5px]'
+            )}
             style={{
               background: 'var(--neon-blue)',
-              boxShadow: '0 0 12px var(--neon-blue)',
-              verticalAlign: 'bottom',
+              boxShadow: '0 0 8px var(--neon-blue)',
             }}
             animate={{ scale: [1, 1.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+            aria-hidden="true"
           />
           <motion.span
-            className="inline-block rounded-full w-2 h-2 md:w-2 md:h-2 align-bottom"
+            className={clsx(
+              'inline-block rounded-full',
+              size === 'lg' ? 'w-[4px] h-[4px]' : 'w-[2.5px] h-[2.5px]'
+            )}
             style={{
               background: 'var(--neon-purple)',
-              boxShadow: '0 0 12px var(--neon-purple)',
-              verticalAlign: 'bottom',
+              boxShadow: '0 0 8px var(--neon-purple)',
             }}
             animate={{ scale: [1, 1.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+            aria-hidden="true"
           />
         </span>
       </span>

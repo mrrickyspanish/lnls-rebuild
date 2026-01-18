@@ -42,9 +42,9 @@ const navLinks = [
 
     return (
       <>
-      <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-neutral-200 shadow-sm transition-all duration-300">
+      <header className="fixed top-0 left-0 w-full z-50 bg-black border-b border-white/20 shadow-sm transition-all duration-300">
         {/* Top Network Bar with trending hashtags - Hidden on mobile and when scrolled */}
-        <div className={`w-full h-[42px] hidden md:flex items-center justify-center px-6 bg-neutral-100 text-xs uppercase tracking-wide text-neutral-700 border-b border-neutral-200 overflow-hidden transition-all duration-300 ${
+        <div className={`w-full h-[42px] hidden md:flex items-center justify-center px-6 bg-neutral-900 text-xs uppercase tracking-wide text-white border-b border-white/20 overflow-hidden transition-all duration-300 ${
           isScrolled ? 'md:h-0 md:opacity-0' : 'md:h-[42px] md:opacity-100'
         }`}>
           {/* Top bar: subscribe left, centered logo, hashtags right */}
@@ -60,7 +60,7 @@ const navLinks = [
             </div>
             {/* Centered logo */}
             <div className="flex items-center justify-center flex-1">
-              <Image src="/uploads/articles/creative-eye-studios_footer.png" alt="Creative Eye Studios" width={130} height={26} className="object-contain h-[26px] w-auto mx-auto" />
+              <Image src="/uploads/articles/creative-eye-studios_horizontal_cyan-on-transparent.png" alt="Creative Eye Studios" width={730} height={146} className="object-contain h-[146px] w-auto mx-auto" />
             </div>
             {/* Hashtags right */}
             <div className="flex items-center flex-1 justify-end">
@@ -71,7 +71,7 @@ const navLinks = [
           </div>
         </div>
         {/* Main Branding Row - Reduced height on mobile */}
-        <div className={`w-full flex items-center justify-between px-3 md:px-6 bg-white relative transition-all duration-300 ${
+        <div className={`w-full flex items-center justify-between px-3 md:px-6 bg-black relative transition-all duration-300 ${
           isScrolled ? 'h-[56px] md:h-[70px]' : 'h-[56px] md:h-[90px]'
         }`}>
           {/* Hamburger (left) */}
@@ -82,18 +82,18 @@ const navLinks = [
             aria-expanded={isMobileMenuOpen}
           >
             <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect y="7" width="24" height="4" rx="2" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
-              <rect y="14" width="24" height="4" rx="2" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
-              <rect y="21" width="24" height="4" rx="2" fill="#111" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
+              <rect y="7" width="24" height="4" rx="2" fill="#fff" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
+              <rect y="14" width="24" height="4" rx="2" fill="#fff" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
+              <rect y="21" width="24" height="4" rx="2" fill="#fff" className="transition group-hover:fill-[var(--neon-purple,#a259f7)]" />
             </svg>
           </button>
-          {/* Centered Logo */}
-          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-end gap-1 select-none">
-            <span className={`font-extrabold tracking-tighter text-black leading-none drop-shadow-lg transition-all duration-300 ${
-              isScrolled ? 'text-3xl md:text-5xl' : 'text-3xl md:text-6xl'
+          {/* Centered Logo - Hidden on mobile, shown on desktop */}
+          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-end gap-1 select-none hidden md:flex">
+            <span className={`font-extrabold tracking-tighter text-white leading-none drop-shadow-lg transition-all duration-300 ${
+              isScrolled ? 'text-5xl' : 'text-6xl'
             }`} style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
             <span
-              className={`flex gap-[1.5px] ml-0.5 md:ml-1 mb-[0.15em] transition-all duration-300`}
+              className={`flex gap-[1.5px] ml-1 mb-[0.15em] transition-all duration-300`}
             >
               <motion.span
                 className={`rounded-full inline-block transition-all duration-300 ${
@@ -122,8 +122,8 @@ const navLinks = [
             </span>
           </Link>
           {/* Bolder Search (right) */}
-          <Link href="/search" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-neutral-200 hover:border-[var(--neon-orange,#FD6B0B)] hover:bg-neutral-100 transition absolute right-3 md:right-6 top-1/2 -translate-y-1/2 group" aria-label="Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+          <Link href="/search" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 hover:border-[var(--neon-orange,#FD6B0B)] hover:bg-white/10 transition absolute right-3 md:right-6 top-1/2 -translate-y-1/2 group" aria-label="Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" className="transition-all" strokeWidth="3.2" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
               <circle cx="11" cy="11" r="8" fill="transparent" className="group-hover:fill-[var(--neon-orange,#FD6B0B)] transition-all" />
@@ -131,16 +131,16 @@ const navLinks = [
           </Link>
         </div>
 
-        {/* Section Links Bar - Optimized for mobile */}
-        <nav className="w-full border-t border-neutral-200 bg-white">
-          <ul className="flex items-center justify-center gap-0 py-1.5 md:py-3">
+        {/* Section Links Bar - Hidden on mobile, visible on desktop */}
+        <nav className="w-full border-t border-white/20 bg-black hidden md:block">
+          <ul className="flex items-center justify-center gap-0 py-3">
             {navLinks.map((link, idx) => (
               <li key={link.href} className="flex items-center">
                 <Link
                   href={link.href}
                   className={clsx(
-                    "text-black font-bold uppercase tracking-wider no-underline relative transition-colors duration-300 hover:text-[var(--neon-orange,#FD6B0B)] px-2 md:px-5 py-0.5 md:py-1",
-                    "text-xs md:text-lg",
+                    "text-white font-bold uppercase tracking-wider no-underline relative transition-colors duration-300 hover:text-[var(--neon-orange,#FD6B0B)] px-5 py-1",
+                    "text-lg",
                     link.href === '/' ? 'active' : ''
                   )}
                 >
@@ -149,7 +149,7 @@ const navLinks = [
                     <span className="absolute left-0 -bottom-2 w-full h-[2px] bg-[var(--neon-orange,#FD6B0B)] rounded" />
                   )}
                 </Link>
-                {idx < navLinks.length - 1 && <span className="text-neutral-300 text-lg md:text-xl font-bold px-1 md:px-2 select-none">|</span>}
+                {idx < navLinks.length - 1 && <span className="text-neutral-300 text-xl font-bold px-2 select-none">|</span>}
               </li>
             ))}
           </ul>
@@ -266,6 +266,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 
       {/* Main Navigation */}
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
+        {/* Primary navigation links */}
         <Link
           href="/news"
           onClick={onClose}
@@ -279,7 +280,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           onClick={onClose}
           className="block py-4 text-3xl font-extrabold hover:text-[var(--neon-orange,#FD6B0B)] transition-colors tracking-tight"
         >
-          Podcast
+          Podcasts
         </Link>
 
         <Link
@@ -290,6 +291,15 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           Videos
         </Link>
 
+        <Link
+          href="/about"
+          onClick={onClose}
+          className="block py-4 text-3xl font-extrabold hover:text-[var(--neon-orange,#FD6B0B)] transition-colors tracking-tight"
+        >
+          About
+        </Link>
+
+        {/* Expandable sections */}
         {sections.map((section) => (
           <div key={section.name} className="border-t border-white/10 pt-2">
             <button
