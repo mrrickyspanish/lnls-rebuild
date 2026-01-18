@@ -116,7 +116,7 @@ function CarouselCard({
     }
   };
 
-  const heroHeightClass = isMobile ? "h-[320px]" : "h-[550px]";
+  const heroHeightClass = isMobile ? "h-[350px]" : "h-[550px]";
 
   const cardContent = (
     <motion.div
@@ -128,7 +128,7 @@ function CarouselCard({
     >
       <div className="md:p-1">
         {isMobile ? (
-          <div className="-mt-20">
+          <div className="-mt-[110px]">
             <div
               className={`relative ${heroHeightClass} bg-[var(--netflix-bg)] shadow-2xl overflow-hidden`}
             >
