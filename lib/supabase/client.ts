@@ -39,7 +39,7 @@ export async function subscribeToNewsletter(
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
     .from("newsletter_subscribers")
-    .insert([{ email, status: 'active' }]);
+    .insert([{ email, active: true }]);
 
   if (error) {
     console.error("Supabase insert error:", error);
