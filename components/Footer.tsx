@@ -1,11 +1,19 @@
 import Link from 'next/link';
 import { Twitter, Instagram, Youtube, Facebook } from 'lucide-react';
+import NewsletterSignup from './NewsletterSignup';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-black border-t border-white/10 mt-auto">
+      {/* Newsletter Section - Full Width */}
+      <div className="border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <NewsletterSignup />
+        </div>
+      </div>
+
       <div className="max-w-[1920px] mx-auto px-6 py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
@@ -140,20 +148,37 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Subscribe */}
+          {/* Connect Section */}
           <div>
             <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
-              Stay Updated
+              Connect
             </h3>
-            <p className="text-white/60 text-sm mb-4">
-              Get the latest news delivered to your inbox.
-            </p>
-            <Link
-              href="/subscribe"
-              className="inline-block px-6 py-2 bg-[var(--netflix-red)] hover:bg-red-700 text-white font-semibold text-sm rounded transition-colors"
-            >
-              Subscribe
-            </Link>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/about"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  Write for Us
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 

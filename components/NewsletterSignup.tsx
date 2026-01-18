@@ -36,26 +36,26 @@ export default function NewsletterSignup() {
   }
 
   return (
-    <div className="card max-w-2xl mx-auto text-center">
+    <div className="text-center">
       <div className="mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-neon-purple/20 mb-4">
-          <Mail className="w-8 h-8 text-neon-purple" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--netflix-red)]/20 mb-4">
+          <Mail className="w-7 h-7 text-[var(--netflix-red)]" />
         </div>
-        <h3 className="text-3xl font-bebas gradient-text mb-2">
-          Stay in the Loop
+        <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 font-netflix">
+          Never Miss a Dribble
         </h3>
-        <p className="text-slate-muted">
-          Get the latest Lakers news and TDD updates delivered daily.
+        <p className="text-white/60 text-sm md:text-base">
+          Get the latest Lakers news, culture, and tech insights delivered daily.
         </p>
       </div>
 
       {status === 'success' ? (
-        <div className="flex items-center justify-center space-x-2 text-neon-gold">
+        <div className="flex items-center justify-center space-x-2 text-green-400 bg-green-500/10 border border-green-500/30 rounded-lg py-4 px-6">
           <Check className="w-5 h-5" />
-          <span>{message}</span>
+          <span className="font-semibold">{message}</span>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
@@ -63,12 +63,12 @@ export default function NewsletterSignup() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="flex-1 px-4 py-3 bg-slate-base border border-slate-muted/20 rounded-lg text-offwhite placeholder:text-slate-muted focus:outline-none focus:border-neon-purple transition-colors"
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[var(--netflix-red)] transition-colors"
             />
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="btn-primary whitespace-nowrap disabled:opacity-50"
+              className="px-6 py-3 bg-[var(--netflix-red)] hover:bg-red-700 text-white font-bold rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
             </button>
@@ -78,7 +78,7 @@ export default function NewsletterSignup() {
             <p className="text-red-400 text-sm">{message}</p>
           )}
 
-          <p className="text-xs text-slate-muted">
+          <p className="text-xs text-white/40">
             We respect your privacy. Unsubscribe anytime.
           </p>
         </form>
