@@ -21,7 +21,8 @@ const ARTICLE_FIELDS = `
   published_at,
   created_at,
   updated_at,
-  views
+  views,
+  likes
 `
 
 type ArticleRow = Database['public']['Tables']['articles']['Row']
