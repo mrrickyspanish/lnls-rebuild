@@ -418,10 +418,28 @@ function CarouselCard({
     </motion.div>
   );
 
-  // Restore previous wrapping logic for desktop (non-mobile)
+  // For mobile: wrap in clickable div or link
   if (isMobile) {
-    return cardContent;
+    const href = item.source_url || "#";
+    if (isPodcast && (item.audio_url || item.source_url)) {
+      return (
+        <div onClick={handlePodcastClick} className="cursor-pointer w-full">
+          {cardContent}
+        </div>
+      );
+    } else {
+      return (
+        <Link
+          href={href}
+          target={href.startsWith("http") ? "_blank" : "_self"}
+          className="w-full block"
+        >
+          {cardContent}
+        </Link>
+      );
+    }
   }
+
   // For desktop: wrap in Link or clickable div
   const href = item.source_url || "#";
   if (isPodcast && (item.audio_url || item.source_url)) {
