@@ -1,6 +1,6 @@
 "use client";
 
-import { Share2, Twitter, Facebook, Link2 } from 'lucide-react';
+import { Twitter, Facebook, Link2 } from 'lucide-react';
 import { useState } from 'react';
 import LikeButton from './LikeButton';
 

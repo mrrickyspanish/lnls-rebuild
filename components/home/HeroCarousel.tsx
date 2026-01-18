@@ -79,7 +79,7 @@ export default function HeroCarousel() {
             </div>
           </a>
         </motion.div>
-        );
+      );
       })}
       {/* Navigation Arrows */}
       <button

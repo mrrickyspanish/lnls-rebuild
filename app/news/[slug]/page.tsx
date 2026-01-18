@@ -11,8 +11,7 @@ import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
 import BackToTop from "@/components/article/BackToTop";
 import ViewTracker from "@/components/article/ViewTracker";
-import LikeButton from "@/components/article/LikeButton";
-import { fetchArticleBySlug, fetchAllArticles, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
+import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
 type ArticleSlide = {

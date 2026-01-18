@@ -1,5 +1,4 @@
 import ContentRowWithHero from "@/components/home/ContentRowWithHero";
-import HeroCarousel from "@/components/home/HeroCarousel";
 import ContentRow from "@/components/home/ContentRow";
 import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
@@ -7,7 +6,7 @@ import { getPublishedArticles } from "@/lib/articles";
 import { getNewsStream } from "@/lib/supabase/client";
 import { getYouTubeRSS } from "@/lib/youtube-rss";
 import type { Article } from "@/types/supabase";
-import { filterOwnedContent, filterExternalContent, isOwnedContent } from "@/lib/content";
+import { filterOwnedContent, filterExternalContent } from "@/lib/content";
 
 export const revalidate = 60;
 
