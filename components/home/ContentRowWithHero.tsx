@@ -32,6 +32,7 @@ type ContentItem = {
   author_name?: string | null;
   show?: string | null;
   channel?: string | null;
+  likes?: number | null;
 };
 
 type ContentRowWithHeroProps = {
@@ -173,16 +174,16 @@ function CarouselCard({
                 </p>
               )}
 
-              {/* Meta row: author + category badge */}
+              {/* Meta row: author + likes */}
               <div className="mt-4 flex items-center gap-3 text-xs text-white/60">
                 {authorName && (
                   <span className="truncate">{authorName}</span>
                 )}
-                {authorName && badge.label && (
+                {authorName && item.likes && (
                   <span className="h-1 w-1 rounded-full bg-white/30" />
                 )}
-                {badge.label && (
-                  <span className="truncate">{badge.label}</span>
+                {item.likes && (
+                  <span>{item.likes} Likes</span>
                 )}
               </div>
             </div>
