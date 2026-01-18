@@ -13,6 +13,7 @@ import {
 } from "@/lib/theme/tokens";
 import { useAudioPlayer } from "@/lib/audio/AudioPlayerContext";
 import { canUseNextImage } from "@/lib/images";
+import ContentTileSkeleton from "./ContentTileSkeleton";
 
 type ContentItem = {
   id: string | number;
@@ -39,6 +40,7 @@ type ContentRowWithHeroProps = {
   viewAllHref?: string;
   autoRotate?: boolean;
   rotateInterval?: number; // seconds
+  isLoading?: boolean;
 };
 
 function formatDate(dateString: string | null | undefined): string {
@@ -509,6 +511,7 @@ export default function ContentRowWithHero({
   viewAllHref,
   autoRotate = true,
   rotateInterval = 12,
+  isLoading = false,
 }: ContentRowWithHeroProps) {
   const { playEpisode } = useAudioPlayer();
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
@@ -535,7 +538,24 @@ export default function ContentRowWithHero({
   }, [autoRotate, items.length, rotateInterval]);
 
   const isMobileLayout = viewportWidth < 768;
-  if (!items || items.length === 0) return null;
+  if (!items || items.length === 0) {
+    // Show loading state if isLoading is true
+    if (isLoading) {
+      return (
+        <section className="mb-20">
+          <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+            <div className="h-8 w-48 bg-gradient-to-r from-[var(--bg-surface)] via-[var(--bg-elevated)] to-[var(--bg-surface)] rounded animate-pulse" />
+          </div>
+          <div className="w-full" style={{ minHeight: 500 }}>
+            <div className="w-full h-[500px] bg-gradient-to-r from-[var(--bg-surface)] via-[var(--bg-elevated)] to-[var(--bg-surface)] rounded-lg animate-pulse relative overflow-hidden">
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+            </div>
+          </div>
+        </section>
+      );
+    }
+    return null;
+  }
 
   const heroItem = items[currentIndex];
 

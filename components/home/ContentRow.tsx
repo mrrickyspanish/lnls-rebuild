@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import ContentTile from "./ContentTile";
+import ContentTileSkeleton from "./ContentTileSkeleton";
 import { useRef, useState } from "react";
 
 type ContentRowProps = {
@@ -12,9 +13,10 @@ type ContentRowProps = {
   items: any[];
   viewAllHref?: string;
   cardSize?: 'default' | 'small';
+  isLoading?: boolean;
 };
 
-export default function ContentRow({ title, description, items, viewAllHref, cardSize = 'default' }: ContentRowProps) {
+export default function ContentRow({ title, description, items, viewAllHref, cardSize = 'default', isLoading = false }: ContentRowProps) {
   const displayItems = items.slice(0, 6);
   const rowRef = useRef<HTMLDivElement>(null);
   const [isMoved, setIsMoved] = useState(false);
@@ -24,6 +26,9 @@ export default function ContentRow({ title, description, items, viewAllHref, car
   const dragDistance = useRef(0);
 
   const widthClass = cardSize === 'small' ? 'w-[250px]' : 'w-[300px]';
+
+  // Show skeleton loader count
+  const skeletonCount = 6;
 
   const handleClick = (direction: "left" | "right") => {
     setIsMoved(true);
@@ -115,20 +120,33 @@ export default function ContentRow({ title, description, items, viewAllHref, car
           onMouseMove={handleMouseMove}
           onClickCapture={handleCaptureClick}
         >
-          {displayItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              className={`flex-shrink-0 ${widthClass} snap-start pointer-events-none`}
-            >
-              <div className="pointer-events-auto">
-                 <ContentTile {...item} episodeQueue={items} size={cardSize} />
+          {isLoading ? (
+            // Show skeleton loaders
+            Array.from({ length: skeletonCount }).map((_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className={`flex-shrink-0 ${widthClass} snap-start`}
+              >
+                <ContentTileSkeleton size={cardSize} />
               </div>
-            </motion.div>
-          ))}
+            ))
+          ) : (
+            // Show actual content
+            displayItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className={`flex-shrink-0 ${widthClass} snap-start pointer-events-none`}
+              >
+                <div className="pointer-events-auto">
+                  <ContentTile {...item} episodeQueue={items} size={cardSize} />
+                </div>
+              </motion.div>
+            ))
+          )}
         </div>
 
         {/* Right Arrow */}
