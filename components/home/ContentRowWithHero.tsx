@@ -179,11 +179,11 @@ function CarouselCard({
                 {authorName && (
                   <span className="truncate">{authorName}</span>
                 )}
-                {authorName && item.likes && (
+                {authorName && (item.likes !== undefined && item.likes !== null) && (
                   <span className="h-1 w-1 rounded-full bg-white/30" />
                 )}
-                {item.likes && (
-                  <span>{item.likes} Likes</span>
+                {(item.likes !== undefined && item.likes !== null) && (
+                  <span>{item.likes} {item.likes === 1 ? 'Like' : 'Likes'}</span>
                 )}
               </div>
             </div>
