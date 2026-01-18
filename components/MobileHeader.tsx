@@ -41,13 +41,13 @@ export default function MobileHeader() {
           <div className="flex items-center justify-end gap-3 h-14 px-4">
             <Link
               href="/subscribe"
-              className="text-black text-sm font-semibold bg-[#2FE6C8] px-3 py-2 rounded hover:opacity-90 transition-opacity"
+              className="text-black text-sm font-semibold bg-[#2FE6C8] px-3 py-1 rounded hover:opacity-90 transition-opacity"
             >
               Subscribe
             </Link>
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 text-white hover:bg-white/10 rounded transition-colors"
+              className="px-3 py-2 text-white hover:bg-white/10 rounded transition-colors"
               aria-label="Open menu"
             >
               <Menu className="w-5 h-5" />
