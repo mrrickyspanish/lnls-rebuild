@@ -16,6 +16,7 @@ const navLinks = [
 
   export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
       if (isMobileMenuOpen) {
@@ -29,11 +30,23 @@ const navLinks = [
       };
     }, [isMobileMenuOpen]);
 
+    // Handle scroll for collapsing header
+    useEffect(() => {
+      const handleScroll = () => {
+        setIsScrolled(window.scrollY > 50);
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
       <>
-      <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-neutral-200 shadow-sm">
-        {/* Top Network Bar with trending hashtags */}
-        <div className="w-full h-[42px] flex items-center justify-center px-6 bg-neutral-100 text-xs uppercase tracking-wide text-neutral-700 border-b border-neutral-200">
+      <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-neutral-200 shadow-sm transition-all duration-300">
+        {/* Top Network Bar with trending hashtags - Hidden on mobile and when scrolled */}
+        <div className={`w-full h-[42px] hidden md:flex items-center justify-center px-6 bg-neutral-100 text-xs uppercase tracking-wide text-neutral-700 border-b border-neutral-200 overflow-hidden transition-all duration-300 ${
+          isScrolled ? 'md:h-0 md:opacity-0' : 'md:h-[42px] md:opacity-100'
+        }`}>
           {/* Top bar: subscribe left, centered logo, hashtags right */}
           <div className="flex w-full items-center justify-center">
             {/* Subscribe link left */}
@@ -57,8 +70,10 @@ const navLinks = [
             </div>
           </div>
         </div>
-        {/* Main Branding Row */}
-        <div className="w-full flex items-center justify-between px-3 md:px-6 h-[60px] md:h-[90px] bg-white relative">
+        {/* Main Branding Row - Reduced height on mobile */}
+        <div className={`w-full flex items-center justify-between px-3 md:px-6 bg-white relative transition-all duration-300 ${
+          isScrolled ? 'h-[56px] md:h-[70px]' : 'h-[56px] md:h-[90px]'
+        }`}>
           {/* Hamburger (left) */}
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
@@ -74,24 +89,32 @@ const navLinks = [
           </button>
           {/* Centered Logo */}
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-end gap-1 select-none">
-            <span className="text-4xl md:text-6xl font-extrabold tracking-tighter text-black leading-none drop-shadow-lg" style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
+            <span className={`font-extrabold tracking-tighter text-black leading-none drop-shadow-lg transition-all duration-300 ${
+              isScrolled ? 'text-3xl md:text-5xl' : 'text-3xl md:text-6xl'
+            }`} style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
             <span
-              className="flex gap-[1.5px] ml-0.5 md:ml-1 mb-[0.15em]"
+              className={`flex gap-[1.5px] ml-0.5 md:ml-1 mb-[0.15em] transition-all duration-300`}
             >
               <motion.span
-                className="w-1.5 h-1.5 rounded-full inline-block"
+                className={`rounded-full inline-block transition-all duration-300 ${
+                  isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
+                }`}
                 style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 3px var(--neon-orange, #FD6B0B)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0 }}
               />
               <motion.span
-                className="w-1.5 h-1.5 rounded-full inline-block"
+                className={`rounded-full inline-block transition-all duration-300 ${
+                  isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
+                }`}
                 style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 3px var(--neon-blue, #00e6fe)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.18 }}
               />
               <motion.span
-                className="w-1.5 h-1.5 rounded-full inline-block"
+                className={`rounded-full inline-block transition-all duration-300 ${
+                  isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
+                }`}
                 style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 3px var(--neon-purple, #a259f7)' }}
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ duration: 1.4, repeat: Infinity, delay: 0.36 }}
@@ -108,16 +131,16 @@ const navLinks = [
           </Link>
         </div>
 
-        {/* Section Links Bar */}
+        {/* Section Links Bar - Optimized for mobile */}
         <nav className="w-full border-t border-neutral-200 bg-white">
-          <ul className="flex items-center justify-center gap-0 py-2 md:py-3">
+          <ul className="flex items-center justify-center gap-0 py-1.5 md:py-3">
             {navLinks.map((link, idx) => (
               <li key={link.href} className="flex items-center">
                 <Link
                   href={link.href}
                   className={clsx(
-                    "text-black font-bold uppercase tracking-wider no-underline relative transition-colors duration-300 hover:text-[var(--neon-orange,#FD6B0B)] px-3 md:px-5 py-0.5 md:py-1 ",
-                    "text-base md:text-lg",
+                    "text-black font-bold uppercase tracking-wider no-underline relative transition-colors duration-300 hover:text-[var(--neon-orange,#FD6B0B)] px-2 md:px-5 py-0.5 md:py-1",
+                    "text-xs md:text-lg",
                     link.href === '/' ? 'active' : ''
                   )}
                 >
