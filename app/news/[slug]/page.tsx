@@ -167,7 +167,7 @@ export default async function ArticlePage({ params }: PageProps) {
           {typeof article.likes === 'number' && (
             <>
               <span>•</span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 text-cyan-400">
                 <span role="img" aria-label="likes">❤️</span> {article.likes.toLocaleString()} likes
               </span>
             </>
