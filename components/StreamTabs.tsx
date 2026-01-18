@@ -14,7 +14,7 @@ export default function StreamTabs({
   const isLatest = value === 'latest'
 
   return (
-    <div className="relative pt-3 pb-0">
+    <div className="relative pt-1 pb-0">
       {/* Full-width divider line */}
       <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-white/20" />
       
