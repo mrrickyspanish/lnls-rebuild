@@ -17,6 +17,7 @@ export default function AnimatedLogo({ href = '/', className, size = 'sm' }: Ani
       className={clsx('inline-flex items-center group', className)}
       aria-label="itsDribbles home"
     >
+      {/* LOCKED: items-baseline alignment with ml-[0.05em] and gap-[0.08em] - DO NOT MODIFY */}
       <span className={clsx(
         'flex items-baseline font-extrabold tracking-tight leading-none',
         size === 'lg' ? 'text-[65px]' : 'text-2xl'

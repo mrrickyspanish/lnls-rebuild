@@ -56,7 +56,7 @@ export default function MobileHeader() {
         </div>
 
         {/* Masthead Section */}
-        <div>
+        <div className="pb-2">
           <div className="px-4">
             <AnimatedLogo size="lg" />
           </div>
