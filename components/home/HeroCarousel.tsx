@@ -44,7 +44,7 @@ export default function HeroCarousel() {
   }, [current, slideCount]);
 
   return (
-    <section className="relative h-[100vh] min-h-[600px] overflow-hidden">
+    <section className="relative h-[100vh] min-h-[600px] md:h-[120vh] md:min-h-[800px] overflow-hidden">
       {slides.map((slide, idx) => (
         <motion.div
           key={slide.title}
@@ -53,29 +53,31 @@ export default function HeroCarousel() {
           transition={{ duration: 1 }}
           className={`absolute inset-0 w-full h-full ${idx === current ? 'z-10' : 'z-0 pointer-events-none'}`}
         >
-          <Image
-            src={slide.image}
-            alt={slide.title}
-            fill
-            priority={idx === 0}
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-          <div className="relative z-20 max-w-[1400px] mx-auto px-8 pt-32 flex flex-col h-full justify-center">
-            <span className="category-tag inline-block bg-purple-900/90 text-yellow-400 px-4 py-2 text-sm font-semibold uppercase rounded mb-6">
-              {slide.category}
-            </span>
-            <h1 className="hero-title font-playfair text-white text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
-              {slide.title}
-            </h1>
-            <p className="hero-subhead text-lg md:text-2xl max-w-xl opacity-90 leading-relaxed mb-8">
-              {slide.subhead}
-            </p>
-            <a href={slide.href} className="cta-button inline-block bg-yellow-400 text-black px-8 py-4 font-bold uppercase tracking-wide rounded transition hover:bg-white hover:-translate-y-1">
-              {slide.cta}
-            </a>
-          </div>
+          <a href={slide.href} className="block w-full h-full">
+            <Image
+              src={slide.image}
+              alt={slide.title}
+              fill
+              priority={idx === 0}
+              className="object-cover object-center"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+            <div className="relative z-20 max-w-[1400px] md:max-w-[1800px] mx-auto px-8 pt-32 flex flex-col h-full justify-center">
+              <span className="category-tag inline-block bg-purple-900/90 text-yellow-400 px-4 py-2 text-sm font-semibold uppercase rounded mb-6">
+                {slide.category}
+              </span>
+              <h1 className="hero-title font-playfair text-white text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
+                {slide.title}
+              </h1>
+              <p className="hero-subhead text-lg md:text-2xl max-w-xl opacity-90 leading-relaxed mb-8">
+                {slide.subhead}
+              </p>
+              <span className="cta-button inline-block bg-yellow-400 text-black px-8 py-4 font-bold uppercase tracking-wide rounded transition hover:bg-white hover:-translate-y-1">
+                {slide.cta}
+              </span>
+            </div>
+          </a>
         </motion.div>
       ))}
       {/* Navigation Arrows */}
