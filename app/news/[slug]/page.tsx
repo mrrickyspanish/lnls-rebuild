@@ -11,6 +11,7 @@ import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
 import BackToTop from "@/components/article/BackToTop";
 import ViewTracker from "@/components/article/ViewTracker";
+import LikeButton from "@/components/article/LikeButton";
 import { fetchArticleBySlug, fetchAllArticles, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
@@ -142,7 +143,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ViewTracker slug={slug} />
       <ReadProgress />
-      <ShareBar url={shareUrl} title={article.title} />
+      <ShareBar url={shareUrl} title={article.title} slug={slug} initialLikes={article.likes || 0} />
       <BackToTop />
       <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[140px] md:pt-[180px]">
         {/* Breadcrumbs */}
@@ -163,6 +164,14 @@ export default async function ArticlePage({ params }: PageProps) {
             <span className="flex items-center gap-1">
               <span role="img" aria-label="views">👁️</span> {article.views.toLocaleString()} views
             </span>
+          )}
+          {typeof article.likes === 'number' && (
+            <>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <span role="img" aria-label="likes">❤️</span> {article.likes.toLocaleString()} likes
+              </span>
+            </>
           )}
           <span>•</span>
           <span>By {article.author_name}</span>

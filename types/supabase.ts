@@ -82,6 +82,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
           views: number;
+          likes: number;
         };
         Insert: {
           id?: string;
@@ -353,6 +354,15 @@ export interface Database {
         };
         Returns: void;
       };
+      increment_article_likes: {
+        Args: {
+          article_slug: string;
+          delta: number;
+        };
+        Returns: {
+          new_likes: number;
+        }[];
+      };
     };
     Enums: {
       user_role: 'admin' | 'editor' | 'writer' | 'user';
@@ -394,6 +404,7 @@ type ArticleTableUpdate = Database['public']['Tables']['articles']['Update'];
 export type Article = Omit<ArticleTableRow, 'body'> & {
   body: ArticleBody;
   views: number;
+  likes: number;
 };
 
 export type ArticleInsert = Omit<ArticleTableInsert, 'body'> & {

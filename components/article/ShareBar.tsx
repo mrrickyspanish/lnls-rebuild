@@ -2,13 +2,16 @@
 
 import { Share2, Twitter, Facebook, Link2 } from 'lucide-react';
 import { useState } from 'react';
+import LikeButton from './LikeButton';
 
 type ShareBarProps = {
   url: string;
   title: string;
+  slug: string;
+  initialLikes: number;
 };
 
-export default function ShareBar({ url, title }: ShareBarProps) {
+export default function ShareBar({ url, title, slug, initialLikes }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = async () => {
@@ -29,6 +32,12 @@ export default function ShareBar({ url, title }: ShareBarProps) {
 
   return (
     <div className="fixed bottom-24 right-6 md:right-12 flex flex-col gap-3 z-40">
+      {/* Like Button */}
+      <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+        <LikeButton slug={slug} initialLikes={initialLikes} />
+      </div>
+
+      {/* Share Buttons */}
       <button
         onClick={shareToTwitter}
         className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-[#1da1f2] transition-colors group"
