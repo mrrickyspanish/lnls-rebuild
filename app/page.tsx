@@ -61,6 +61,8 @@ export default async function HomePage() {
         source_url: `/news/${article.slug}`,
         published_at: article.published_at || article.created_at,
         topic: article.topic || undefined, // Ensure topic is included for correct badge
+        author_name: article.author_name || undefined,
+        likes: article.likes || undefined,
       };
     };
 
