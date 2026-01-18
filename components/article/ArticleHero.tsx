@@ -63,6 +63,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       alt={alt}
       fill
       priority={priority}
+      sizes="100vw"
       className="object-cover"
       style={{ borderRadius: '12px' }}
     />

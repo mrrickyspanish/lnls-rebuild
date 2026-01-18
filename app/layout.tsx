@@ -4,7 +4,12 @@ import ResponsiveHeader from '@/components/ResponsiveHeader'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
-import SplashScreen from '@/components/splash/SplashScreen'
+import dynamic from 'next/dynamic';
+
+// Lazy load SplashScreen for better initial page load
+const SplashScreen = dynamic(() => import('@/components/splash/SplashScreen'), {
+  ssr: false,
+});
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })

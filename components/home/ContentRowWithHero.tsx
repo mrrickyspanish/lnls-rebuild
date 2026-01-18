@@ -137,6 +137,7 @@ function CarouselCard({
                       src={item.image_url}
                       alt={item.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       priority
                     />
@@ -303,6 +304,7 @@ function CarouselCard({
                     src={item.image_url}
                     alt={item.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     priority
                   />

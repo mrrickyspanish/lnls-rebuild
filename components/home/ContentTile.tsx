@@ -124,6 +124,8 @@ export default function ContentTile({
               src={image_url}
               alt={title}
               fill
+              sizes="(max-width: 768px) 250px, 300px"
+              loading="lazy"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (

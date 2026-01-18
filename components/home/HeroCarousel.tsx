@@ -79,7 +79,8 @@ export default function HeroCarousel() {
             </div>
           </a>
         </motion.div>
-      ))}
+        );
+      })}
       {/* Navigation Arrows */}
       <button
         aria-label="Previous Slide"
