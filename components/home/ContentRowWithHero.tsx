@@ -118,6 +118,9 @@ function CarouselCard({
 
   const heroHeightClass = isMobile ? "h-[350px]" : "h-[550px]";
 
+  // Extract author name for meta row
+  const authorName = item.author_name || item.author || item.show || item.channel;
+
   const cardContent = (
     <motion.div
       onHoverStart={() => setIsHovered(true)}
@@ -128,139 +131,64 @@ function CarouselCard({
     >
       <div className="md:p-1">
         {isMobile ? (
-          <div className="-mt-[110px]">
-            <div
-              className={`relative ${heroHeightClass} bg-[var(--netflix-bg)] shadow-2xl overflow-hidden`}
-            >
-              <div className="relative w-full h-full min-h-[120px]">
-                {item.image_url ? (
-                  useOptimizedImage ? (
-                    <Image
-                      src={item.image_url}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      priority
-                    />
-                  ) : (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                  )
+          <div>
+            {/* Verge-style image panel with aspect ratio and border */}
+            <div className="relative aspect-[16/10] overflow-hidden border border-white/10">
+              {item.image_url ? (
+                useOptimizedImage ? (
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    priority
+                  />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                <div className="absolute top-3 left-3 flex gap-2">
-                  <motion.div
-                    animate={{ opacity: isHovered ? 0 : 1 }}
-                    className="px-2 py-1 rounded-lg text-xs font-bold backdrop-blur-md shadow-lg"
-                    style={{
-                      backgroundColor: `${accent.primary}40`,
-                      color: accent.primary,
-                      border: `1.5px solid ${accent.primary}`,
-                    }}
-                  >
-                    {badge.label}
-                  </motion.div>
-                  <motion.div
-                    animate={{ opacity: isHovered ? 0 : 1 }}
-                    className="px-2 py-1 rounded-lg text-xs font-bold backdrop-blur-md shadow-lg bg-white/10 text-white border border-white/30"
-                  >
-                    TDD
-                  </motion.div>
-                </div>
-              </div>
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                )
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
+              )}
+              {/* Subtle readability gradient */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/0" />
             </div>
-            <div className="w-full flex flex-col justify-center items-center px-4 py-3">
-              <h3 className="font-extrabold text-white leading-tight font-netflix line-clamp-2 text-2xl mb-2 tracking-tight text-center drop-shadow-lg max-w-[80%] [text-wrap:balance]">
+
+            {/* Verge-style text panel with responsive negative margin overlap */}
+            <div className="relative -mt-10 sm:-mt-14 bg-black px-5 pt-6 pb-6 text-left">
+              {/* Headline - big, tight, 2 line clamp */}
+              <h3 className="text-white font-extrabold tracking-tight leading-[0.95] text-[32px] sm:text-[36px] line-clamp-2">
                 {item.title}
               </h3>
-              <div className="flex items-center gap-2 text-xs text-white/80 mb-1 justify-center">
-                {item.episode_number && (
-                  <span className="font-semibold text-white">
-                    Ep {item.episode_number}
-                  </span>
+
+              {/* Subhead - lighter, 2 line clamp */}
+              {item.description && (
+                <p className="mt-3 text-white/75 text-base leading-snug line-clamp-2">
+                  {item.description}
+                </p>
+              )}
+
+              {/* Meta row: author + category badge */}
+              <div className="mt-4 flex items-center gap-3 text-xs text-white/60">
+                {authorName && (
+                  <span className="truncate">{authorName}</span>
                 )}
-                {item.duration && item.episode_number && <span>•</span>}
-                {item.duration && (
-                  <span>
-                    {isPodcast
-                      ? `${Math.floor(
-                          parseInt(item.duration || "0", 10) / 60
-                        )}m`
-                      : item.duration}
-                  </span>
+                {authorName && badge.label && (
+                  <span className="h-1 w-1 rounded-full bg-white/30" />
                 )}
-                {item.author && <span>•</span>}
-                {item.author && (
-                  <span className="font-semibold text-white">
-                    {item.author}
-                  </span>
+                {badge.label && (
+                  <span className="truncate">{badge.label}</span>
                 )}
               </div>
-              {item.description && (
-                <>
-                  <p className="text-xs text-white/90 line-clamp-2 leading-relaxed mb-1 text-center">
-                    {item.description.split(". ")[0] +
-                      (item.description.includes(".") ? "." : "")}
-                  </p>
-                  {(() => {
-                    let byline: string | null = null;
-                    if (
-                      isPodcast &&
-                      (item.show || item.author_name || item.author)
-                    ) {
-                      byline = `from ${
-                        item.show || item.author_name || item.author
-                      }`;
-                    } else if (
-                      item.content_type === "youtube" &&
-                      (item.channel || item.author_name || item.author)
-                    ) {
-                      byline = `from ${
-                        item.channel || item.author_name || item.author
-                      }`;
-                    } else if (item.author_name || item.author) {
-                      byline = `by ${item.author_name || item.author}`;
-                    }
-                    return byline ? (
-                      <div className="italic text-white/80 text-sm text-center mb-2">
-                        {byline}
-                      </div>
-                    ) : null;
-                  })()}
-                </>
-              )}
-              {!item.description && (() => {
-                let byline: string | null = null;
-                if (
-                  isPodcast &&
-                  (item.show || item.author_name || item.author)
-                ) {
-                  byline = `from ${
-                    item.show || item.author_name || item.author
-                  }`;
-                } else if (
-                  item.content_type === "youtube" &&
-                  (item.channel || item.author_name || item.author)
-                ) {
-                  byline = `from ${
-                    item.channel || item.author_name || item.author
-                  }`;
-                } else if (item.author_name || item.author) {
-                  byline = `by ${item.author_name || item.author}`;
-                }
-                return byline ? (
-                  <div className="italic text-white/80 text-sm text-center mb-2">
-                    {byline}
-                  </div>
-                ) : null;
-              })()}
+            </div>
+
+            {/* Keep existing controls below */}
+            <div className="w-full flex flex-col justify-center items-center px-4 py-3 lg:hidden">
               <div className="flex gap-2 items-center justify-center">
                 {item.duration && !isCurrentlyPlaying && (
                   <div className="bg-black/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white shadow-lg">
