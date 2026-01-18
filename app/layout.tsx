@@ -6,6 +6,7 @@ import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
 import ViewTransition from '@/components/ViewTransition';
 import dynamic from 'next/dynamic';
+import { TabProvider } from '@/components/home/HomePageClient';
 
 // Lazy load SplashScreen for better initial page load
 const SplashScreen = dynamic(() => import('@/components/splash/SplashScreen'));
@@ -34,14 +35,16 @@ export default function RootLayout({
       <body className={`${inter.variable} ${space.variable} font-sans min-h-screen flex flex-col`}>
         <SplashScreen />
         <ViewTransition />
-        <AudioPlayerProvider>
-          <ResponsiveHeader />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <GlobalAudioPlayer />
-        </AudioPlayerProvider>
+        <TabProvider>
+          <AudioPlayerProvider>
+            <ResponsiveHeader />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <GlobalAudioPlayer />
+          </AudioPlayerProvider>
+        </TabProvider>
       </body>
     </html>
   )

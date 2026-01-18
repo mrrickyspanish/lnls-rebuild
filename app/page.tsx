@@ -2,7 +2,7 @@ import ContentRowWithHero from "@/components/home/ContentRowWithHero";
 import ContentRow from "@/components/home/ContentRow";
 import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
-import HomePageClient, { TabProvider } from "@/components/home/HomePageClient";
+import HomePageClient from "@/components/home/HomePageClient";
 import { getPublishedArticles } from "@/lib/articles";
 import { getNewsStream } from "@/lib/supabase/client";
 import { getYouTubeRSS } from "@/lib/youtube-rss";
@@ -271,7 +271,6 @@ export default async function HomePage() {
     }).filter(Boolean);
 
     return (
-      <TabProvider>
         <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-0 md:pt-[180px]">
           {/* SEO: JSON-LD structured data for org and hero items */}
           <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(orgJsonLd)}</script>
@@ -350,7 +349,6 @@ export default async function HomePage() {
           />
         </div>
       </main>
-    </TabProvider>
     );
   } catch (error) {
     console.error("Error fetching content:", error);
