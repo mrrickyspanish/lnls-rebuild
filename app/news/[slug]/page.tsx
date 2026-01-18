@@ -9,6 +9,7 @@ import RelatedRow from "@/components/article/RelatedRow";
 import AuthorCard from "@/components/article/AuthorCard";
 import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
+import BackToTop from "@/components/article/BackToTop";
 import { fetchArticleBySlug, fetchAllArticles, incrementArticleViews, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
@@ -144,6 +145,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} />
+      <BackToTop />
       <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[140px] md:pt-[180px]">
         {/* Breadcrumbs */}
         <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
