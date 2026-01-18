@@ -10,7 +10,8 @@ import AuthorCard from "@/components/article/AuthorCard";
 import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
 import BackToTop from "@/components/article/BackToTop";
-import { fetchArticleBySlug, fetchAllArticles, incrementArticleViews, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
+import ViewTracker from "@/components/article/ViewTracker";
+import { fetchArticleBySlug, fetchAllArticles, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 
 type ArticleSlide = {
@@ -99,10 +100,6 @@ export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
-  // Increment view count (fire and forget)
-  incrementArticleViews(slug).catch(err => 
-    console.error('Failed to track view:', err)
-  );
 
   let relatedArticles = await fetchRelatedArticles(article.id, article.topic, 6);
 
@@ -143,6 +140,7 @@ export default async function ArticlePage({ params }: PageProps) {
   return (
     <>
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
+      <ViewTracker slug={slug} />
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} />
       <BackToTop />
