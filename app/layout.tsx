@@ -7,9 +7,7 @@ import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
 import dynamic from 'next/dynamic';
 
 // Lazy load SplashScreen for better initial page load
-const SplashScreen = dynamic(() => import('@/components/splash/SplashScreen'), {
-  ssr: false,
-});
+const SplashScreen = dynamic(() => import('@/components/splash/SplashScreen'));
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })
