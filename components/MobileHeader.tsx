@@ -41,7 +41,7 @@ export default function MobileHeader() {
           <div className="flex items-center justify-end gap-3 h-14 px-4">
             <Link
               href="/subscribe"
-              className="text-black text-sm font-semibold bg-[#2FE6C8] px-3 py-1.5 rounded hover:opacity-90 transition-opacity"
+              className="text-black text-sm font-semibold bg-[#2FE6C8] px-3 py-2 rounded hover:opacity-90 transition-opacity"
             >
               Subscribe
             </Link>
