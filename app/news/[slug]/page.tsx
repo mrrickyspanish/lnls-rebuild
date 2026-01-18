@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Heart } from "lucide-react";
 
 import ArticleHero from "@/components/article/ArticleHero";
 import ArticleBody from "@/components/article/ArticleBody";
@@ -168,7 +169,7 @@ export default async function ArticlePage({ params }: PageProps) {
             <>
               <span>•</span>
               <span className="flex items-center gap-1 text-cyan-400">
-                <span role="img" aria-label="likes">❤️</span> {article.likes.toLocaleString()} likes
+                <Heart className="w-4 h-4 fill-cyan-400" aria-label="likes" /> {article.likes.toLocaleString()} likes
               </span>
             </>
           )}
