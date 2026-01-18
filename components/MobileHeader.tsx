@@ -66,7 +66,7 @@ export default function MobileHeader() {
         <StreamTabs value={activeTab} onChange={setActiveTab} />
       </header>
 
-      <div className="h-[165px] lg:hidden" />
+      <div className="h-[150px] lg:hidden" />
 
       <AnimatePresence>
         {isMenuOpen && (
