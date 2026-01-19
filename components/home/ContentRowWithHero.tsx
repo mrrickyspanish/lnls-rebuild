@@ -170,8 +170,8 @@ function CarouselCard({
                   }}
                 />
                 
-                {/* Text floats in gradient zone - bottom third */}
-                <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
+                {/* Text floats in gradient zone - interrupts earlier, bleeds into black */}
+                <div className="absolute inset-x-0 bottom-16 z-10 px-6 pb-6 text-left">
                   <div className="max-w-[92%]">
                     {/* Headline - capped at 2 lines */}
                     <h2 className="text-[clamp(2.25rem,7vw,3.5rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
