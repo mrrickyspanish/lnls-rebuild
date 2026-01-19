@@ -240,7 +240,7 @@ function CarouselCard({
           </div>
         ) : (
           <div
-            className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)] shadow-2xl ring-2 ring-white/80`}
+            className={`relative ${heroHeightClass} rounded-lg bg-[var(--netflix-bg)]`}
           >
             <div className="absolute inset-0 rounded-lg overflow-hidden">
               {item.image_url ? (
@@ -268,7 +268,12 @@ function CarouselCard({
                   </span>
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(to top, #000000 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.65) 50%, transparent 100%)'
+                }}
+              />
             </div>
 
             <div className="absolute top-4 left-4 flex gap-2">
@@ -346,13 +351,28 @@ function CarouselCard({
                 )}
               </div>
 
-              <h3 className="font-['Space_Grotesk'] font-extrabold text-white leading-tight tracking-[-0.02em] line-clamp-2 text-xl md:text-2xl">
+              <h3 className="font-['Space_Grotesk'] font-extrabold text-white leading-[1.05] tracking-[-0.02em] line-clamp-2 text-3xl">
                 {item.title}
               </h3>
               {item.description && (
-                <p className="font-['Space_Grotesk'] font-normal text-sm text-white/90 line-clamp-2 leading-[1.75]">
+                <p className="font-['Space_Grotesk'] font-normal text-lg text-white/90 line-clamp-2 leading-[1.75]">
                   {item.description}
                 </p>
+              )}
+              
+              {/* Meta row - author and likes */}
+              {(authorName || (item.likes !== undefined && item.likes !== null)) && (
+                <div className="flex items-center gap-3 text-sm font-['Space_Grotesk'] font-normal text-white/60 mt-3">
+                  {authorName && (
+                    <span className="truncate">{authorName}</span>
+                  )}
+                  {authorName && (item.likes !== undefined && item.likes !== null) && (
+                    <span className="h-1 w-1 rounded-full bg-white/30" />
+                  )}
+                  {(item.likes !== undefined && item.likes !== null) && (
+                    <span>{item.likes} {item.likes === 1 ? 'like' : 'likes'}</span>
+                  )}
+                </div>
               )}
             </div>
           </div>
