@@ -173,7 +173,7 @@ function CarouselCard({
 
                       {/* Dek - lighter weight, extra breathing room for sophistication */}
                       {item.description && (
-                        <p className="mt-3 text-base font-['Space_Grotesk'] font-light leading-[1.75] text-white/70 line-clamp-2">
+                        <p className="mt-3 text-base font-['Space_Grotesk'] font-normal leading-[1.75] text-white/90 line-clamp-2">
                           {item.description}
                         </p>
                       )}
@@ -344,7 +344,7 @@ function CarouselCard({
                 {item.title}
               </h3>
               {item.description && (
-                <p className="font-['Space_Grotesk'] font-light text-sm text-white/90 line-clamp-2 leading-[1.75]">
+                <p className="font-['Space_Grotesk'] font-normal text-sm text-white/90 line-clamp-2 leading-[1.75]">
                   {item.description}
                 </p>
               )}
