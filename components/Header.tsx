@@ -88,37 +88,44 @@ const navLinks = [
             </svg>
           </button>
           {/* Centered Logo - Hidden on mobile, shown on desktop */}
-          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-end gap-1 select-none hidden md:flex">
-            <span className={`font-extrabold tracking-tighter text-white leading-none drop-shadow-lg transition-all duration-300 ${
+          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none hidden md:flex">
+            {/* LOCKED: items-baseline alignment with ml-[0.05em] and gap-[0.08em] - scaled up from mobile */}
+            <span className={clsx(
+              'flex items-baseline font-extrabold tracking-tight leading-none text-white drop-shadow-lg transition-all duration-300',
               isScrolled ? 'text-5xl' : 'text-6xl'
-            }`} style={{letterSpacing: '-0.04em'}}>itsDribbles</span>
-            <span
-              className={`flex gap-[1.5px] ml-1 mb-[0.15em] transition-all duration-300`}
-            >
-              <motion.span
-                className={`rounded-full inline-block transition-all duration-300 ${
-                  isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
-                }`}
-                style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 3px var(--neon-orange, #FD6B0B)' }}
-                animate={{ scale: [1, 1.25, 1] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay: 0 }}
-              />
-              <motion.span
-                className={`rounded-full inline-block transition-all duration-300 ${
-                  isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
-                }`}
-                style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 3px var(--neon-blue, #00e6fe)' }}
-                animate={{ scale: [1, 1.25, 1] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay: 0.18 }}
-              />
-              <motion.span
-                className={`rounded-full inline-block transition-all duration-300 ${
-                  isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
-                }`}
-                style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 3px var(--neon-purple, #a259f7)' }}
-                animate={{ scale: [1, 1.25, 1] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay: 0.36 }}
-              />
+            )}>
+              <span>itsDribbles</span>
+              <span className="inline-flex items-center gap-[0.08em] ml-[0.05em]">
+                <motion.span
+                  className={clsx(
+                    'inline-block rounded-full transition-all duration-300',
+                    isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
+                  )}
+                  style={{ background: 'var(--neon-orange, #FD6B0B)', boxShadow: '0 0 3px var(--neon-orange, #FD6B0B)' }}
+                  animate={{ scale: [1, 1.25, 1] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: 0 }}
+                />
+                <motion.span
+                  className={clsx(
+                    'inline-block rounded-full transition-all duration-300',
+                    isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
+                  )}
+                  style={{ background: 'var(--neon-blue, #00e6fe)', boxShadow: '0 0 3px var(--neon-blue, #00e6fe)' }}
+                  animate={{ scale: [1, 1.25, 1] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: 0.18 }}
+                />
+                <motion.span
+                  className={clsx(
+                    'inline-block rounded-full transition-all duration-300',
+                    isScrolled ? 'w-1 h-1' : 'w-1.5 h-1.5'
+                  )}
+                  style={{ background: 'var(--neon-purple, #a259f7)', boxShadow: '0 0 3px var(--neon-purple, #a259f7)' }}
+                  animate={{ scale: [1, 1.25, 1] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: 0.36 }}
+                />
+              </span>
+            </span>
+          </Link>
             </span>
           </Link>
           {/* Bolder Search (right) */}
