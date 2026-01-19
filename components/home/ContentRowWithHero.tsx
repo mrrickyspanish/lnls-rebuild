@@ -169,20 +169,20 @@ function CarouselCard({
                   {/* Hero text overlay with max-width constraint */}
                   <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
                     <div className="max-w-[92%]">
-                      {/* Headline - Space Grotesk authority */}
-                      <h2 className="text-[clamp(1.75rem,5.5vw,2.75rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.01em] text-white line-clamp-2">
+                      {/* Headline - Grotesk edge, tight tracking, let line breaks work */}
+                      <h2 className="text-[clamp(1.75rem,5.5vw,2.75rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
                         {item.title}
                       </h2>
 
-                      {/* Dek - Space Grotesk restraint */}
+                      {/* Dek - lighter weight, extra breathing room for sophistication */}
                       {item.description && (
-                        <p className="mt-3 text-base font-['Space_Grotesk'] font-normal leading-relaxed text-white/70 line-clamp-2">
+                        <p className="mt-3 text-base font-['Space_Grotesk'] font-light leading-[1.75] text-white/70 line-clamp-2">
                           {item.description}
                         </p>
                       )}
 
-                      {/* Meta row - Space Grotesk platform feel */}
-                      <div className="mt-4 flex items-center gap-3 text-sm font-['Space_Grotesk'] font-medium tracking-wide text-white/60">
+                      {/* Meta row - Grotesk Regular, clean, no personality */}
+                      <div className="mt-4 flex items-center gap-3 text-sm font-['Space_Grotesk'] font-normal text-white/60">
                         {authorName && (
                           <span className="truncate">{authorName}</span>
                         )}
