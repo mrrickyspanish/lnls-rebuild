@@ -133,11 +133,12 @@ function CarouselCard({
       <div className="md:p-1">
         {isMobile ? (
           <div className="md:hidden">
-            {/* Edge-to-edge Verge-style capped overlay hero */}
+            {/* One continuous hero surface - image dissolves into black */}
             <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-              <div className="relative overflow-hidden border-y border-white/10">
-                {/* Capped height image container */}
-                <div className="relative w-full min-h-[420px] max-h-[520px] h-[62vh]">
+              {/* Hero wrapper extends beyond image - gradient zone at bottom */}
+              <div className="relative overflow-hidden" style={{ height: 'calc(62vh + 180px)' }}>
+                {/* Image fills upper portion only */}
+                <div className="absolute inset-x-0 top-0 w-full h-[62vh]">
                   {item.image_url ? (
                     useOptimizedImage ? (
                       <Image
@@ -159,37 +160,42 @@ function CarouselCard({
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
                   )}
-                  
-                  {/* Stronger gradient for text protection - full black at bottom */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                  
-                  {/* Hero text overlay with max-width constraint */}
-                  <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
-                    <div className="max-w-[92%]">
-                      {/* Headline - Grotesk edge, tight tracking, let line breaks work */}
-                      <h2 className="text-[clamp(1.75rem,5.5vw,2.75rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
-                        {item.title}
-                      </h2>
+                </div>
+                
+                {/* Verge-style gradient - overshoots to true black */}
+                <div 
+                  className="pointer-events-none absolute inset-0 z-[1]"
+                  style={{
+                    background: 'linear-gradient(to top, #000000 0%, rgba(0,0,0,0.85) 25%, rgba(0,0,0,0.65) 45%, transparent 100%)'
+                  }}
+                />
+                
+                {/* Text floats in gradient zone - bottom third */}
+                <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
+                  <div className="max-w-[92%]">
+                    {/* Headline - capped at 2 lines */}
+                    <h2 className="text-[clamp(1.75rem,5.5vw,2.75rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
+                      {item.title}
+                    </h2>
 
-                      {/* Dek - lighter weight, extra breathing room for sophistication */}
-                      {item.description && (
-                        <p className="mt-3 text-base font-['Space_Grotesk'] font-normal leading-[1.75] text-white/90 line-clamp-2">
-                          {item.description}
-                        </p>
+                    {/* Dek - capped at 2 lines */}
+                    {item.description && (
+                      <p className="mt-3 text-base font-['Space_Grotesk'] font-normal leading-[1.75] text-white/90 line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
+
+                    {/* Meta row - single line */}
+                    <div className="mt-4 flex items-center gap-3 text-sm font-['Space_Grotesk'] font-normal text-white/60">
+                      {authorName && (
+                        <span className="truncate">{authorName}</span>
                       )}
-
-                      {/* Meta row - Grotesk Regular, clean, no personality */}
-                      <div className="mt-4 flex items-center gap-3 text-sm font-['Space_Grotesk'] font-normal text-white/60">
-                        {authorName && (
-                          <span className="truncate">{authorName}</span>
-                        )}
-                        {authorName && (item.likes !== undefined && item.likes !== null) && (
-                          <span className="h-1 w-1 rounded-full bg-white/30" />
-                        )}
-                        {(item.likes !== undefined && item.likes !== null) && (
-                          <span>{item.likes} {item.likes === 1 ? 'like' : 'likes'}</span>
-                        )}
-                      </div>
+                      {authorName && (item.likes !== undefined && item.likes !== null) && (
+                        <span className="h-1 w-1 rounded-full bg-white/30" />
+                      )}
+                      {(item.likes !== undefined && item.likes !== null) && (
+                        <span>{item.likes} {item.likes === 1 ? 'like' : 'likes'}</span>
+                      )}
                     </div>
                   </div>
                 </div>
