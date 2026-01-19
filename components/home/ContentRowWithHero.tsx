@@ -132,59 +132,69 @@ function CarouselCard({
     >
       <div className="md:p-1">
         {isMobile ? (
-          <div>
-            {/* True Verge-style image overlay - text on top of image */}
-            <div className="relative aspect-[16/10] overflow-hidden border border-white/5">
-              {item.image_url ? (
-                useOptimizedImage ? (
-                  <Image
-                    src={item.image_url}
-                    alt={item.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    priority
-                  />
-                ) : (
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                )
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
-              )}
-              
-              {/* Verge-style gradient for readability */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-              
-              {/* Hero text overlay - positioned absolutely inside image */}
-              <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-6 text-left">
-                {/* Headline - Verge-style */}
-                <h2 className="text-white font-extrabold tracking-tight leading-[0.92] text-[32px] sm:text-[36px] line-clamp-2">
-                  {item.title}
-                </h2>
+          <div className="md:hidden">
+            {/* Edge-to-edge Verge-style capped overlay hero */}
+            <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+              <div className="relative overflow-hidden border-y border-white/10">
+                {/* Capped height image container */}
+                <div className="relative w-full min-h-[420px] max-h-[520px] h-[62vh]">
+                  {item.image_url ? (
+                    useOptimizedImage ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.title}
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                        priority
+                      />
+                    ) : (
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    )
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
+                  )}
+                  
+                  {/* Stronger Verge-like gradient for text protection */}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+                  
+                  {/* Extra bottom protection */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-black/35" />
+                  
+                  {/* Hero text overlay with max-width constraint */}
+                  <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
+                    <div className="max-w-[92%]">
+                      {/* Headline - Verge weight and tightness */}
+                      <h2 className="text-white font-extrabold tracking-tight leading-[0.9] text-[38px] line-clamp-2">
+                        {item.title}
+                      </h2>
 
-                {/* Dek (subhead) */}
-                {item.description && (
-                  <p className="mt-3 text-white/75 text-base leading-snug line-clamp-2">
-                    {item.description}
-                  </p>
-                )}
+                      {/* Dek - Verge clamp */}
+                      {item.description && (
+                        <p className="mt-3 text-white/70 text-[16px] leading-snug line-clamp-2">
+                          {item.description}
+                        </p>
+                      )}
 
-                {/* Meta row: author + likes */}
-                <div className="mt-4 flex items-center gap-3 text-xs text-white/60">
-                  {authorName && (
-                    <span className="truncate">{authorName}</span>
-                  )}
-                  {authorName && (item.likes !== undefined && item.likes !== null) && (
-                    <span className="h-1 w-1 rounded-full bg-white/30" />
-                  )}
-                  {(item.likes !== undefined && item.likes !== null) && (
-                    <span>{item.likes} {item.likes === 1 ? 'Like' : 'Likes'}</span>
-                  )}
+                      {/* Meta row - subtle */}
+                      <div className="mt-4 flex items-center gap-3 text-xs text-white/60">
+                        {authorName && (
+                          <span className="truncate">{authorName}</span>
+                        )}
+                        {authorName && (item.likes !== undefined && item.likes !== null) && (
+                          <span className="h-1 w-1 rounded-full bg-white/30" />
+                        )}
+                        {(item.likes !== undefined && item.likes !== null) && (
+                          <span>{item.likes} {item.likes === 1 ? 'like' : 'likes'}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
