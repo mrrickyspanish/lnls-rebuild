@@ -174,7 +174,7 @@ function CarouselCard({
                 <div className="absolute inset-x-0 bottom-16 z-10 px-6 pb-6 text-left">
                   <div className="max-w-[92%]">
                     {/* Headline - capped at 2 lines */}
-                    <h2 className="text-[clamp(2.25rem,7vw,3.5rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
+                    <h2 className="text-[clamp(2.5rem,8vw,4rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
                       {item.title}
                     </h2>
 
