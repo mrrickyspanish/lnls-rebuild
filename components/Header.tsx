@@ -126,8 +126,6 @@ const navLinks = [
               </span>
             </span>
           </Link>
-            </span>
-          </Link>
           {/* Bolder Search (right) */}
           <Link href="/search" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 hover:border-[var(--neon-orange,#FD6B0B)] hover:bg-white/10 transition absolute right-3 md:right-6 top-1/2 -translate-y-1/2 group" aria-label="Search">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
