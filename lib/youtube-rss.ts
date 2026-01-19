@@ -18,16 +18,16 @@ const parser = new Parser({
   },
 });
 
-export async function getYouTubeRSS(channelId: string = process.env.YOUTUBE_CHANNEL_ID || ''): Promise<YouTubeVideo[]> {
-  if (!channelId) {
-    console.warn('No YouTube Channel ID provided');
+export async function getYouTubeRSS(playlistId: string = process.env.YOUTUBE_PLAYLIST_ID || ''): Promise<YouTubeVideo[]> {
+  if (!playlistId) {
+    console.warn('No YouTube Playlist ID provided');
     return [];
   }
 
   try {
-    const feed = await parser.parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
+    const feed = await parser.parseURL(`https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`);
     
-    const allVideos = feed.items.map((item: any) => {
+    return feed.items.map((item: any) => {
       const mediaGroup = item.mediaGroup || {};
       const thumbnail = mediaGroup['media:thumbnail']?.[0]?.['$']?.url || '';
       const description = mediaGroup['media:description']?.[0] || '';
@@ -41,12 +41,6 @@ export async function getYouTubeRSS(channelId: string = process.env.YOUTUBE_CHAN
         description: description,
       };
     });
-    
-    // Filter to only show Late Night Lake Show content
-    return allVideos.filter(video => 
-      video.title.toLowerCase().includes('late night lake show') ||
-      video.description.toLowerCase().includes('late night lake show')
-    );
   } catch (error) {
     console.error('Error fetching YouTube RSS:', error);
     return [];
