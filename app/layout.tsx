@@ -1,5 +1,5 @@
 import './globals.css'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import { Inter, Space_Grotesk, IBM_Plex_Sans } from 'next/font/google'
 import ResponsiveHeader from '@/components/ResponsiveHeader'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
@@ -13,6 +13,11 @@ const SplashScreen = dynamic(() => import('@/components/splash/SplashScreen'));
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })
+const ibmPlex = IBM_Plex_Sans({ 
+  weight: ['400', '500', '700'],
+  subsets: ['latin'],
+  variable: '--font-ibm-plex'
+})
 
 export const metadata = {
   title: 'The Daily Dribble',
@@ -32,7 +37,7 @@ export default function RootLayout({
         <meta name="view-transition" content="same-origin" />
         <link rel="icon" type="image/png" href="/uploads/articles/dribbles_favicon_1.png" />
       </head>
-      <body className={`${inter.variable} ${space.variable} font-sans min-h-screen flex flex-col`}>
+      <body className={`${inter.variable} ${space.variable} ${ibmPlex.variable} font-sans min-h-screen flex flex-col`}>
         <SplashScreen />
         <ViewTransition />
         <TabProvider>

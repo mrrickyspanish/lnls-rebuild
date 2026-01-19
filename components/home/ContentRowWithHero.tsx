@@ -169,20 +169,20 @@ function CarouselCard({
                   {/* Hero text overlay with max-width constraint */}
                   <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
                     <div className="max-w-[92%]">
-                      {/* Headline - Verge weight and tightness */}
-                      <h2 className="text-white font-extrabold tracking-tight leading-[0.9] text-[38px] line-clamp-2">
+                      {/* Headline - IBM Plex Sans authority */}
+                      <h2 className="text-[clamp(1.75rem,5.5vw,2.75rem)] font-['IBM_Plex_Sans'] font-extrabold leading-[1.05] tracking-[-0.01em] text-white line-clamp-2">
                         {item.title}
                       </h2>
 
-                      {/* Dek - Verge clamp */}
+                      {/* Dek - IBM Plex Sans restraint */}
                       {item.description && (
-                        <p className="mt-3 text-white/70 text-[16px] leading-snug line-clamp-2">
+                        <p className="mt-3 text-base font-['IBM_Plex_Sans'] font-normal leading-relaxed text-white/70 line-clamp-2">
                           {item.description}
                         </p>
                       )}
 
-                      {/* Meta row - subtle */}
-                      <div className="mt-4 flex items-center gap-3 text-xs text-white/60">
+                      {/* Meta row - IBM Plex Sans platform feel */}
+                      <div className="mt-4 flex items-center gap-3 text-sm font-['IBM_Plex_Sans'] font-medium tracking-wide text-white/60">
                         {authorName && (
                           <span className="truncate">{authorName}</span>
                         )}
