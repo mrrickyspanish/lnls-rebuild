@@ -343,11 +343,11 @@ function CarouselCard({
                 )}
               </div>
 
-              <h3 className="font-bold text-white leading-tight font-netflix line-clamp-2 text-xl md:text-2xl">
+              <h3 className="font-['Space_Grotesk'] font-extrabold text-white leading-tight tracking-[-0.02em] line-clamp-2 text-xl md:text-2xl">
                 {item.title}
               </h3>
               {item.description && (
-                <p className="text-sm text-white/90 line-clamp-2 leading-relaxed">
+                <p className="font-['Space_Grotesk'] font-light text-sm text-white/90 line-clamp-2 leading-[1.75]">
                   {item.description}
                 </p>
               )}
