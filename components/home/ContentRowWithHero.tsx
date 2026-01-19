@@ -174,13 +174,13 @@ function CarouselCard({
                 <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
                   <div className="max-w-[92%]">
                     {/* Headline - capped at 2 lines */}
-                    <h2 className="text-[clamp(2rem,6vw,3rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
+                    <h2 className="text-[clamp(2.25rem,7vw,3.5rem)] font-['Space_Grotesk'] font-extrabold leading-[1.05] tracking-[-0.02em] text-white line-clamp-2">
                       {item.title}
                     </h2>
 
                     {/* Dek - capped at 2 lines */}
                     {item.description && (
-                      <p className="mt-3 text-lg font-['Space_Grotesk'] font-normal leading-[1.75] text-white/90 line-clamp-2">
+                      <p className="mt-3 text-xl font-['Space_Grotesk'] font-normal leading-[1.75] text-white/90 line-clamp-2">
                         {item.description}
                       </p>
                     )}
