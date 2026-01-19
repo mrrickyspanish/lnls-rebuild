@@ -160,8 +160,8 @@ function CarouselCard({
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" />
                   )}
                   
-                  {/* Stronger Verge-like gradient for text protection */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+                  {/* Stronger gradient for text protection - full black at bottom */}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                   
                   {/* Hero text overlay with max-width constraint */}
                   <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6 text-left">
