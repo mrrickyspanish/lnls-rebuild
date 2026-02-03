@@ -191,7 +191,7 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     const sizeChoice = window.prompt('Choose size:\nType: small, medium, or full (default: medium)')?.toLowerCase().trim()
     const size = sizeChoice === 'small' || sizeChoice === 'medium' || sizeChoice === 'full' ? sizeChoice : 'medium'
 
-    // @ts-ignore - custom command from VideoEmbed extension
+    // @ts-expect-error - custom command from VideoEmbed extension
     editor.chain().focus().setVideoEmbed(url, size).run()
   }, [editor])
 
@@ -433,4 +433,6 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
       />
     </div>
   )
+
+}
 

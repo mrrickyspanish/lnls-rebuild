@@ -223,7 +223,7 @@ export const VideoEmbed = Node.create({
     ]
   },
   
-  // @ts-expect-error - TipTap command type inference issue  
+  // @ts-expect-error - TipTap command type inference issue
   addCommands() {
     return {
       setVideoEmbed:

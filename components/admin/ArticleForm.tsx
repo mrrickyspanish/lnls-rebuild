@@ -114,7 +114,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         insertArticleImage?.(data.path)
       }
 
-      setError(null)
+      setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload image')
     } finally {
