@@ -13,12 +13,13 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   try {
-    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw, recruitReadyArticlesRaw, footballArticlesRaw, youtubeVideos] = await Promise.all([
+    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw, recruitReadyArticlesRaw, footballArticlesRaw, lifestyleArticlesRaw, youtubeVideos] = await Promise.all([
       getNewsStream(50),
       getPublishedArticles(12, "Lakers"),
       getPublishedArticles(12, "NBA"),
       getPublishedArticles(12, "Recruit Ready"),
       getPublishedArticles(12, "Football"),
+      getPublishedArticles(12, "Lifestyle"),
       getYouTubeRSS(),
     ]);
     const podcastResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
@@ -126,7 +127,8 @@ export default async function HomePage() {
     const lakersArticles = (lakersArticlesRaw || []).map(mapArticleToContentItem);
     const footballArticles = (footballArticlesRaw || []).map(mapArticleToContentItem);
     const recruitReadyArticlesFromDB = (recruitReadyArticlesRaw || []).map(mapArticleToContentItem);
-    const allArticles = [...lakersArticles, ...nbaArticles, ...footballArticles, ...recruitReadyArticlesFromDB];
+    const lifestyleArticles = (lifestyleArticlesRaw || []).map(mapArticleToContentItem);
+    const allArticles = [...lakersArticles, ...nbaArticles, ...footballArticles, ...recruitReadyArticlesFromDB, ...lifestyleArticles];
 
     const latestArticle = allArticles.length
       ? [...allArticles].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
