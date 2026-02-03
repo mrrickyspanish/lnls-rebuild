@@ -67,6 +67,7 @@ export interface Database {
           title: string;
           slug: string;
           excerpt: string;
+          meta_description: string | null;
           hero_image_url: string;
           image_credit: string | null;
           author_name: string;
@@ -89,6 +90,7 @@ export interface Database {
           title: string;
           slug: string;
           excerpt: string;
+          meta_description?: string | null;
           hero_image_url: string;
           image_credit?: string | null;
           author_name: string;
@@ -109,6 +111,7 @@ export interface Database {
           title?: string;
           slug?: string;
           excerpt?: string;
+          meta_description?: string | null;
           hero_image_url?: string;
           image_credit?: string | null;
           author_name?: string;

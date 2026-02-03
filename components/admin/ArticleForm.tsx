@@ -63,6 +63,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     excerpt: initialData?.excerpt || '',
+    metaDescription: initialData?.meta_description || '',
     heroImageUrl: initialData?.hero_image_url || '',
     imageCredit: initialData?.image_credit || '',
     authorName: initialData?.author_name || 'TDD Sports Staff',
@@ -354,6 +355,21 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
                 <p className="text-xs text-neutral-500">Paste these URLs into the article body where you need supporting images.</p>
               </div>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-400 mb-1">
+              Meta Description (SEO)
+            </label>
+            <textarea
+              value={formData.metaDescription}
+              onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+              className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
+              placeholder="Custom description for search engines and social media (optional, defaults to excerpt)"
+              rows={2}
+              maxLength={160}
+            />
+            <p className="text-xs text-neutral-500 mt-1">{formData.metaDescription.length}/160 characters</p>
           </div>
 
           <div>

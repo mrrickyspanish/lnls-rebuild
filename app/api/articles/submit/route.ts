@@ -9,6 +9,7 @@ import type { ArticleBody, ArticleInsert } from '@/types/supabase'
 interface SubmitArticlePayload {
   title: string
   excerpt: string
+  metaDescription?: string
   heroImageUrl: string
   imageCredit?: string
   authorName: string
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
       title: rawPayload.title.trim(),
       slug,
       excerpt: rawPayload.excerpt.trim(),
+      meta_description: rawPayload.metaDescription?.trim() || null,
       hero_image_url: rawPayload.heroImageUrl.trim(),
       image_credit: rawPayload.imageCredit?.trim() || null,
       author_name: rawPayload.authorName.trim(),

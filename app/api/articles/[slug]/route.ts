@@ -8,6 +8,7 @@ import type { ArticleBody, ArticleUpdate } from '@/types/supabase'
 interface UpdateArticlePayload {
   title: string
   excerpt: string
+  metaDescription?: string
   heroImageUrl: string
   imageCredit?: string
   authorName: string
@@ -79,6 +80,7 @@ export async function PATCH(
     const updatePayload: ArticleUpdate = {
       title: rawPayload.title.trim(),
       excerpt: rawPayload.excerpt.trim(),
+      meta_description: rawPayload.metaDescription?.trim() || null,
       hero_image_url: rawPayload.heroImageUrl.trim(),
       image_credit: rawPayload.imageCredit?.trim() || null,
       author_name: rawPayload.authorName.trim(),

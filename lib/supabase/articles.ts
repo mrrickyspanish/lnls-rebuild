@@ -7,6 +7,7 @@ const ARTICLE_FIELDS = `
   title,
   slug,
   excerpt,
+  meta_description,
   hero_image_url,
   image_credit,
   author_name,

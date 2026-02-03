@@ -71,12 +71,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const url = `${siteUrl.replace(/\/$/, "")}/news/${slug}`;
   const image = article.hero_image_url || 
     "https://lnls.media/uploads/articles/dribbles_og_2024.png";
+  const description = article.meta_description || article.excerpt || "TDD article";
   return {
     title: article.title,
-    description: article.excerpt || "TDD article",
+    description,
     openGraph: {
       title: article.title,
-      description: article.excerpt || "TDD article",
+      description,
       url,
       type: "article",
       images: [
@@ -91,7 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: {
       card: "summary_large_image",
       title: article.title,
-      description: article.excerpt || "TDD article",
+      description,
       images: [image],
     },
   };
