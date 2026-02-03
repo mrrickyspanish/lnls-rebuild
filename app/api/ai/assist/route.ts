@@ -13,7 +13,8 @@ type AIAction =
   | 'suggest-related'
   | 'create-thread'
   | 'generate-show-notes'
-  | 'extract-quotes';
+  | 'extract-quotes'
+  | 'format-article';
 
 interface AIAssistRequest {
   action: AIAction;
@@ -73,6 +74,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<AIAssistRespo
       
       case 'extract-quotes':
         result = await extractQuotes(content, context);
+        break;
+      
+      case 'format-article':
+        result = await formatArticle(content, context);
         break;
       
       default:
@@ -295,7 +300,64 @@ Thread (one tweet per line, numbered):`
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^\d+\.\s*/, '').trim());
 }
+// Format raw article text into structured TipTap JSON
+async function formatArticle(content: string, context?: any) {
+  const message = await anthropic.messages.create({
+    model: 'claude-3-5-sonnet-20241022',
+    max_tokens: 4096,
+    temperature: 0.3,
+    messages: [{
+      role: 'user',
+      content: `You are a professional sports editor formatting an article for The Daily Dribble, a Lakers/NBA publication.
 
+Transform this raw text into a properly structured TipTap JSON document with excellent visual formatting:
+
+FORMATTING GUIDELINES:
+- Use H2 headings for major sections (player analysis, game recap sections, etc.)
+- Use H3 for subsections if needed
+- Bold player names, key stats, and important phrases
+- Use calloutCard nodes for standout quotes, key takeaways, or critical stats
+- Create proper paragraph breaks for readability
+- Use bullet lists for stats, lineups, or key points
+- Ensure good flow and visual hierarchy
+
+RAW TEXT:
+${content}
+
+Return ONLY valid TipTap JSON in this exact structure (no markdown, no explanations):
+{
+  "type": "doc",
+  "content": [
+    {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Heading text"}]},
+    {"type": "paragraph", "content": [{"type": "text", "text": "Regular text"}, {"type": "text", "marks": [{"type": "bold"}], "text": "bold text"}]},
+    {"type": "calloutCard", "content": [{"type": "text", "text": "Important callout"}]},
+    {"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "List item"}]}]}]}
+  ]
+}
+
+IMPORTANT: Return only the JSON object, no other text.`
+    }]
+  });
+
+  const textContent = message.content.find(block => block.type === 'text');
+  if (!textContent || textContent.type !== 'text') {
+    throw new Error('No text content in AI response');
+  }
+
+  try {
+    // Clean up the response and parse JSON
+    let jsonText = textContent.text.trim();
+    
+    // Remove markdown code blocks if present
+    jsonText = jsonText.replace(/^```json\n/, '').replace(/\n```$/, '').replace(/^```\n/, '').replace(/\n```$/, '');
+    
+    const formatted = JSON.parse(jsonText);
+    return formatted;
+  } catch (error) {
+    console.error('Failed to parse AI-formatted article:', error);
+    throw new Error('AI returned invalid JSON format');
+  }
+}
 // Generate podcast show notes from transcript
 async function generateShowNotes(transcript: string, context?: any): Promise<{
   summary: string;

@@ -75,6 +75,10 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     featured: initialData?.featured || false
   })
 
+  const [rawText, setRawText] = useState('')
+  const [isFormatting, setIsFormatting] = useState(false)
+  const [showFormatter, setShowFormatter] = useState(false)
+
   const [bodyContent, setBodyContent] = useState<JSONContent>(
     toEditorContent(initialData?.body)
   )
@@ -192,6 +196,48 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
       setError(message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAutoFormat = async () => {
+    if (!rawText.trim()) {
+      setError('Please enter some text to format')
+      return
+    }
+
+    setIsFormatting(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/ai/assist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'format-article',
+          content: rawText,
+          context: {
+            title: formData.title,
+            category: formData.topic
+          }
+        })
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to format article')
+      }
+
+      // Load the formatted JSON into the editor
+      setBodyContent(result.data)
+      setRawText('')
+      setShowFormatter(false)
+      setError('')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to format article'
+      setError(message)
+    } finally {
+      setIsFormatting(false)
     }
   }
 
@@ -486,6 +532,54 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             <option value="Analysis">Analysis</option>
             <option value="Lifestyle">Lifestyle</option>
           </select>
+        </div>
+
+        {/* AI Auto-Format Section */}
+        <div className="space-y-2 border border-neutral-700 rounded-lg p-4 bg-neutral-900/50">
+          <button
+            type="button"
+            onClick={() => setShowFormatter(!showFormatter)}
+            className="flex items-center justify-between w-full text-left"
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-white">🤖 AI Auto-Format</h3>
+              <p className="text-xs text-neutral-400 mt-1">Paste raw text and let AI structure it with headings, emphasis, and callouts</p>
+            </div>
+            <span className="text-neutral-500">{showFormatter ? '▼' : '▶'}</span>
+          </button>
+
+          {showFormatter && (
+            <div className="mt-4 space-y-3">
+              <textarea
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                placeholder="Paste your raw article text here... AI will add headings, bold key phrases, create callouts for important points, and structure it beautifully."
+                className="w-full bg-neutral-800 border border-neutral-700 rounded p-3 text-white focus:outline-none focus:border-orange-500 h-48 text-sm"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAutoFormat}
+                  disabled={isFormatting || !rawText.trim()}
+                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  {isFormatting ? 'Formatting...' : '✨ Format with AI'}
+                </button>
+                {rawText && (
+                  <button
+                    type="button"
+                    onClick={() => setRawText('')}
+                    className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded transition-colors text-sm"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-neutral-500">
+                💡 Tip: Add a title first for better AI formatting. The formatted content will load into the editor below where you can review and edit.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
