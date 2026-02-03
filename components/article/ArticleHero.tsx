@@ -30,13 +30,15 @@ function formatDate(dateString: string): string {
 }
 
 function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
+  const isBarnesBirthday = src.includes('barnes_birthday_post_');
+  const objectPositionClass = isBarnesBirthday ? 'object-bottom' : 'object-center';
   // Always use <img> for /uploads/ images for reliability
   if (src.startsWith('/uploads/')) {
     return (
       <img
         src={src}
         alt={alt}
-        className="absolute inset-0 h-full w-full object-cover object-bottom"
+        className={`absolute inset-0 h-full w-full object-cover ${objectPositionClass}`}
         loading={priority ? 'eager' : 'lazy'}
         style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
       />
@@ -49,7 +51,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       <img
         src={src}
         alt={alt}
-        className="absolute inset-0 h-full w-full object-cover object-bottom"
+        className={`absolute inset-0 h-full w-full object-cover ${objectPositionClass}`}
         loading={priority ? 'eager' : 'lazy'}
         style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
       />
@@ -64,7 +66,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       fill
       priority={priority}
       sizes="100vw"
-      className="object-cover object-bottom"
+      className={`object-cover ${objectPositionClass}`}
       style={{ borderRadius: '12px' }}
     />
   );
