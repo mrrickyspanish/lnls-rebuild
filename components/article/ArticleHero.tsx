@@ -73,9 +73,12 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
 }
 
 export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
+  const isBarnesBirthday = currentArticle.heroImage.includes('barnes_birthday_post_');
+  const heroAspectClass = isBarnesBirthday ? 'aspect-[4/3] md:aspect-[4/3]' : 'aspect-[16/10] md:aspect-[16/8]';
+
   return (
     <section className="article-hero w-full flex justify-center px-4 md:px-8 lg:px-16 xl:px-32">
-      <div className="relative w-full max-w-7xl aspect-[16/10] md:aspect-[16/8] rounded-xl overflow-hidden">
+      <div className={`relative w-full max-w-7xl ${heroAspectClass} rounded-xl overflow-hidden`}>
         <motion.div
           className="absolute inset-0"
           initial={{ scale: 1.08, opacity: 0 }}
