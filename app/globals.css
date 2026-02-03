@@ -101,6 +101,14 @@ main {
   @apply border-l-4 border-red-500/60 pl-4 italic text-white/80 mb-6;
 }
 
+.tiptap-article .callout-card {
+  @apply border-l-4 border-orange-500/60 pl-4 text-white/90 mb-6 text-lg leading-relaxed;
+}
+
+.callout-card {
+  @apply border-l-4 border-orange-500/60 pl-4 text-neutral-200 my-4 text-lg leading-relaxed;
+}
+
 .tiptap-video-wrapper {
   @apply my-8;
 }

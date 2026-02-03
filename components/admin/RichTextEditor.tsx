@@ -11,6 +11,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import HardBreak from '@tiptap/extension-hard-break'
 
 import { VideoEmbed } from '@/lib/tiptap/video-extension'
+import { CalloutCard } from '@/lib/tiptap/callout-card-extension'
 
 const DEFAULT_CONTENT: JSONContent = {
   type: 'doc',
@@ -77,11 +78,12 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
         types: ['heading', 'paragraph'],
       }),
       VideoEmbed,
+      CalloutCard,
     ],
     content: value ?? DEFAULT_CONTENT,
     editorProps: {
       attributes: {
-        class: 'prose prose-invert prose-base md:prose-lg max-w-none focus:outline-none min-h-[400px] px-4 py-3 prose-headings:text-white prose-headings:text-xl md:prose-headings:text-2xl prose-p:text-neutral-300 prose-p:leading-relaxed prose-p:my-4 md:prose-p:my-6 prose-a:text-red-400 prose-a:underline hover:prose-a:text-red-300 prose-strong:text-white prose-ul:text-neutral-300 prose-ol:text-neutral-300 prose-hr:border-white/10 prose-hr:my-6 md:prose-hr:my-8 prose-blockquote:border-l-red-600 prose-blockquote:text-neutral-300',
+        class: 'prose prose-invert prose-base md:prose-lg max-w-none focus:outline-none min-h-[400px] px-4 py-3 prose-headings:text-white prose-headings:text-xl md:prose-headings:text-2xl prose-p:text-neutral-300 prose-p:leading-relaxed prose-p:my-4 md:prose-p:my-6 prose-a:text-red-400 prose-a:underline hover:prose-a:text-red-300 prose-strong:text-white prose-ul:text-neutral-300 prose-ol:text-neutral-300 prose-hr:border-white/10 prose-hr:my-6 md:prose-hr:my-8 prose-blockquote:border-l-red-600 prose-blockquote:text-neutral-300 prose-[.callout-card]:border-l-orange-500 prose-[.callout-card]:text-neutral-200',
       },
     },
     onUpdate({ editor }) {
@@ -329,6 +331,19 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
           title="Quote"
         >
           &quot;
+        </button>
+
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleCalloutCard().run()}
+          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+            editor.isActive('calloutCard')
+              ? 'bg-red-600 text-white'
+              : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+          }`}
+          title="Callout Card"
+        >
+          💡
         </button>
 
         <button
