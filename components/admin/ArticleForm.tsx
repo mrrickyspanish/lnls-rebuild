@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { JSONContent } from '@tiptap/react'
 
@@ -84,6 +84,10 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   )
 
   const handleBodyChange = (content: JSONContent) => setBodyContent(content)
+
+  const handleEditorReady = useCallback(({ insertImage }: { insertImage: (url: string, caption?: string) => void }) => {
+    setInsertArticleImage(() => insertImage)
+  }, [])
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -589,7 +593,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           <RichTextEditor 
             value={bodyContent} 
             onChange={handleBodyChange}
-            onReady={({ insertImage }) => setInsertArticleImage(() => insertImage)}
+            onReady={handleEditorReady}
           />
           <p className="text-xs text-neutral-500">
             Use the toolbar to add formatting, links, images/GIFs, and embedded YouTube or Vimeo videos.
