@@ -14,6 +14,7 @@ const categoryColors: Record<string, string> = {
   NBA: 'border-blue-500 text-blue-500',
   Tech: 'border-purple-500 text-purple-500',
   Culture: 'border-pink-500 text-pink-500',
+  Lifestyle: 'border-pink-500 text-pink-500',
 };
 
 function formatDate(dateString?: string | null): string {

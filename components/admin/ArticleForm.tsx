@@ -434,6 +434,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             <option value="Football">Football</option>
             <option value="Rumors">Rumors</option>
             <option value="Analysis">Analysis</option>
+            <option value="Lifestyle">Lifestyle</option>
           </select>
         </div>
 
