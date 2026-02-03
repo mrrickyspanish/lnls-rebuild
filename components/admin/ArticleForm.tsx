@@ -25,6 +25,11 @@ const AUTHOR_PRESETS = [
     twitter: '@mrrickyspanish',
     bio: 'Founder of The Daily Dribble & Creative Eye Studios. Digital creator and sports storyteller mixing hoops, culture, and life. Patiently persistent.',
   },
+  {
+    name: 'Juice McDaniels',
+    twitter: '@LeKwamJames',
+    bio: 'Klutch Sports Operative Passionately Covering the Lakers since 2019.',
+  },
 ]
 
 const EMPTY_DOC: JSONContent = {

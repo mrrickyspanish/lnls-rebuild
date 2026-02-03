@@ -29,8 +29,10 @@ const TRUSTED_IMAGE_HOSTS = new Set([
 ]);
 
 export function canUseNextImage(src?: string | null) {
-  // Allow all images, no domain restrictions
-  return !!src;
+  if (!src) return false;
+  // Only allow next/image for local images, unsplash, or sanity CDN
+  // For external images, fall back to plain <img> to avoid Next.js domain whitelist issues
+  return src.startsWith('/') || src.startsWith('https://images.unsplash.com') || src.startsWith('https://cdn.sanity.io');
 }
 
 export function isLocalImage(src?: string | null) {
