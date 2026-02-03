@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { JSONContent } from '@tiptap/react'
 
@@ -31,10 +31,16 @@ const EMPTY_DOC: JSONContent = {
 
 export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [loading, setLoading] = useState(false)
-
-const [  error, setError] = useState('')
+  const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: boolean }>({})
+  const [imageUsage, setImageUsage] = useState<'hero' | 'article'>('hero')
+  const [articleImages, setArticleImages] = useState<string[]>([])
+  const [insertArticleImage, setInsertArticleImage] = useState<((url: string) => void) | null>(null)
+  const MAX_MB = 4
 
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
@@ -50,13 +56,73 @@ const [  error, setError] = useState('')
     featured: initialData?.featured || false
   })
 
-
-
   const [bodyContent, setBodyContent] = useState<JSONContent>(
     toEditorContent(initialData?.body)
   )
 
   const handleBodyChange = (content: JSONContent) => setBodyContent(content)
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to copy')
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, usage: 'hero' | 'article') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > MAX_MB * 1024 * 1024) {
+      setError(`File must be under ${MAX_MB}MB (current ${(file.size / 1024 / 1024).toFixed(1)}MB)`)
+      return
+    }
+
+    setUploading(true)
+    setUploadProgress({ ...uploadProgress, [usage]: true })
+
+    try {
+      const formDataToSend = new FormData()
+      formDataToSend.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataToSend,
+      })
+
+      let data: any
+      try {
+        data = await response.json()
+      } catch (parseErr) {
+        const text = await response.text()
+        throw new Error(text || 'Upload failed')
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed')
+      }
+
+      // Update form with the new image path
+      if (usage === 'hero') {
+        setFormData(prev => ({
+          ...prev,
+          heroImageUrl: data.path,
+        }))
+      } else {
+        setArticleImages(prev => [data.path, ...prev])
+        insertArticleImage?.(data.path)
+      }
+
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload image')
+    } finally {
+      setUploading(false)
+      setUploadProgress({ ...uploadProgress, [usage]: false })
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -162,21 +228,114 @@ const [  error, setError] = useState('')
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
-              Hero Image Source
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-white">Images & Media</h2>
+          
+          <div className="space-y-3">
+            <div className="flex gap-4 items-center text-sm text-neutral-400">
+              <span className="font-semibold text-white">Upload intent:</span>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="image-usage"
+                  value="hero"
+                  checked={imageUsage === 'hero'}
+                  onChange={() => setImageUsage('hero')}
+                  className="h-4 w-4 text-red-600 border-neutral-700 bg-neutral-900"
+                />
+                <span>Hero image</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="image-usage"
+                  value="article"
+                  checked={imageUsage === 'article'}
+                  onChange={() => setImageUsage('article')}
+                  className="h-4 w-4 text-red-600 border-neutral-700 bg-neutral-900"
+                />
+                <span>Article imagery</span>
+              </label>
+            </div>
+
+            <label className="block text-sm font-medium text-neutral-400 mb-2">
+              Hero Image URL *
             </label>
+            
+            {/* File Upload */}
+            <div className="flex gap-2">
+              <label className="flex-1 cursor-pointer">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, imageUsage)}
+                  disabled={uploading}
+                  className="hidden"
+                />
+                <div className="w-full px-4 py-2 bg-neutral-800 border border-dashed border-neutral-700 rounded text-white text-center hover:border-red-600 transition-colors disabled:opacity-50 cursor-pointer">
+                  {uploadProgress[imageUsage] ? 'Uploading...' : 'Click to upload'}
+                </div>
+              </label>
+            </div>
+
+            {/* Or paste URL */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-neutral-900 px-2 text-xs text-neutral-500">or paste URL</span>
+              </div>
+              <div className="border border-neutral-700 rounded"></div>
+            </div>
+
             <input
               type="text"
+              required
               value={formData.heroImageUrl}
               onChange={(e) => setFormData({ ...formData, heroImageUrl: e.target.value })}
               className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
               placeholder="https://cdn.example.com/image.jpg or /uploads/articles/local.jpg"
             />
-            <p className="mt-1 text-xs text-neutral-500">
-              Accepts full URLs or repo assets served from <code>/public</code> (e.g. /uploads/articles/cover.jpg).
-            </p>
+            
+            {formData.heroImageUrl && (
+              <div className="mt-3 relative w-full h-40 bg-neutral-800 border border-neutral-700 rounded overflow-hidden">
+                <img
+                  src={formData.heroImageUrl}
+                  alt="Hero preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {articleImages.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <div className="text-sm text-neutral-400 font-semibold">Article imagery (recent uploads)</div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {articleImages.map((img) => (
+                    <div key={img} className="p-3 bg-neutral-800 border border-neutral-700 rounded space-y-2">
+                      <div className="text-xs text-neutral-500 break-all">{img}</div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(img)}
+                          className="px-3 py-1 bg-neutral-700 text-white text-sm rounded hover:bg-neutral-600 transition-colors"
+                        >
+                          Copy URL
+                        </button>
+                        <a
+                          href={img}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1 bg-red-600/20 text-red-400 text-sm rounded hover:bg-red-600/30 transition-colors"
+                        >
+                          Open
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-neutral-500">Paste these URLs into the article body where you need supporting images.</p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -282,7 +441,11 @@ const [  error, setError] = useState('')
           <label className="block text-sm font-medium mb-2">
             Article Body *
           </label>
-          <RichTextEditor value={bodyContent} onChange={handleBodyChange} />
+          <RichTextEditor 
+            value={bodyContent} 
+            onChange={handleBodyChange}
+            onReady={({ insertImage }) => setInsertArticleImage(() => insertImage)}
+          />
           <p className="text-xs text-neutral-500">
             Use the toolbar to add formatting, links, images/GIFs, and embedded YouTube or Vimeo videos.
           </p>
