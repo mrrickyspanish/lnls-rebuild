@@ -14,6 +14,19 @@ interface ArticleFormProps {
   mode: 'create' | 'edit'
 }
 
+const AUTHOR_PRESETS = [
+  {
+    name: 'TDD Sports Staff',
+    twitter: 'lnlssports',
+    bio: 'Covering the Lakers with passion and insight since day one.',
+  },
+  {
+    name: 'Rick Barnes Jr.',
+    twitter: '@mrrickyspanish',
+    bio: 'Founder of The Daily Dribble & Creative Eye Studios. Digital creator and sports storyteller mixing hoops, culture, and life. Patiently persistent.',
+  },
+]
+
 const EMPTY_DOC: JSONContent = {
   type: 'doc',
   content: [
@@ -354,14 +367,30 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Author Name *</label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium mb-2">Author *</label>
+            <select
               value={formData.authorName}
-              onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
+              onChange={(e) => {
+                const selected = AUTHOR_PRESETS.find(a => a.name === e.target.value)
+                if (selected) {
+                  setFormData({
+                    ...formData,
+                    authorName: selected.name,
+                    authorTwitter: selected.twitter,
+                    authorBio: selected.bio,
+                  })
+                }
+              }}
               className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
               required
-            />
+            >
+              <option value="">Select an author...</option>
+              {AUTHOR_PRESETS.map((author) => (
+                <option key={author.name} value={author.name}>
+                  {author.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Twitter Handle</label>
