@@ -33,7 +33,12 @@ export async function POST(request: NextRequest) {
       if (error.code === "23505" || /duplicate/i.test(error.message)) {
         return NextResponse.json({ error: "Email already subscribed" }, { status: 409 });
       }
-      console.error("newsletter insert error:", error);
+      console.error("newsletter insert error:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
     }
 

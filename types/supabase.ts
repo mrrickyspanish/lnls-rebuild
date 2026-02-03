@@ -272,26 +272,20 @@ export interface Database {
         Row: {
           id: string;
           email: string;
-          status: 'active' | 'unsubscribed' | 'bounced';
-          preferences: Json | null;
           subscribed_at: string;
-          unsubscribed_at: string | null;
+          active: boolean;
         };
         Insert: {
           id?: string;
           email: string;
-          status?: 'active' | 'unsubscribed' | 'bounced';
-          preferences?: Json | null;
           subscribed_at?: string;
-          unsubscribed_at?: string | null;
+          active?: boolean;
         };
         Update: {
           id?: string;
           email?: string;
-          status?: 'active' | 'unsubscribed' | 'bounced';
-          preferences?: Json | null;
           subscribed_at?: string;
-          unsubscribed_at?: string | null;
+          active?: boolean;
         };
         Relationships: [];
       };

@@ -2,25 +2,28 @@
 -- Run this in your Supabase SQL editor
 
 -- =============================================
--- 1. NEWSLETTER_SUBS TABLE
+-- 1. NEWSLETTER_SUBSCRIBERS TABLE
 -- =============================================
 
-ALTER TABLE public.newsletter_subs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public insert for newsletter subscriptions" ON public.newsletter_subscribers;
 CREATE POLICY "Allow public insert for newsletter subscriptions"
-ON public.newsletter_subs
+ON public.newsletter_subscribers
 FOR INSERT
 TO anon, authenticated
 WITH CHECK (true);
 
-CREATE POLICY "Allow public read access to newsletter_subs"
-ON public.newsletter_subs
+DROP POLICY IF EXISTS "Allow public read access to newsletter_subscribers" ON public.newsletter_subscribers;
+CREATE POLICY "Allow public read access to newsletter_subscribers"
+ON public.newsletter_subscribers
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
-CREATE POLICY "Allow service role full access to newsletter_subs"
-ON public.newsletter_subs
+DROP POLICY IF EXISTS "Allow service role full access to newsletter_subscribers" ON public.newsletter_subscribers;
+CREATE POLICY "Allow service role full access to newsletter_subscribers"
+ON public.newsletter_subscribers
 FOR ALL
 TO service_role
 USING (true)
@@ -33,12 +36,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to published articles" ON public.articles;
 CREATE POLICY "Allow public read access to published articles"
 ON public.articles
 FOR SELECT
 TO anon, authenticated
 USING (published = true);
 
+DROP POLICY IF EXISTS "Allow service role full access to articles" ON public.articles;
 CREATE POLICY "Allow service role full access to articles"
 ON public.articles
 FOR ALL
@@ -53,12 +58,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.ai_news_stream ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to ai_news_stream" ON public.ai_news_stream;
 CREATE POLICY "Allow public read access to ai_news_stream"
 ON public.ai_news_stream
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to ai_news_stream" ON public.ai_news_stream;
 CREATE POLICY "Allow service role full access to ai_news_stream"
 ON public.ai_news_stream
 FOR ALL
@@ -73,12 +80,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.youtube_videos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to youtube_videos" ON public.youtube_videos;
 CREATE POLICY "Allow public read access to youtube_videos"
 ON public.youtube_videos
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to youtube_videos" ON public.youtube_videos;
 CREATE POLICY "Allow service role full access to youtube_videos"
 ON public.youtube_videos
 FOR ALL
@@ -93,12 +102,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.lnls_takes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to takes" ON public.lnls_takes;
 CREATE POLICY "Allow public read access to takes"
 ON public.lnls_takes
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to lnls_takes" ON public.lnls_takes;
 CREATE POLICY "Allow service role full access to lnls_takes"
 ON public.lnls_takes
 FOR ALL
@@ -113,12 +124,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.lnls_writers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to writers" ON public.lnls_writers;
 CREATE POLICY "Allow public read access to writers"
 ON public.lnls_writers
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to lnls_writers" ON public.lnls_writers;
 CREATE POLICY "Allow service role full access to lnls_writers"
 ON public.lnls_writers
 FOR ALL
@@ -133,12 +146,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.featured_modal_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to featured_modal_config" ON public.featured_modal_config;
 CREATE POLICY "Allow public read access to featured_modal_config"
 ON public.featured_modal_config
 FOR SELECT
 TO anon, authenticated
 USING (enabled = true);
 
+DROP POLICY IF EXISTS "Allow service role full access to featured_modal_config" ON public.featured_modal_config;
 CREATE POLICY "Allow service role full access to featured_modal_config"
 ON public.featured_modal_config
 FOR ALL
@@ -153,12 +168,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.subscribers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public insert for subscribers" ON public.subscribers;
 CREATE POLICY "Allow public insert for subscribers"
 ON public.subscribers
 FOR INSERT
 TO anon, authenticated
 WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to subscribers" ON public.subscribers;
 CREATE POLICY "Allow service role full access to subscribers"
 ON public.subscribers
 FOR ALL
@@ -173,12 +190,14 @@ WITH CHECK (true);
 
 ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access to videos" ON public.videos;
 CREATE POLICY "Allow public read access to videos"
 ON public.videos
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to videos" ON public.videos;
 CREATE POLICY "Allow service role full access to videos"
 ON public.videos
 FOR ALL
@@ -193,6 +212,7 @@ WITH CHECK (true);
 
 ALTER TABLE public.email_sends ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow service role full access to email_sends" ON public.email_sends;
 CREATE POLICY "Allow service role full access to email_sends"
 ON public.email_sends
 FOR ALL
