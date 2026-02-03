@@ -328,6 +328,15 @@ export default async function HomePage() {
               cardSize="small"
             />
           )}
+          {/* The Culture - Lifestyle & Entertainment */}
+          {lifestyleArticles.length > 0 && (
+            <ContentRow
+              title="The Culture"
+              description="Entertainment, music, and lifestyle beyond basketball"
+              items={lifestyleArticles}
+              viewAllHref="/news?topic=lifestyle"
+            />
+          )}
           {/* Latest Videos */}
           {videoContent.length > 0 ? (
             <ContentRow
@@ -346,10 +355,6 @@ export default async function HomePage() {
           <ComingSoonRow 
             title="Tech & Innovation"
             description="The latest in technology, AI, and innovation"
-          />
-          <ComingSoonRow 
-            title="The Culture"
-            description="Entertainment, music, and lifestyle beyond basketball"
           />
         </div>
       </main>
