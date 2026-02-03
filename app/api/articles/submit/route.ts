@@ -19,6 +19,7 @@ interface SubmitArticlePayload {
   topic: string
   body: ArticleBody
   videoUrl?: string
+  featured?: boolean
   slug?: string
 }
 
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
       body: rawPayload.body,
       video_url: rawPayload.videoUrl?.trim() || null,
       published: true,
-      featured: false,
+      featured: Boolean(rawPayload.featured),
       published_at: new Date().toISOString()
     }
 

@@ -18,6 +18,7 @@ interface UpdateArticlePayload {
   topic: string
   body: ArticleBody
   videoUrl?: string
+  featured?: boolean
 }
 
 const REQUIRED_FIELDS: Array<keyof UpdateArticlePayload> = [
@@ -90,6 +91,7 @@ export async function PATCH(
       topic: rawPayload.topic.trim(),
       body: rawPayload.body,
       video_url: rawPayload.videoUrl?.trim() || null,
+      featured: Boolean(rawPayload.featured),
       // We don't update slug, published_at, or created_at on edit usually
     }
 

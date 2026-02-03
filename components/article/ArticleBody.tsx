@@ -10,6 +10,7 @@ import TextAlign from '@tiptap/extension-text-align';
 
 import { isArticleBodyBlocks, isTipTapDoc } from '@/lib/articles/body';
 import { VideoEmbed } from '@/lib/tiptap/video-extension';
+import { CalloutCard } from '@/lib/tiptap/callout-card-extension';
 import type { ArticleBodyBlock, TipTapDocNode } from '@/types/supabase';
 
 import type { ArticleBody } from '@/types/supabase';
@@ -78,5 +79,6 @@ function generateTipTapHTML(doc: TipTapDocNode) {
     Image.configure({ HTMLAttributes: { class: 'rounded-xl my-6 shadow-lg' } }),
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     VideoEmbed,
+    CalloutCard,
   ])
 }
