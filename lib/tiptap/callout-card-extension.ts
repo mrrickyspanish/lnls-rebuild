@@ -43,7 +43,7 @@ export const CalloutCard = Node.create({
       toggleCalloutCard:
         () =>
         ({ commands }) => {
-          return commands.toggleWrap(this.name)
+          return commands.toggleNode(this.name, 'paragraph')
         },
     }
   },
