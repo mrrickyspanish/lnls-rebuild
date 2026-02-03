@@ -36,7 +36,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       <img
         src={src}
         alt={alt}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-bottom"
         loading={priority ? 'eager' : 'lazy'}
         style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
       />
@@ -49,7 +49,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       <img
         src={src}
         alt={alt}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-bottom"
         loading={priority ? 'eager' : 'lazy'}
         style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
       />
@@ -64,7 +64,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
       fill
       priority={priority}
       sizes="100vw"
-      className="object-cover"
+      className="object-cover object-bottom"
       style={{ borderRadius: '12px' }}
     />
   );
@@ -73,7 +73,7 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
 export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
   return (
     <section className="article-hero w-full flex justify-center px-4 md:px-8 lg:px-16 xl:px-32">
-      <div className="relative w-full max-w-6xl aspect-[16/9] md:aspect-[16/7] rounded-xl overflow-hidden">
+      <div className="relative w-full max-w-7xl aspect-[16/10] md:aspect-[16/8] rounded-xl overflow-hidden">
         <motion.div
           className="absolute inset-0"
           initial={{ scale: 1.08, opacity: 0 }}
