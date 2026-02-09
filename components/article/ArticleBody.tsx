@@ -49,12 +49,10 @@ function renderSupabaseBlock(block: ArticleBodyBlock, index: number) {
 }
 
 export default function ArticleBody({ content }: ArticleBodyProps) {
-  if (!content) return null;
-
-  const hasTwitterEmbed = useMemo(
-    () => (isTipTapDoc(content) ? containsNodeType(content, 'twitterEmbed') : false),
-    [content]
-  );
+  const hasTwitterEmbed = useMemo(() => {
+    if (!content || !isTipTapDoc(content)) return false;
+    return containsNodeType(content, 'twitterEmbed');
+  }, [content]);
 
   useEffect(() => {
     if (!hasTwitterEmbed || typeof window === 'undefined') return;
@@ -81,6 +79,8 @@ export default function ArticleBody({ content }: ArticleBodyProps) {
     script.onload = loadWidgets;
     document.body.appendChild(script);
   }, [hasTwitterEmbed]);
+
+  if (!content) return null;
 
   if (isArticleBodyBlocks(content)) {
     return (
