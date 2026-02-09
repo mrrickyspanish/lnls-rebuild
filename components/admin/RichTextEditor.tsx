@@ -12,6 +12,7 @@ import HardBreak from '@tiptap/extension-hard-break'
 
 import { VideoEmbed } from '@/lib/tiptap/video-extension'
 import { CalloutCard } from '@/lib/tiptap/callout-card-extension'
+import { TwitterEmbed } from '@/lib/tiptap/twitter-extension'
 
 const DEFAULT_CONTENT: JSONContent = {
   type: 'doc',
@@ -78,6 +79,7 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
         types: ['heading', 'paragraph'],
       }),
       VideoEmbed,
+      TwitterEmbed,
       CalloutCard,
     ],
     content: value ?? DEFAULT_CONTENT,
@@ -111,12 +113,21 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     if (!editor) return
 
     const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('Enter URL:', previousUrl)
+    const url = window.prompt('Enter URL:', previousUrl)?.trim()
 
     if (url === null) return
 
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
+      return
+    }
+
+    if (editor.state.selection.empty) {
+      editor.chain().focus().insertContent({
+        type: 'text',
+        text: url,
+        marks: [{ type: 'link', attrs: { href: url } }],
+      }).run()
       return
     }
 
@@ -195,6 +206,16 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
 
     // @ts-expect-error - custom command from VideoEmbed extension
     editor.chain().focus().setVideoEmbed(url, size).run()
+  }, [editor])
+
+  const addTweet = useCallback(() => {
+    if (!editor) return
+
+    const url = window.prompt('Enter tweet URL (x.com or twitter.com):')?.trim()
+    if (!url) return
+
+    // @ts-expect-error - custom command from TwitterEmbed extension
+    editor.chain().focus().setTwitterEmbed(url).run()
   }, [editor])
 
   const addHardBreak = useCallback(() => {
@@ -369,6 +390,15 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
           title="Add Link"
         >
           🔗
+        </button>
+
+        <button
+          type="button"
+          onClick={addTweet}
+          className="px-3 py-1.5 rounded text-sm bg-neutral-700 text-neutral-300 hover:bg-neutral-600 transition-colors"
+          title="Embed Tweet"
+        >
+          X
         </button>
 
         <button
