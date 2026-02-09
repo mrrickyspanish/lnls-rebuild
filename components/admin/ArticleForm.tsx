@@ -30,6 +30,11 @@ const AUTHOR_PRESETS = [
     twitter: '@LeKwamJames',
     bio: 'Klutch Sports Operative Passionately Covering the Lakers since 2019.',
   },
+  {
+    name: 'Brendan Willis',
+    twitter: '@BwaysTakes',
+    bio: 'Covering all things football with a bit of all other things sports related',
+  },
 ]
 
 const EMPTY_DOC: JSONContent = {
