@@ -62,7 +62,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: boolean }>({})
   const [imageUsage, setImageUsage] = useState<'hero' | 'article'>('hero')
   const [articleImages, setArticleImages] = useState<string[]>([])
-  const [insertArticleImage, setInsertArticleImage] = useState<((url: string) => void) | null>(null)
+  const [insertArticleImage, setInsertArticleImage] = useState<((url: string, caption?: string) => void) | null>(null)
   const MAX_MB = 4
 
   const [formData, setFormData] = useState({
@@ -90,9 +90,12 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
 
   const handleBodyChange = (content: JSONContent) => setBodyContent(content)
 
-  const handleEditorReady = useCallback(({ insertImage }: { insertImage: (url: string, caption?: string) => void }) => {
-    setInsertArticleImage(() => insertImage)
-  }, [])
+  const handleEditorReady = useCallback(
+    ({ insertImage }: { insertImage: (url: string, caption?: string) => void }) => {
+      setInsertArticleImage(() => insertImage)
+    },
+    []
+  )
 
   const copyToClipboard = async (text: string) => {
     try {
