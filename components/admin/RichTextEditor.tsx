@@ -95,6 +95,13 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     immediatelyRender: false,
   })
 
+  useEffect(() => {
+    if (!editor || !value) return
+    const current = editor.getJSON()
+    if (JSON.stringify(current) === JSON.stringify(value)) return
+    editor.commands.setContent(value)
+  }, [editor, value])
+
   // Expose helper back to parent once editor is ready
   useEffect(() => {
     if (!editor || !onReady) return
