@@ -1,13 +1,11 @@
 /**
  * Image Upload API
- * Handles uploading images and pushing them to GitHub
+ * Handles uploading images to Supabase Storage
  * Route: POST /api/upload
  */
 
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { execSync } from 'child_process'
 import { NextRequest, NextResponse } from 'next/server'
+import { createSupabaseServiceClient } from '@/lib/supabase/client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,39 +45,44 @@ export async function POST(request: NextRequest) {
       .toLowerCase()
     const filename = `${sanitizedName}_${timestamp}.${ext}`
 
-    // Save file to public/uploads/articles
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'articles')
-    await mkdir(uploadDir, { recursive: true })
-    
-    const filePath = join(uploadDir, filename)
     const buffer = await file.arrayBuffer()
-    await writeFile(filePath, Buffer.from(buffer))
+    const supabase = createSupabaseServiceClient()
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'article-images'
+    const storagePath = `articles/${filename}`
 
-    // Add and commit to git
-    try {
-      const relativeFilePath = `public/uploads/articles/${filename}`
-      execSync(`cd "${process.cwd()}" && git add "${relativeFilePath}"`, { 
-        stdio: 'pipe' 
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(storagePath, Buffer.from(buffer), {
+        contentType: file.type,
+        upsert: true,
       })
-      execSync(`cd "${process.cwd()}" && git commit -m "Upload image: ${filename}"`, { 
-        stdio: 'pipe' 
-      })
-      execSync(`cd "${process.cwd()}" && git push origin main`, { 
-        stdio: 'pipe' 
-      })
-    } catch (gitError) {
-      console.error('Git error (non-fatal):', gitError)
-      // Continue anyway - file was saved locally
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      return NextResponse.json(
+        { error: uploadError.message || 'Failed to upload image' },
+        { status: 500 }
+      )
     }
 
-    // Return the public path for the image
-    const publicPath = `/uploads/articles/${filename}`
-    
+    const { data: publicData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(storagePath)
+
+    const publicUrl = publicData?.publicUrl
+    if (!publicUrl) {
+      return NextResponse.json(
+        { error: 'Failed to generate public URL' },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Image uploaded successfully',
-      path: publicPath,
+      path: publicUrl,
       filename,
+      storagePath,
     })
   } catch (error) {
     console.error('Upload error:', error)
