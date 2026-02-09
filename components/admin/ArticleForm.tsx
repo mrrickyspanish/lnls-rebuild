@@ -143,7 +143,8 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         }))
       } else {
         setArticleImages(prev => [data.path, ...prev])
-        insertArticleImage?.(data.path)
+        const caption = window.prompt('Enter image caption (optional):')?.trim()
+        insertArticleImage?.(data.path, caption)
       }
 
       setError('')

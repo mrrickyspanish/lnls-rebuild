@@ -40,6 +40,32 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
   const [uploadingImage, setUploadingImage] = useState(false)
   const MAX_MB = 4
 
+  const insertImageWithCaption = useCallback((url: string, caption?: string) => {
+    if (!editor) return
+
+    const content = [
+      {
+        type: 'image',
+        attrs: { src: url },
+      },
+    ] as JSONContent[]
+
+    if (caption) {
+      content.push({
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: caption,
+            marks: [{ type: 'italic' }],
+          },
+        ],
+      })
+    }
+
+    editor.chain().focus().insertContent(content).run()
+  }, [editor])
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -107,10 +133,7 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     if (!editor || !onReady) return
 
     const insertImage = (url: string, caption?: string) => {
-      editor.chain().focus().setImage({ src: url }).run()
-      if (caption) {
-        editor.chain().focus().insertContent(`<p><em>${caption}</em></p>`).run()
-      }
+      insertImageWithCaption(url, caption)
     }
 
     onReady({ insertImage })
@@ -154,13 +177,9 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     const url = window.prompt('Enter image URL:')?.trim()
     if (!url) return
 
-    editor.chain().focus().setImage({ src: url }).run()
-
     const caption = window.prompt('Enter image caption (optional):')?.trim()
-    if (caption) {
-      editor.chain().focus().insertContent(`<p><em>${caption}</em></p>`).run()
-    }
-  }, [editor])
+    insertImageWithCaption(url, caption)
+  }, [editor, insertImageWithCaption])
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -194,7 +213,8 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
         throw new Error(data.error || 'Upload failed')
       }
 
-      editor.chain().focus().setImage({ src: data.path }).run()
+      const caption = window.prompt('Enter image caption (optional):')?.trim()
+      insertImageWithCaption(data.path, caption)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to upload image'
       window.alert(message)
@@ -202,7 +222,7 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
       setUploadingImage(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
-  }, [editor])
+  }, [editor, insertImageWithCaption])
 
   const addVideo = useCallback(() => {
     if (!editor) return
