@@ -120,11 +120,13 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     if (!editor) return
 
     const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('Enter URL:', previousUrl)?.trim()
+    const input = window.prompt('Enter URL:', previousUrl)
 
-    if (url === null) return
+    if (input === null) return
 
-    if (url === '') {
+    const url = input.trim()
+
+    if (!url) {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
       return
     }

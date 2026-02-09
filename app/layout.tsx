@@ -7,7 +7,7 @@ import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
 import ViewTransition from '@/components/ViewTransition';
 import dynamic from 'next/dynamic';
 import { TabProvider } from '@/components/home/HomePageClient';
-import { Analytics } from '@vercel/analytics/next';
+import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load SplashScreen for better initial page load
 const SplashScreen = dynamic(() => import('@/components/splash/SplashScreen'));
