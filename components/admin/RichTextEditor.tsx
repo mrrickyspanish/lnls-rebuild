@@ -223,6 +223,23 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     const url = window.prompt('Enter tweet URL (x.com or twitter.com):')?.trim()
     if (!url) return
 
+    if (editor.isActive('calloutCard')) {
+      const { $from } = editor.state.selection
+      for (let depth = $from.depth; depth > 0; depth -= 1) {
+        if ($from.node(depth).type.name === 'calloutCard') {
+          const insertPos = $from.after(depth)
+          editor
+            .chain()
+            .focus()
+            .setTextSelection(insertPos)
+            // @ts-expect-error - custom command from TwitterEmbed extension
+            .setTwitterEmbed(url)
+            .run()
+          return
+        }
+      }
+    }
+
     // @ts-expect-error - custom command from TwitterEmbed extension
     editor.chain().focus().setTwitterEmbed(url).run()
   }, [editor])
