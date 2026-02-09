@@ -12,7 +12,7 @@ import HardBreak from '@tiptap/extension-hard-break'
 
 import { VideoEmbed } from '@/lib/tiptap/video-extension'
 import { CalloutCard } from '@/lib/tiptap/callout-card-extension'
-import { TwitterEmbed } from '@/lib/tiptap/twitter-extension'
+import { TwitterEmbed, parseTweetUrl } from '@/lib/tiptap/twitter-extension'
 
 const DEFAULT_CONTENT: JSONContent = {
   type: 'doc',
@@ -223,6 +223,12 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     const url = window.prompt('Enter tweet URL (x.com or twitter.com):')?.trim()
     if (!url) return
 
+    const attributes = parseTweetUrl(url)
+    if (!attributes) {
+      window.alert('Unsupported tweet URL.')
+      return
+    }
+
     if (editor.isActive('calloutCard')) {
       const { $from } = editor.state.selection
       for (let depth = $from.depth; depth > 0; depth -= 1) {
@@ -231,17 +237,24 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
           editor
             .chain()
             .focus()
-            .setTextSelection(insertPos)
-            // @ts-expect-error - custom command from TwitterEmbed extension
-            .setTwitterEmbed(url)
+            .insertContentAt(insertPos, {
+              type: 'twitterEmbed',
+              attrs: attributes,
+            })
             .run()
           return
         }
       }
     }
 
-    // @ts-expect-error - custom command from TwitterEmbed extension
-    editor.chain().focus().setTwitterEmbed(url).run()
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'twitterEmbed',
+        attrs: attributes,
+      })
+      .run()
   }, [editor])
 
   const addHardBreak = useCallback(() => {

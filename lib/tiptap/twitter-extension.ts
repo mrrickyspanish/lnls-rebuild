@@ -5,7 +5,7 @@ interface TwitterAttributes {
   tweetId: string
 }
 
-function parseTweetUrl(input: string): TwitterAttributes | null {
+export function parseTweetUrl(input: string): TwitterAttributes | null {
   try {
     const url = new URL(input)
     const host = url.hostname.replace('www.', '')
