@@ -40,32 +40,6 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
   const [uploadingImage, setUploadingImage] = useState(false)
   const MAX_MB = 4
 
-  const insertImageWithCaption = useCallback((url: string, caption?: string) => {
-    if (!editor) return
-
-    const content = [
-      {
-        type: 'image',
-        attrs: { src: url },
-      },
-    ] as JSONContent[]
-
-    if (caption) {
-      content.push({
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            text: caption,
-            marks: [{ type: 'italic' }],
-          },
-        ],
-      })
-    }
-
-    editor.chain().focus().insertContent(content).run()
-  }, [editor])
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -120,6 +94,32 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     },
     immediatelyRender: false,
   })
+
+  const insertImageWithCaption = useCallback((url: string, caption?: string) => {
+    if (!editor) return
+
+    const content = [
+      {
+        type: 'image',
+        attrs: { src: url },
+      },
+    ] as JSONContent[]
+
+    if (caption) {
+      content.push({
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: caption,
+            marks: [{ type: 'italic' }],
+          },
+        ],
+      })
+    }
+
+    editor.chain().focus().insertContent(content).run()
+  }, [editor])
 
   useEffect(() => {
     if (!editor || !value) return
