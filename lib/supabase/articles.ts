@@ -20,6 +20,7 @@ const ARTICLE_FIELDS = `
   published,
   featured,
   published_at,
+  last_newsletter_sent_at,
   created_at,
   updated_at,
   views,

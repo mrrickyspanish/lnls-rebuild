@@ -86,7 +86,11 @@ function AdminTable({ title, articles, emptyLabel }: AdminTableProps) {
                         Edit →
                       </Link>
                     </div>
-                    <ArticleRowActions slug={article.slug} published={article.published} />
+                    <ArticleRowActions
+                      slug={article.slug}
+                      published={article.published}
+                      lastNewsletterSentAt={article.last_newsletter_sent_at}
+                    />
                   </div>
                 </td>
               </tr>

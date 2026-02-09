@@ -80,6 +80,7 @@ export interface Database {
           published: boolean;
           featured: boolean;
           published_at: string | null;
+          last_newsletter_sent_at: string | null;
           created_at: string;
           updated_at: string;
           views: number;
@@ -103,6 +104,7 @@ export interface Database {
           published?: boolean;
           featured?: boolean;
           published_at?: string | null;
+          last_newsletter_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -124,6 +126,7 @@ export interface Database {
           published?: boolean;
           featured?: boolean;
           published_at?: string | null;
+          last_newsletter_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
           views?: number;
@@ -274,18 +277,24 @@ export interface Database {
           email: string;
           subscribed_at: string;
           active: boolean;
+          unsubscribe_token: string | null;
+          unsubscribed_at: string | null;
         };
         Insert: {
           id?: string;
           email: string;
           subscribed_at?: string;
           active?: boolean;
+          unsubscribe_token?: string | null;
+          unsubscribed_at?: string | null;
         };
         Update: {
           id?: string;
           email?: string;
           subscribed_at?: string;
           active?: boolean;
+          unsubscribe_token?: string | null;
+          unsubscribed_at?: string | null;
         };
         Relationships: [];
       };

@@ -1,5 +1,6 @@
 // lib/supabase/client.ts
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "crypto";
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 
@@ -37,9 +38,10 @@ export async function subscribeToNewsletter(
 ): Promise<{ data: unknown; error: PostgrestError | null }> {
   console.log("subscribeToNewsletter called with", email, source);
   const supabase = createSupabaseServiceClient();
+  const unsubscribeToken = randomUUID();
   const { data, error } = await supabase
     .from("newsletter_subscribers")
-    .insert([{ email, active: true }]);
+    .insert([{ email, active: true, unsubscribe_token: unsubscribeToken }]);
 
   if (error) {
     console.error("Supabase insert error:", error);
