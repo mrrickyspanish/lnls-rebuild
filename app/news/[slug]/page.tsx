@@ -42,6 +42,7 @@ function buildHeroArticle(article: ArticleWithSlideshow, slug: string) {
     title: article.title,
     excerpt: article.excerpt || "",
     heroImage: article.hero_image_url || FALLBACK_IMAGE,
+    heroVideo: article.video_url || null,
     imageCredit: article.image_credit,
     author: { name: article.author_name },
     publishedAt: article.published_at || article.created_at,

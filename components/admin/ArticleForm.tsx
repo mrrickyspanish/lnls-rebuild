@@ -380,6 +380,33 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
               </div>
             )}
 
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-neutral-400 mb-2">
+                Hero Video URL (optional)
+              </label>
+              <input
+                type="text"
+                value={formData.videoUrl}
+                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
+                placeholder="https://cdn.example.com/video.mp4"
+              />
+              <p className="text-xs text-neutral-500 mt-1">
+                Direct video files only (.mp4, .webm, .mov). Used on the article page hero only.
+              </p>
+              {formData.videoUrl && (
+                <div className="mt-3 relative w-full h-40 bg-neutral-800 border border-neutral-700 rounded overflow-hidden">
+                  <video
+                    src={formData.videoUrl}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                    controls
+                  />
+                </div>
+              )}
+            </div>
+
             {articleImages.length > 0 && (
               <div className="space-y-2 mt-4">
                 <div className="text-sm text-neutral-400 font-semibold">Article imagery (recent uploads)</div>

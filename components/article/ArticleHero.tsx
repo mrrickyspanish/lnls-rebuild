@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { canUseNextImage } from '@/lib/images';
@@ -9,6 +10,7 @@ type Article = {
   title: string;
   excerpt: string;
   heroImage: string;
+  heroVideo?: string | null;
   imageCredit?: string | null;
   author: { name: string };
   publishedAt: string;
@@ -73,7 +75,19 @@ function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; 
   );
 }
 
+function isDirectVideoUrl(url?: string | null): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov');
+}
+
 export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
+  const [videoError, setVideoError] = useState(false);
+  const heroVideo = currentArticle.heroVideo || undefined;
+  const showVideo = useMemo(
+    () => !videoError && isDirectVideoUrl(heroVideo),
+    [heroVideo, videoError]
+  );
   const isBarnesBirthday = currentArticle.heroImage.includes('barnes_birthday_post_');
   const heroAspectClass = isBarnesBirthday ? 'aspect-[4/3] md:aspect-[4/3]' : 'aspect-[16/10] md:aspect-[16/8]';
 
@@ -86,7 +100,20 @@ export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
         >
-          <MediaLayer src={currentArticle.heroImage} alt={currentArticle.title} priority />
+          {showVideo ? (
+            <video
+              src={heroVideo}
+              className="absolute inset-0 h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              onError={() => setVideoError(true)}
+              poster={currentArticle.heroImage}
+            />
+          ) : (
+            <MediaLayer src={currentArticle.heroImage} alt={currentArticle.title} priority />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-[5%] bg-gradient-to-t from-black via-black/85 to-transparent" />
         </motion.div>
