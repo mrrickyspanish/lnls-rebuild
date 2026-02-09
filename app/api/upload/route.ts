@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = await file.arrayBuffer()
     const supabase = createSupabaseServiceClient()
-    const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'article-images'
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'Article Images'
     const storagePath = `articles/${filename}`
 
     const { error: uploadError } = await supabase.storage
