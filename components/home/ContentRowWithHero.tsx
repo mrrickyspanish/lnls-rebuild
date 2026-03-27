@@ -542,18 +542,7 @@ export default function ContentRowWithHero({
 
   let mobileList: ContentItem[] = [];
   if (isMobileLayout) {
-    const list = items.filter((item) => item !== heroItem);
-    const podcastIdx = list.findIndex(
-      (item) => item.content_type === "podcast"
-    );
-    if (podcastIdx > -1) {
-      mobileList = [
-        list[podcastIdx],
-        ...list.filter((_, i) => i !== podcastIdx),
-      ];
-    } else {
-      mobileList = list;
-    }
+    mobileList = items.filter((item) => item !== heroItem);
   }
 
   const handleMobileItemClick = (item: ContentItem, list: ContentItem[]) => {

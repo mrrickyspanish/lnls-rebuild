@@ -73,8 +73,12 @@ export default async function HomePage() {
       return Number.isNaN(time) ? 0 : time;
     };
 
-    const sortByDateDesc = <T extends { published_at?: string | null }>(items: T[]) =>
-      [...items].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at));
+    const sortByDateDesc = <T extends { published_at?: string | null; created_at?: string | null }>(items: T[]) =>
+      [...items].sort((a, b) => {
+        const bDate = b.published_at ?? b.created_at;
+        const aDate = a.published_at ?? a.created_at;
+        return toTimestamp(bDate) - toTimestamp(aDate);
+      });
 
     const dedupeById = <T extends { id?: string | number }>(items: T[]) => {
       const seen = new Set<string>();
@@ -172,25 +176,10 @@ export default async function HomePage() {
 
     const HERO_ITEM_TARGET = 4;
 
-    // SIMPLIFIED Hero Logic: Latest featured article first, then everything else by date
-    let heroItems: ContentItem[] = [];
-
-    // Get the single latest featured article if it exists
-    const latestFeatured = featuredArticles.length > 0 ? featuredArticles[0] : null;
-
-    // Get all owned content with images, sorted by date
-    const ownedWithImages = dedupeById(sortByDateDesc(ownedContent))
-      .filter(item => item.image_url);
-
-    // Build hero: featured first (if exists), then rest by date
-    if (latestFeatured) {
-      // Featured article first, then other content (excluding the featured one)
-      const otherContent = ownedWithImages.filter(item => item.id !== latestFeatured.id);
-      heroItems = [latestFeatured, ...otherContent].slice(0, HERO_ITEM_TARGET);
-    } else {
-      // No featured article, just use latest content by date
-      heroItems = ownedWithImages.slice(0, HERO_ITEM_TARGET);
-    }
+    // Main hero items are strictly ordered by latest publish date.
+    const heroItems: ContentItem[] = dedupeById(sortByDateDesc(ownedContent))
+      .filter(item => item.image_url)
+      .slice(0, HERO_ITEM_TARGET);
 
     const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
     const purpleGoldItems = purpleGoldArticles.length > 0
