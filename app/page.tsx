@@ -13,13 +13,9 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   try {
-    const [supabaseData, lakersArticlesRaw, nbaArticlesRaw, recruitReadyArticlesRaw, footballArticlesRaw, lifestyleArticlesRaw, youtubeVideos] = await Promise.all([
+    const [supabaseData, allPublishedArticlesRaw, youtubeVideos] = await Promise.all([
       getNewsStream(50),
-      getPublishedArticles(12, "Lakers"),
-      getPublishedArticles(12, "NBA"),
-      getPublishedArticles(12, "Recruit Ready"),
-      getPublishedArticles(12, "Football"),
-      getPublishedArticles(12, "Lifestyle"),
+      getPublishedArticles(200),
       getYouTubeRSS(),
     ]);
     const podcastResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
@@ -126,13 +122,13 @@ export default async function HomePage() {
       duration: undefined, // RSS doesn't provide duration
     }));
 
-    // Ensure all articles have topic field for correct badge logic
-    const nbaArticles = (nbaArticlesRaw || []).map(mapArticleToContentItem);
-    const lakersArticles = (lakersArticlesRaw || []).map(mapArticleToContentItem);
-    const footballArticles = (footballArticlesRaw || []).map(mapArticleToContentItem);
-    const recruitReadyArticlesFromDB = (recruitReadyArticlesRaw || []).map(mapArticleToContentItem);
-    const lifestyleArticles = (lifestyleArticlesRaw || []).map(mapArticleToContentItem);
-    const allArticles = [...lakersArticles, ...nbaArticles, ...footballArticles, ...recruitReadyArticlesFromDB, ...lifestyleArticles];
+    // Pull all internal published articles from admin source regardless of topic.
+    const allArticles = (allPublishedArticlesRaw || []).map(mapArticleToContentItem);
+    const lakersArticles = allArticles.filter((item) => item.topic === "Lakers");
+    const nbaArticles = allArticles.filter((item) => item.topic === "NBA");
+    const footballArticles = allArticles.filter((item) => item.topic === "Football");
+    const recruitReadyArticlesFromDB = allArticles.filter((item) => item.topic === "Recruit Ready");
+    const lifestyleArticles = allArticles.filter((item) => item.topic === "Lifestyle");
 
     const latestArticle = allArticles.length
       ? [...allArticles].sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))[0]
@@ -154,19 +150,10 @@ export default async function HomePage() {
     const externalContent = filterExternalContent(allContent);
 
 
-    // --- FEATURED HERO LOGIC ---
-    // Find all featured articles (using the 'featured' boolean property)
-    const featuredArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.featured && item.image_url);
-    
-    // Find all "Recruit Ready" articles - always prioritized for hero
-    const recruitReadyArticles = dedupeById(sortByDateDesc(ownedContent)).filter(item => item.topic === 'Recruit Ready' && item.image_url);
+    const ownedContentSorted = dedupeById(sortByDateDesc(ownedContent));
 
-    // Trending Now - Owned Content Only, FEATURED and RECRUIT READY always included at the top
-    const trendingNow = [
-      ...featuredArticles,
-      ...recruitReadyArticles.filter(item => !featuredArticles.find(f => f.id === item.id)), // Add Recruit Ready not already featured
-      ...dedupeById(sortByDateDesc(ownedContent)).filter(item => !item.featured && item.topic !== 'Recruit Ready')
-    ].map(item => ({
+    // What's Happening Now - internal content only, strictly by latest post date.
+    const trendingNow = ownedContentSorted.map(item => ({
       ...item,
       topic: item.topic || undefined,
     })).slice(0, 10);
@@ -177,11 +164,11 @@ export default async function HomePage() {
     const HERO_ITEM_TARGET = 4;
 
     // Main hero items are strictly ordered by latest publish date.
-    const heroItems: ContentItem[] = dedupeById(sortByDateDesc(ownedContent))
+    const heroItems: ContentItem[] = ownedContentSorted
       .filter(item => item.image_url)
       .slice(0, HERO_ITEM_TARGET);
 
-    const purpleGoldArticles = (lakersArticlesRaw || []).slice(0, 10);
+    const purpleGoldArticles = lakersArticles.slice(0, 10);
     const purpleGoldItems = purpleGoldArticles.length > 0
       ? purpleGoldArticles.map(mapArticleToContentItem)
       : ownedContent.filter(item => 
@@ -193,7 +180,7 @@ export default async function HomePage() {
         })).slice(0, 10);
 
     // Recruit Ready - Athlete features and recruiting content
-    const recruitReadyItems = dedupeById(sortByDateDesc(ownedContent))
+    const recruitReadyItems = ownedContentSorted
       .filter(item => item.topic === 'Recruit Ready')
       .slice(0, 10);
 
@@ -204,11 +191,11 @@ export default async function HomePage() {
       externalContentCount: externalContent.length,
       trendingNowCount: trendingNow.length,
       aroundLeagueCount: aroundLeagueItems.length,
-      recruitReadyArticlesCount: recruitReadyArticles.length,
+      recruitReadyArticlesCount: recruitReadyArticlesFromDB.length,
       recruitReadyItemsCount: recruitReadyItems.length,
       heroItemsCount: heroItems.length,
       heroItems: heroItems.map(h => ({ id: h.id, title: h.title, topic: h.topic, featured: h.featured })),
-      recruitReadySample: recruitReadyArticles.slice(0, 2).map(r => ({ id: r.id, title: r.title, topic: r.topic })),
+      recruitReadySample: recruitReadyArticlesFromDB.slice(0, 2).map(r => ({ id: r.id, title: r.title, topic: r.topic })),
     });
 
     // --- JSON-LD Structured Data ---
