@@ -3,7 +3,7 @@ import ContentRow from "@/components/home/ContentRow";
 import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
 import HomePageClient from "@/components/home/HomePageClient";
-import { getArticlesBySlugs, getFeaturedArticles, getPublishedArticles } from "@/lib/articles";
+import { getFeaturedArticles, getPublishedArticles } from "@/lib/articles";
 import { getNewsStream } from "@/lib/supabase/client";
 import { getYouTubeRSS } from "@/lib/youtube-rss";
 import type { Article } from "@/types/supabase";
@@ -18,11 +18,10 @@ const PINNED_HERO_SLUGS = [
 
 export default async function HomePage() {
   try {
-    const [supabaseData, allPublishedArticlesRaw, featuredArticlesRaw, pinnedArticlesRaw, youtubeVideos] = await Promise.all([
+    const [supabaseData, allPublishedArticlesRaw, featuredArticlesRaw, youtubeVideos] = await Promise.all([
       getNewsStream(50),
       getPublishedArticles(200),
       getFeaturedArticles(20),
-      getArticlesBySlugs([...PINNED_HERO_SLUGS]),
       getYouTubeRSS(),
     ]);
     const podcastResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
@@ -132,9 +131,8 @@ export default async function HomePage() {
     // Pull all internal published articles from admin source regardless of topic.
     const allArticles = (allPublishedArticlesRaw || []).map(mapArticleToContentItem);
     const featuredArticles = (featuredArticlesRaw || []).map(mapArticleToContentItem);
-    const pinnedArticlesUnordered = (pinnedArticlesRaw || []).map(mapArticleToContentItem);
     const pinnedArticles = PINNED_HERO_SLUGS
-      .map((slug) => pinnedArticlesUnordered.find((a) => a.source_url === `/news/${slug}`))
+      .map((slug) => allArticles.find((a) => a.source_url === `/news/${slug}`))
       .filter(Boolean) as ContentItem[];
     const lakersArticles = allArticles.filter((item) => item.topic === "Lakers");
     const nbaArticles = allArticles.filter((item) => item.topic === "NBA");
