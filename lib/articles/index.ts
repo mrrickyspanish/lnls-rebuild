@@ -1,3 +1,4 @@
-import { fetchPublishedArticles } from '@/lib/supabase/articles'
+import { fetchFeaturedArticles, fetchPublishedArticles } from '@/lib/supabase/articles'
 
 export const getPublishedArticles = fetchPublishedArticles
+export const getFeaturedArticles = fetchFeaturedArticles

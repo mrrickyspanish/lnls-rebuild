@@ -65,6 +65,26 @@ export async function fetchPublishedArticles(
   return (data ?? []).map(mapArticle)
 }
 
+export async function fetchFeaturedArticles(
+  limit = DEFAULT_LIMIT
+): Promise<Article[]> {
+  const supabase = createSupabaseAnonClient()
+  const { data, error } = await supabase
+    .from('articles')
+    .select(ARTICLE_FIELDS)
+    .eq('published', true)
+    .eq('featured', true)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('Failed to fetch featured articles:', error)
+    return []
+  }
+
+  return (data ?? []).map(mapArticle)
+}
+
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   const supabase = createSupabaseAnonClient()
   const { data, error } = await supabase
