@@ -173,9 +173,10 @@ export default async function HomePage() {
 
     const HERO_ITEM_TARGET = 4;
 
-    // Hero slider uses the exact same ordering as `/news`:
-    // fetchPublishedArticles() ordering (published_at desc, created_at desc) with no extra rules.
-    const heroItems: ContentItem[] = allArticles.slice(0, HERO_ITEM_TARGET);
+    // Hero slider: newest first by publish time only. Topic/category/tags are not used for inclusion or order.
+    const heroItems: ContentItem[] = [...allArticles]
+      .sort((a, b) => toTimestamp(b.published_at) - toTimestamp(a.published_at))
+      .slice(0, HERO_ITEM_TARGET);
 
     const purpleGoldArticles = lakersArticles.slice(0, 10);
     const purpleGoldItems = purpleGoldArticles.length > 0
