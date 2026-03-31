@@ -174,17 +174,17 @@ export default async function HomePage() {
     const HERO_ITEM_TARGET = 4;
 
     // Main hero items are strictly ordered by latest publish date.
-    // RULE: The latest owned item ALWAYS appears in the hero slider (even if it lacks an image).
-    // Remaining hero slots prefer items with images for best visuals.
-    const latestOwnedItem = ownedContentSorted[0];
-    const heroFillItems: ContentItem[] = ownedContentSorted
-      .filter((item) => item !== latestOwnedItem)
-      .filter((item) => item.image_url)
-      .slice(0, Math.max(0, HERO_ITEM_TARGET - (latestOwnedItem ? 1 : 0)));
+    // RULE: The latest internal article ALWAYS appears in the hero slider.
+    // Then we take the next newest internal articles to fill remaining hero slots.
+    // No image gating here; missing images should not block inclusion.
+    const latestOwnedArticle = ownedArticlesSorted[0];
+    const heroFillArticles: ContentItem[] = ownedArticlesSorted
+      .filter((item) => item !== latestOwnedArticle)
+      .slice(0, Math.max(0, HERO_ITEM_TARGET - (latestOwnedArticle ? 1 : 0)));
 
     const heroItems: ContentItem[] = [
-      ...(latestOwnedItem ? [latestOwnedItem] : []),
-      ...heroFillItems,
+      ...(latestOwnedArticle ? [latestOwnedArticle] : []),
+      ...heroFillArticles,
     ];
 
     const purpleGoldArticles = lakersArticles.slice(0, 10);
