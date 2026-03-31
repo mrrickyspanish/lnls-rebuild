@@ -152,11 +152,21 @@ export default async function HomePage() {
 
     const ownedContentSorted = dedupeById(sortByDateDesc(ownedContent));
 
-    // What's Happening Now - internal content only, strictly by latest post date.
-    const trendingNow = ownedContentSorted.map(item => ({
-      ...item,
-      topic: item.topic || undefined,
-    })).slice(0, 10);
+    // What's Happening Now - internal articles only, strictly by latest post date.
+    // This prevents podcasts/videos from crowding out newly published articles.
+    const ownedArticlesSorted = ownedContentSorted.filter(
+      (item) => item.content_type === "article"
+    );
+    const trendingNowBase = ownedArticlesSorted.length
+      ? ownedArticlesSorted
+      : ownedContentSorted;
+
+    const trendingNow = trendingNowBase
+      .map((item) => ({
+        ...item,
+        topic: item.topic || undefined,
+      }))
+      .slice(0, 10);
 
     // Around the League - External Content Only
     const aroundLeagueItems = dedupeById(sortByDateDesc(externalContent)).slice(0, 10);
@@ -164,9 +174,18 @@ export default async function HomePage() {
     const HERO_ITEM_TARGET = 4;
 
     // Main hero items are strictly ordered by latest publish date.
-    const heroItems: ContentItem[] = ownedContentSorted
-      .filter(item => item.image_url)
-      .slice(0, HERO_ITEM_TARGET);
+    // RULE: The latest owned item ALWAYS appears in the hero slider (even if it lacks an image).
+    // Remaining hero slots prefer items with images for best visuals.
+    const latestOwnedItem = ownedContentSorted[0];
+    const heroFillItems: ContentItem[] = ownedContentSorted
+      .filter((item) => item !== latestOwnedItem)
+      .filter((item) => item.image_url)
+      .slice(0, Math.max(0, HERO_ITEM_TARGET - (latestOwnedItem ? 1 : 0)));
+
+    const heroItems: ContentItem[] = [
+      ...(latestOwnedItem ? [latestOwnedItem] : []),
+      ...heroFillItems,
+    ];
 
     const purpleGoldArticles = lakersArticles.slice(0, 10);
     const purpleGoldItems = purpleGoldArticles.length > 0
@@ -194,7 +213,7 @@ export default async function HomePage() {
       recruitReadyArticlesCount: recruitReadyArticlesFromDB.length,
       recruitReadyItemsCount: recruitReadyItems.length,
       heroItemsCount: heroItems.length,
-      heroItems: heroItems.map(h => ({ id: h.id, title: h.title, topic: h.topic, featured: h.featured })),
+      heroItems: heroItems.map(h => ({ id: h.id, title: h.title, topic: h.topic })),
       recruitReadySample: recruitReadyArticlesFromDB.slice(0, 2).map(r => ({ id: r.id, title: r.title, topic: r.topic })),
     });
 
