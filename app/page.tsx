@@ -131,9 +131,43 @@ export default async function HomePage() {
     // Pull all internal published articles from admin source regardless of topic.
     const allArticles = (allPublishedArticlesRaw || []).map(mapArticleToContentItem);
     const featuredArticles = (featuredArticlesRaw || []).map(mapArticleToContentItem);
-    const pinnedArticles = PINNED_HERO_SLUGS
+    const pinnedArticlesFromDb = PINNED_HERO_SLUGS
       .map((slug) => allArticles.find((a) => a.source_url === `/news/${slug}`))
       .filter(Boolean) as ContentItem[];
+
+    // Absolute override: if the pinned items aren't in the published list for any reason,
+    // still force them into hero/trending using a fallback stub.
+    const pinnedFallbackBySlug: Record<(typeof PINNED_HERO_SLUGS)[number], ContentItem> = {
+      "the-general-vs-the-movie-star-r-b-s-last-stand-at-the-verzuz": {
+        id: "pinned:the-general-vs-the-movie-star-r-b-s-last-stand-at-the-verzuz",
+        title: "THE GENERAL VS. THE MOVIE STAR: R&B’S LAST STAND AT THE VERZUZ",
+        description: undefined,
+        image_url: null,
+        content_type: "article",
+        source: "TDD",
+        source_url: "/news/the-general-vs-the-movie-star-r-b-s-last-stand-at-the-verzuz",
+        published_at: new Date().toISOString(),
+        topic: "Lifestyle",
+      },
+      "the-nba-is-finally-taking-the-first-step-toward-expansion": {
+        id: "pinned:the-nba-is-finally-taking-the-first-step-toward-expansion",
+        title: "The NBA Is Finally Taking the First Step Toward Expansion",
+        description: undefined,
+        image_url: null,
+        content_type: "article",
+        source: "TDD",
+        source_url: "/news/the-nba-is-finally-taking-the-first-step-toward-expansion",
+        published_at: new Date().toISOString(),
+        topic: "NBA",
+      },
+    };
+
+    const pinnedArticles = PINNED_HERO_SLUGS.map((slug) => {
+      return (
+        pinnedArticlesFromDb.find((a) => a.source_url === `/news/${slug}`) ??
+        pinnedFallbackBySlug[slug]
+      );
+    });
     const lakersArticles = allArticles.filter((item) => item.topic === "Lakers");
     const nbaArticles = allArticles.filter((item) => item.topic === "NBA");
     const footballArticles = allArticles.filter((item) => item.topic === "Football");
