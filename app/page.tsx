@@ -3,7 +3,7 @@ import ContentRow from "@/components/home/ContentRow";
 import ComingSoonRow from "@/components/home/ComingSoonRow";
 import QueueSetter from "@/components/home/QueueSetter";
 import HomePageClient from "@/components/home/HomePageClient";
-import { getFeaturedArticles, getPublishedArticles } from "@/lib/articles";
+import { getArticlesBySlugs, getFeaturedArticles, getPublishedArticles } from "@/lib/articles";
 import { getNewsStream } from "@/lib/supabase/client";
 import { getYouTubeRSS } from "@/lib/youtube-rss";
 import type { Article } from "@/types/supabase";
@@ -11,12 +11,18 @@ import { filterOwnedContent, filterExternalContent } from "@/lib/content";
 
 export const revalidate = 60;
 
+const PINNED_HERO_SLUGS = [
+  "the-general-vs-the-movie-star-r-b-s-last-stand-at-the-verzuz",
+  "the-nba-is-finally-taking-the-first-step-toward-expansion",
+] as const;
+
 export default async function HomePage() {
   try {
-    const [supabaseData, allPublishedArticlesRaw, featuredArticlesRaw, youtubeVideos] = await Promise.all([
+    const [supabaseData, allPublishedArticlesRaw, featuredArticlesRaw, pinnedArticlesRaw, youtubeVideos] = await Promise.all([
       getNewsStream(50),
       getPublishedArticles(200),
       getFeaturedArticles(20),
+      getArticlesBySlugs([...PINNED_HERO_SLUGS]),
       getYouTubeRSS(),
     ]);
     const podcastResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/podcast/episodes`)
@@ -126,6 +132,10 @@ export default async function HomePage() {
     // Pull all internal published articles from admin source regardless of topic.
     const allArticles = (allPublishedArticlesRaw || []).map(mapArticleToContentItem);
     const featuredArticles = (featuredArticlesRaw || []).map(mapArticleToContentItem);
+    const pinnedArticlesUnordered = (pinnedArticlesRaw || []).map(mapArticleToContentItem);
+    const pinnedArticles = PINNED_HERO_SLUGS
+      .map((slug) => pinnedArticlesUnordered.find((a) => a.source_url === `/news/${slug}`))
+      .filter(Boolean) as ContentItem[];
     const lakersArticles = allArticles.filter((item) => item.topic === "Lakers");
     const nbaArticles = allArticles.filter((item) => item.topic === "NBA");
     const footballArticles = allArticles.filter((item) => item.topic === "Football");
@@ -172,6 +182,7 @@ export default async function HomePage() {
 
     const trendingNowMerged = dedupeById([
       ...(latestOwnedArticle ? [latestOwnedArticle] : []),
+      ...pinnedArticles.filter((a) => String(a.id) !== String(latestOwnedArticle?.id)),
       ...forcedFeatured,
       ...trendingNowBase,
     ]);
@@ -190,9 +201,10 @@ export default async function HomePage() {
 
     // Main hero items are strictly ordered by latest publish date.
     // Force featured articles into the hero slider in the right spot:
-    // latest article first, then featured, then fill by newest.
+    // latest article first, then pinned-by-slug, then featured, then fill by newest.
     const heroMerged = dedupeById([
       ...(latestOwnedArticle ? [latestOwnedArticle] : []),
+      ...pinnedArticles.filter((a) => String(a.id) !== String(latestOwnedArticle?.id)),
       ...forcedFeatured,
       ...ownedArticlesSorted,
     ]);

@@ -85,6 +85,28 @@ export async function fetchFeaturedArticles(
   return (data ?? []).map(mapArticle)
 }
 
+export async function fetchArticlesBySlugs(slugs: string[]): Promise<Article[]> {
+  const normalized = (slugs ?? [])
+    .map((s) => String(s || '').trim())
+    .filter(Boolean)
+
+  if (normalized.length === 0) return []
+
+  const supabase = createSupabaseAnonClient()
+  const { data, error } = await supabase
+    .from('articles')
+    .select(ARTICLE_FIELDS)
+    .eq('published', true)
+    .in('slug', normalized)
+
+  if (error) {
+    console.error('Failed to fetch articles by slugs:', error)
+    return []
+  }
+
+  return (data ?? []).map(mapArticle)
+}
+
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   const supabase = createSupabaseAnonClient()
   const { data, error } = await supabase
