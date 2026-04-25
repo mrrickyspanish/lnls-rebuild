@@ -18,16 +18,44 @@ const parser = new Parser({
   },
 });
 
-export async function getYouTubeRSS(playlistId: string = process.env.YOUTUBE_PLAYLIST_ID || ''): Promise<YouTubeVideo[]> {
-  if (!playlistId) {
-    console.warn('No YouTube Playlist ID provided');
+function buildFeedUrl(feedId: string, feedType: 'playlist' | 'channel'): string {
+  const queryKey = feedType === 'playlist' ? 'playlist_id' : 'channel_id';
+  return `https://www.youtube.com/feeds/videos.xml?${queryKey}=${feedId}`;
+}
+
+function resolveYouTubeFeedConfig(explicitFeedId?: string): { id: string; type: 'playlist' | 'channel' } | null {
+  const fromArg = explicitFeedId?.trim();
+  if (fromArg) {
+    return {
+      id: fromArg,
+      type: fromArg.startsWith('PL') ? 'playlist' : 'channel',
+    };
+  }
+
+  const playlistId = process.env.YOUTUBE_PLAYLIST_ID?.trim();
+  if (playlistId) {
+    return { id: playlistId, type: 'playlist' };
+  }
+
+  const channelId = process.env.YOUTUBE_CHANNEL_ID?.trim();
+  if (channelId) {
+    return { id: channelId, type: 'channel' };
+  }
+
+  return null;
+}
+
+export async function getYouTubeRSS(feedId?: string): Promise<YouTubeVideo[]> {
+  const feed = resolveYouTubeFeedConfig(feedId);
+  if (!feed) {
+    console.warn('No YouTube feed ID provided (set YOUTUBE_PLAYLIST_ID or YOUTUBE_CHANNEL_ID)');
     return [];
   }
 
   try {
-    const feed = await parser.parseURL(`https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`);
+    const rss = await parser.parseURL(buildFeedUrl(feed.id, feed.type));
     
-    return feed.items.map((item: any) => {
+    return rss.items.map((item: any) => {
       const mediaGroup = item.mediaGroup || {};
       const thumbnail = mediaGroup['media:thumbnail']?.[0]?.['$']?.url || '';
       const description = mediaGroup['media:description']?.[0] || '';
