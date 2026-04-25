@@ -87,7 +87,26 @@ export default async function HomePage() {
       });
     };
 
-    type ContentItem = (typeof supabaseItems)[number];
+    type ContentItem = {
+      id: string | number;
+      title: string;
+      excerpt?: string;
+      description?: string;
+      image_url?: string | null;
+      content_type?: string | null;
+      source?: string;
+      source_url?: string | null;
+      published_at?: string | null;
+      author_name?: string;
+      author?: string;
+      topic?: string;
+      featured?: boolean;
+      duration?: string;
+      episode_number?: number;
+      audio_url?: string;
+      likes?: number;
+      created_at?: string | null;
+    };
 
     // Convert podcast episodes from API to proper format
     const podcastContent = (podcastResponse || []).map((episode: any) => ({
@@ -180,7 +199,7 @@ export default async function HomePage() {
 
     const purpleGoldArticles = lakersArticles.slice(0, 10);
     const purpleGoldItems = purpleGoldArticles.length > 0
-      ? purpleGoldArticles.map(mapArticleToContentItem)
+      ? purpleGoldArticles
       : ownedContent.filter(item => 
           (item.title || '').toLowerCase().includes('laker') || 
           (item.source || '').toLowerCase().includes('laker')
