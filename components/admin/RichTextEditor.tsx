@@ -47,6 +47,10 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
           levels: [2, 3],
         },
         hardBreak: false,
+        // Disable built-ins that are registered separately below
+        // to prevent the "Duplicate extension names" TipTap warning.
+        link: false,
+        underline: false,
       }),
       HardBreak.extend({
         addKeyboardShortcuts() {

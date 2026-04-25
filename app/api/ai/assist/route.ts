@@ -40,7 +40,11 @@ function isRecord(value: unknown): value is AnyRecord {
 }
 
 function toText(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+  // Preserve whitespace-only strings (e.g. " " between bold words).
+  // Only reject truly empty strings.
+  if (typeof value !== 'string') return null;
+  if (value === '') return null;
+  return value;
 }
 
 function makeFallbackDoc(rawText: string): AnyRecord {
