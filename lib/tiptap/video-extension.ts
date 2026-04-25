@@ -12,6 +12,28 @@ interface VideoAttributes {
   size?: 'small' | 'medium' | 'full'
 }
 
+function normalizeFileSource(src: string): string {
+  const trimmed = src.trim()
+  if (!trimmed) return trimmed
+
+  // Keep existing relative paths as-is.
+  if (trimmed.startsWith('/')) {
+    return trimmed
+  }
+
+  // Convert absolute URLs that point to site uploads into a relative path.
+  try {
+    const url = new URL(trimmed)
+    if (url.pathname.startsWith('/uploads/')) {
+      return `${url.pathname}${url.search}${url.hash}`
+    }
+  } catch {
+    // Non-URL values are returned unchanged and handled by validation elsewhere.
+  }
+
+  return trimmed
+}
+
 /**
  * Parse YouTube URL and extract video ID
  */
@@ -94,7 +116,7 @@ function parseDirectFile(url: URL): VideoAttributes | null {
   if (!matches) return null
 
   return {
-    src: url.toString(),
+    src: normalizeFileSource(url.toString()),
     provider: 'file',
     title: 'Video file',
   }
@@ -163,6 +185,9 @@ export const VideoEmbed = Node.create({
   
   renderHTML({ HTMLAttributes }) {
     const { src, provider, title, size = 'medium' } = HTMLAttributes
+    const normalizedSrc = provider === 'file' && typeof src === 'string'
+      ? normalizeFileSource(src)
+      : src
 
     // Size classes: small = max-w-md (448px), medium = max-w-2xl (672px), full = w-full
     const sizeClass = size === 'small' ? 'max-w-md' : size === 'medium' ? 'max-w-2xl' : 'w-full'
@@ -182,7 +207,7 @@ export const VideoEmbed = Node.create({
           [
             'video',
             {
-              src,
+              src: normalizedSrc,
               title: title || 'Video',
               class: 'w-full h-auto',
               controls: 'true',
