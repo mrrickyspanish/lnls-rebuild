@@ -125,7 +125,12 @@ export default function RichTextEditor({ value, onChange, onReady }: RichTextEdi
     if (!editor || !value) return
     const current = editor.getJSON()
     if (JSON.stringify(current) === JSON.stringify(value)) return
-    editor.commands.setContent(value)
+    try {
+      editor.commands.setContent(value)
+    } catch (error) {
+      console.error('Failed to apply editor content, falling back to default doc:', error)
+      editor.commands.setContent(DEFAULT_CONTENT)
+    }
   }, [editor, value])
 
   // Expose helper back to parent once editor is ready

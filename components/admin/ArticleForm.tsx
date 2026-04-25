@@ -241,6 +241,10 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         throw new Error(result.error || 'Failed to format article')
       }
 
+      if (!result.data || typeof result.data !== 'object' || result.data.type !== 'doc') {
+        throw new Error('AI formatter returned invalid editor content')
+      }
+
       // Load the formatted JSON into the editor
       setBodyContent(result.data)
       setRawText('')

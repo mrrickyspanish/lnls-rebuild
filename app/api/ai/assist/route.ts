@@ -33,6 +33,140 @@ interface AIAssistResponse {
   error?: string;
 }
 
+type AnyRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is AnyRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function toText(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function makeFallbackDoc(rawText: string): AnyRecord {
+  const text = rawText.trim() || 'Formatting completed, but no structured content was returned.';
+  return {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text }],
+      },
+    ],
+  };
+}
+
+function extractJsonObject(text: string): string {
+  const trimmed = text.trim();
+  const withoutFences = trimmed
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
+
+  if (withoutFences.startsWith('{') && withoutFences.endsWith('}')) {
+    return withoutFences;
+  }
+
+  const start = withoutFences.indexOf('{');
+  const end = withoutFences.lastIndexOf('}');
+  if (start >= 0 && end > start) {
+    return withoutFences.slice(start, end + 1);
+  }
+
+  return withoutFences;
+}
+
+function sanitizeInlineNode(node: unknown): AnyRecord | null {
+  if (!isRecord(node) || typeof node.type !== 'string') return null;
+
+  if (node.type === 'text') {
+    const text = toText(node.text);
+    if (!text) return null;
+
+    const marks = Array.isArray(node.marks)
+      ? node.marks.filter((mark) => isRecord(mark) && typeof mark.type === 'string')
+      : undefined;
+
+    return marks && marks.length > 0
+      ? { type: 'text', text, marks }
+      : { type: 'text', text };
+  }
+
+  if (node.type === 'hardBreak') {
+    return { type: 'hardBreak' };
+  }
+
+  return null;
+}
+
+function sanitizeBlockNode(node: unknown): AnyRecord | null {
+  if (!isRecord(node) || typeof node.type !== 'string') return null;
+
+  if (node.type === 'paragraph' || node.type === 'calloutCard') {
+    const inline = Array.isArray(node.content)
+      ? node.content.map(sanitizeInlineNode).filter(Boolean)
+      : [];
+    if (inline.length === 0) return null;
+    return { type: node.type, content: inline };
+  }
+
+  if (node.type === 'heading') {
+    const inline = Array.isArray(node.content)
+      ? node.content.map(sanitizeInlineNode).filter(Boolean)
+      : [];
+    if (inline.length === 0) return null;
+    const level = isRecord(node.attrs) && typeof node.attrs.level === 'number'
+      ? node.attrs.level
+      : 2;
+    const normalizedLevel = Math.max(2, Math.min(3, level));
+    return { type: 'heading', attrs: { level: normalizedLevel }, content: inline };
+  }
+
+  if (node.type === 'bulletList' || node.type === 'orderedList') {
+    const items = Array.isArray(node.content)
+      ? node.content
+          .map((item) => sanitizeBlockNode(item))
+          .filter((item): item is AnyRecord => isRecord(item) && item.type === 'listItem')
+      : [];
+
+    if (items.length === 0) return null;
+    return { type: node.type, content: items };
+  }
+
+  if (node.type === 'listItem') {
+    const children = Array.isArray(node.content)
+      ? node.content
+          .map((child) => sanitizeBlockNode(child))
+          .filter(Boolean)
+      : [];
+
+    if (children.length === 0) return null;
+    return { type: 'listItem', content: children };
+  }
+
+  return null;
+}
+
+function sanitizeTipTapDoc(value: unknown, rawText: string): AnyRecord {
+  if (!isRecord(value) || value.type !== 'doc') {
+    return makeFallbackDoc(rawText);
+  }
+
+  const content = Array.isArray(value.content)
+    ? value.content.map((node) => sanitizeBlockNode(node)).filter(Boolean)
+    : [];
+
+  if (content.length === 0) {
+    return makeFallbackDoc(rawText);
+  }
+
+  return {
+    type: 'doc',
+    content,
+  };
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse<AIAssistResponse>> {
   try {
     const body: AIAssistRequest = await req.json();
@@ -345,17 +479,12 @@ IMPORTANT: Return only the JSON object, no other text.`
   }
 
   try {
-    // Clean up the response and parse JSON
-    let jsonText = textContent.text.trim();
-    
-    // Remove markdown code blocks if present
-    jsonText = jsonText.replace(/^```json\n/, '').replace(/\n```$/, '').replace(/^```\n/, '').replace(/\n```$/, '');
-    
+    const jsonText = extractJsonObject(textContent.text);
     const formatted = JSON.parse(jsonText);
-    return formatted;
+    return sanitizeTipTapDoc(formatted, content);
   } catch (error) {
     console.error('Failed to parse AI-formatted article:', error);
-    throw new Error('AI returned invalid JSON format');
+    return makeFallbackDoc(content);
   }
 }
 // Generate podcast show notes from transcript
