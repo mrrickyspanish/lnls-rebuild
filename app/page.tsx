@@ -25,8 +25,14 @@ export default async function HomePage() {
     id:video.id, title:video.title, description:video.description, image_url:video.thumbnail,
     source_url:video.link, published_at:video.pubDate, content_type:'video',
   })) : []
-  return <div className="min-h-screen bg-[var(--netflix-bg)]">
+  // Formatted on the server in a fixed zone so it cannot hydrate-mismatch,
+  // and matches the UTC formatting used for story dates. `revalidate = 60`
+  // keeps it current.
+  const dateline = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC',
+  })
+  return <div className="min-h-screen bg-[var(--bg-primary)]">
     <QueueSetter episodes={podcasts} />
-    <EditorialHome articles={articles} podcasts={podcasts} videos={videos} />
+    <EditorialHome articles={articles} podcasts={podcasts} videos={videos} dateline={dateline} />
   </div>
 }

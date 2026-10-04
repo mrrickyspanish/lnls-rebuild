@@ -20,7 +20,8 @@ module.exports = {
       fontFamily: {
         'bebas': ['Inter', 'sans-serif'], // Replacing Bebas with Inter Bold for headlines
         'inter': ['Inter', 'sans-serif'],
-        'space': ['var(--font-space)', 'sans-serif'],
+        'anton': ['var(--font-anton)', 'Arial Narrow', 'sans-serif'],
+        'plex': ['var(--font-ibm-plex)', 'system-ui', 'sans-serif'],
         'netflix': ['Inter', 'sans-serif'], // Fallback
       },
     },

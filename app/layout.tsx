@@ -1,6 +1,6 @@
 import './globals.css'
-import { Inter, Space_Grotesk, IBM_Plex_Sans } from 'next/font/google'
-import ResponsiveHeader from '@/components/ResponsiveHeader'
+import { Inter, Anton, IBM_Plex_Sans } from 'next/font/google'
+import SiteNav from '@/components/SiteNav'
 import Footer from '@/components/Footer'
 import { AudioPlayerProvider } from "@/lib/audio/AudioPlayerContext";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
@@ -10,7 +10,9 @@ import { Analytics } from '@vercel/analytics/react';
 
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const space = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })
+// Anton carries the display type. Space Grotesk was only ever used by the old
+// home-page CSS, so swapping it keeps the loaded-font count flat.
+const anton = Anton({ weight: ['400'], subsets: ['latin'], variable: '--font-anton' })
 const ibmPlex = IBM_Plex_Sans({ 
   weight: ['400', '500', '700'],
   subsets: ['latin'],
@@ -35,11 +37,11 @@ export default function RootLayout({
         <meta name="view-transition" content="same-origin" />
         <link rel="icon" type="image/png" href="/uploads/articles/dribbles_favicon_1.png" />
       </head>
-      <body className={`${inter.variable} ${space.variable} ${ibmPlex.variable} font-sans min-h-screen flex flex-col`}>
+      <body className={`${inter.variable} ${anton.variable} ${ibmPlex.variable} font-sans min-h-screen flex flex-col`}>
         <ViewTransition />
         <TabProvider>
           <AudioPlayerProvider>
-            <ResponsiveHeader />
+            <SiteNav />
             <main className="flex-1">
               {children}
             </main>
