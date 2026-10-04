@@ -199,7 +199,7 @@ export default function GlobalAudioPlayer() {
           }}
         >
           <motion.div
-            className="h-full bg-[var(--netflix-red)]"
+            className="h-full bg-[var(--neon-orange)]"
             style={{ width: `${progressPercent}%` }}
           />
           <motion.div

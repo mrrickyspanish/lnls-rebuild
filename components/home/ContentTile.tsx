@@ -156,15 +156,15 @@ export default function ContentTile({
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
           <div className={`w-16 h-16 rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ring-2 ${
             isCurrentlyPlaying 
-              ? 'bg-[var(--netflix-red)] ring-[var(--netflix-red)]/50 animate-pulse' 
+              ? 'bg-[var(--neon-orange)] ring-[var(--neon-orange)]/50 animate-pulse' 
               : 'bg-white/20 ring-white/50 hover:bg-white/30'
           }`}>
             {isArticle ? (
-              <BookOpen className="w-8 h-8 text-white" />
+              <BookOpen className={`w-8 h-8 ${isCurrentlyPlaying ? 'text-[#0D0D0D]' : 'text-white'}`} />
             ) : isPodcast ? (
-              <Mic2 className="w-8 h-8 text-white" />
+              <Mic2 className={`w-8 h-8 ${isCurrentlyPlaying ? 'text-[#0D0D0D]' : 'text-white'}`} />
             ) : (
-              <Play className="w-8 h-8 fill-current ml-1 text-white" />
+              <Play className={`w-8 h-8 fill-current ml-1 ${isCurrentlyPlaying ? 'text-[#0D0D0D]' : 'text-white'}`} />
             )}
           </div>
         </div>
@@ -187,13 +187,13 @@ export default function ContentTile({
 
         {/* Now Playing Indicator */}
         {isCurrentlyPlaying && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 bg-[var(--netflix-red)] px-2 py-1 rounded-full">
+          <div className="absolute top-2 right-2 flex items-center gap-1 bg-[var(--neon-orange)] px-2 py-1 rounded-full">
             <div className="flex gap-0.5">
-              <div className="w-0.5 h-3 bg-white animate-pulse" style={{ animationDelay: '0ms' }} />
-              <div className="w-0.5 h-3 bg-white animate-pulse" style={{ animationDelay: '150ms' }} />
-              <div className="w-0.5 h-3 bg-white animate-pulse" style={{ animationDelay: '300ms' }} />
+              <div className="w-0.5 h-3 bg-[#0D0D0D] animate-pulse" style={{ animationDelay: '0ms' }} />
+              <div className="w-0.5 h-3 bg-[#0D0D0D] animate-pulse" style={{ animationDelay: '150ms' }} />
+              <div className="w-0.5 h-3 bg-[#0D0D0D] animate-pulse" style={{ animationDelay: '300ms' }} />
             </div>
-            <span className="text-xs font-bold text-white">Playing</span>
+            <span className="text-xs font-bold text-[#0D0D0D]">Playing</span>
           </div>
         )}
 
@@ -207,7 +207,7 @@ export default function ContentTile({
           </div>
 
           {/* Title - Large & Bold */}
-          <h3 className="text-base md:text-lg font-bold text-white group-hover:text-[var(--netflix-red)] transition-colors leading-tight line-clamp-3 font-netflix">
+          <h3 className="text-base md:text-lg font-bold text-white group-hover:text-[var(--neon-orange)] transition-colors leading-tight line-clamp-3 font-netflix">
             {title}
           </h3>
 
@@ -221,7 +221,7 @@ export default function ContentTile({
           {/* Progress Bar - Simulated playback progress */}
           <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-[var(--netflix-red)] rounded-full transition-all duration-300" 
+              className="h-full bg-[var(--neon-orange)] rounded-full transition-all duration-300" 
               style={{ width: `${Math.floor(Math.random() * 60 + 20)}%` }} 
             />
           </div>

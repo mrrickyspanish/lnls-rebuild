@@ -30,12 +30,15 @@ export default function AuthorCard({ author }: AuthorCardProps) {
             <p className="font-bold text-lg mb-1">{author.name}</p>
             {author.twitter && (
               <p className="text-sm text-white/60 mb-3">
+                {/* Some saved handles include the @ and some do not. Normalize
+                    so the card never shows @@name or links to twitter.com/@name. */}
                 <Link
-                  href={`https://twitter.com/${author.twitter}`}
+                  href={`https://x.com/${author.twitter.replace(/^@/, '')}`}
                   target="_blank"
-                  className="hover:text-[var(--netflix-red)] transition-colors"
+                  rel="noopener noreferrer"
+                  className="hover:text-[var(--neon-orange)] transition-colors"
                 >
-                  @{author.twitter}
+                  @{author.twitter.replace(/^@/, '')}
                 </Link>
               </p>
             )}

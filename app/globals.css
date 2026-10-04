@@ -986,3 +986,86 @@ button.tdd-cta:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* ---------- Contact ------------------------------------------------------ */
+/* Same system as About: left-aligned, radius 0, ruled sections instead of
+   cards. The old page used var(--netflix-red), which is not defined anywhere,
+   so its links had no color of their own. */
+.tdd-contact { padding-top: 40px; }
+
+.tdd-contact-hero {
+  padding-bottom: 36px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-contact-hero h1 {
+  font-size: clamp(64px, 14vw, 168px);
+  line-height: 0.88;
+}
+
+.tdd-contact-hero p {
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.5;
+  color: var(--tdd-muted);
+  margin-top: 22px;
+  max-width: 40ch;
+}
+
+.tdd-contact-section { margin-top: 52px; }
+
+.tdd-contact-section h2 {
+  font-size: clamp(30px, 4.6vw, 52px);
+  line-height: 0.95;
+}
+
+.tdd-contact-section > p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  margin-top: 14px;
+}
+
+.tdd-contact-email {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: clamp(20px, 5.4vw, 40px);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  border-bottom: 3px solid var(--neon-orange);
+  padding: 12px 0 8px;
+  transition: color 0.18s var(--tdd-ease);
+}
+
+.tdd-contact-email:hover { color: var(--neon-orange); }
+
+.tdd-contact-socials { margin-top: 22px; max-width: 640px; }
+
+.tdd-contact-socials li { border-top: 1px solid var(--tdd-rule); }
+.tdd-contact-socials li:last-child { border-bottom: 1px solid var(--tdd-rule); }
+
+.tdd-contact-socials a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 60px;
+  font-size: 18px;
+}
+
+.tdd-contact-socials a span:first-child {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tdd-contact-socials a span:last-child {
+  color: var(--tdd-muted);
+  transition: color 0.18s var(--tdd-ease);
+}
+
+.tdd-contact-socials a:hover span:last-child { color: var(--neon-orange); }
+
+.tdd-contact a:focus-visible {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 3px;
+}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Twitter, Instagram, Youtube, Facebook } from 'lucide-react';
 import NewsletterSignup from './NewsletterSignup';
+import { SOCIAL_URLS } from '@/lib/contact';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -28,16 +29,16 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex items-center gap-3">
               <a
-                href="https://twitter.com/thedailydribble"
+                href={SOCIAL_URLS.x}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                aria-label="Twitter"
+                aria-label="X (Twitter)"
               >
                 <Twitter className="w-5 h-5 text-white" />
               </a>
               <a
-                href="https://instagram.com/thedailydribble"
+                href={SOCIAL_URLS.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
@@ -46,7 +47,7 @@ export default function Footer() {
                 <Instagram className="w-5 h-5 text-white" />
               </a>
               <a
-                href="https://youtube.com/@thedailydribble"
+                href={SOCIAL_URLS.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
@@ -55,7 +56,7 @@ export default function Footer() {
                 <Youtube className="w-5 h-5 text-white" />
               </a>
               <a
-                href="https://facebook.com/thedailydribble"
+                href={SOCIAL_URLS.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"

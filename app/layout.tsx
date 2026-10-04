@@ -1,3 +1,4 @@
+import { SOCIAL_HANDLE } from '@/lib/contact'
 import { getSiteUrl } from '@/lib/site'
 import './globals.css'
 import type { Metadata } from 'next'
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@dailydribble',
+    site: `@${SOCIAL_HANDLE}`,
     title: 'The Daily Dribble',
     description: DESCRIPTION,
   },

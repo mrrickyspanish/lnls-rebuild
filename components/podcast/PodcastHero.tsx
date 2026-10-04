@@ -162,7 +162,7 @@ export default function PodcastHero({ currentEpisode }: PodcastHeroProps) {
               <div className="flex items-center gap-2 text-sm text-white/60 mb-2">
                 {currentEpisode.episode_number && (
                   <>
-                    <span className="font-semibold text-[var(--netflix-red)]">
+                    <span className="font-semibold text-[var(--neon-orange)]">
                       Episode {currentEpisode.episode_number}
                     </span>
                     <span>•</span>
@@ -222,7 +222,7 @@ export default function PodcastHero({ currentEpisode }: PodcastHeroProps) {
                     [&::-webkit-slider-thumb]:hover:scale-110
                     [&::-webkit-slider-thumb]:transition-transform"
                   style={{
-                    background: `linear-gradient(to right, var(--netflix-red) 0%, var(--netflix-red) ${progress}%, rgba(255,255,255,0.2) ${progress}%, rgba(255,255,255,0.2) 100%)`
+                    background: `linear-gradient(to right, var(--neon-orange) 0%, var(--neon-orange) ${progress}%, rgba(255,255,255,0.2) ${progress}%, rgba(255,255,255,0.2) 100%)`
                   }}
                 />
                 <div className="flex justify-between text-xs text-white/60">

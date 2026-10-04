@@ -64,7 +64,7 @@ export default function SubscribePage() {
               placeholder="Enter your email"
               required
               disabled={status === 'loading'}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:border-[var(--netflix-red)] focus:outline-none disabled:opacity-50"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:border-[var(--neon-orange)] focus:outline-none disabled:opacity-50"
             />
 
             {status === 'error' && (
@@ -74,7 +74,7 @@ export default function SubscribePage() {
             <button
               type="submit"
               disabled={status === 'loading' || !email}
-              className="w-full py-3 bg-[var(--netflix-red)] hover:bg-red-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-[var(--neon-orange)] hover:brightness-110 text-[#0D0D0D] font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
             </button>

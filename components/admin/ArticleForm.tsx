@@ -1,4 +1,5 @@
 'use client'
+import { SOCIAL_HANDLE } from '@/lib/contact'
 
 import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -17,7 +18,7 @@ interface ArticleFormProps {
 const AUTHOR_PRESETS = [
   {
     name: 'TDD Sports Staff',
-    twitter: 'lnlssports',
+    twitter: SOCIAL_HANDLE,
     bio: 'Covering the Lakers with passion and insight since day one.',
   },
   {
@@ -73,7 +74,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     imageCredit: initialData?.image_credit || '',
     authorName: initialData?.author_name || 'TDD Sports Staff',
     authorBio: initialData?.author_bio || 'Covering the Lakers with passion and insight since day one.',
-    authorTwitter: initialData?.author_twitter || 'lnlssports',
+    authorTwitter: initialData?.author_twitter || SOCIAL_HANDLE,
     readTime: initialData?.read_time || 5,
     topic: initialData?.topic || 'Lakers',
     videoUrl: initialData?.video_url || '',
