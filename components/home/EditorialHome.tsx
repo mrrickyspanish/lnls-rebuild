@@ -24,7 +24,7 @@ function Picture({item, lead=false}: {item:EditorialItem; lead?:boolean}) {
 function Story({item, lead=false}: {item:EditorialItem; lead?:boolean}) {
   return <Link href={item.source_url || '/news'} className={lead ? 'editorial-lead' : 'editorial-story'}>
     <Picture item={item} lead={lead}/><div className="editorial-copy">
-      <p className="editorial-kicker">{item.topic || 'Basketball'} · Article</p>
+      <p className="editorial-kicker">{item.topic || 'Sports'} · Article</p>
       {lead ? <h2>{item.title}</h2> : <h3>{item.title}</h3>}
       {summary(item) && <p className="editorial-summary">{summary(item)}</p>}
       <p className="editorial-meta">{item.author_name && <span>{item.author_name} · </span>}{date(item.published_at)}</p>
@@ -36,7 +36,7 @@ export default function EditorialHome({articles, podcasts, videos}: {articles:Ed
   const {playEpisode, currentEpisode, isPlaying} = useAudioPlayer()
   const lead = articles[0]
   return <div className="editorial-home">
-    <section className="editorial-intro"><h1>Basketball. Beyond the box score.</h1><p>Court. Code. Culture.</p></section>
+    <section className="editorial-intro"><h1>Sports. Beyond the box score.</h1><p>Sports. Tech. Culture.</p></section>
     {lead && <section className="editorial-cover-grid" aria-label="Featured stories"><div className="editorial-cover"><p className="editorial-cover-label">The cover story</p><Story item={lead} lead/></div>{articles.length > 1 && <aside className="editorial-on-deck" aria-label="More featured stories"><p className="editorial-deck-label">Also in the mix</p>{articles.slice(1,3).map((item,index)=><div className="editorial-deck-story" key={item.id}><span className="editorial-deck-number" aria-hidden="true">0{index+2}</span><Story item={item}/></div>)}</aside>}</section>}
     {articles.length > 3 && <section className="editorial-section"><div className="editorial-section-heading"><div><p className="editorial-kicker">The reading room</p><h2>Latest stories</h2></div><Link href="/news">All articles</Link></div><div className="editorial-stories">{articles.slice(3,11).map(item=><Story key={item.id} item={item}/>)}</div></section>}
     {!lead && <section className="editorial-empty"><p className="editorial-kicker">From the archive</p><h2>Start with Late Night Lake Show.</h2><p>Explore the conversations below, or browse our article archive.</p><Link className="editorial-action" href="/news">Explore articles ↗</Link></section>}

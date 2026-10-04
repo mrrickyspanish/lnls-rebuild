@@ -19,7 +19,7 @@ const ibmPlex = IBM_Plex_Sans({
 
 export const metadata = {
   title: 'The Daily Dribble',
-  description: 'Lakers perspectives, NBA stories, and the culture around the game. Read The Daily Dribble and listen to Late Night Lake Show.',
+  description: 'All-sports perspectives, technology, and the culture around the game. Read The Daily Dribble and listen to Late Night Lake Show.',
 }
 
 

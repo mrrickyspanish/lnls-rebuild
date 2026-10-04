@@ -23,7 +23,7 @@ export default function Footer() {
               The Daily Dribble
             </h3>
             <p className="text-white/60 text-sm leading-relaxed mb-4">
-              Court. Code. Culture. Where basketball meets technology and lifestyle.
+              Sports. Tech. Culture. Where sports meet technology and lifestyle.
             </p>
             {/* Social Links */}
             <div className="flex items-center gap-3">
