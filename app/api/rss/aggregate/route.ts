@@ -1,3 +1,4 @@
+import { requireAdminOrCron } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Parser from 'rss-parser'
@@ -8,7 +9,9 @@ const RSS_FEEDS = [
   'https://lakersnation.com/feed/',
 ]
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const denied = await requireAdminOrCron(request)
+  if (denied) return denied
   try {
     console.log('🔄 Starting RSS aggregation...')
     const parser = new Parser({

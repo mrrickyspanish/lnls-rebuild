@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from '@upstash/qstash'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
@@ -11,6 +12,9 @@ function buildArticleUrl(slug: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { slug } = (await request.json()) as { slug?: string }
 
