@@ -112,22 +112,7 @@ export async function fetchPodcastEpisodes(limit?: number): Promise<Episode[]> {
   } catch (error) {
     console.error('Podcast episodes fetch error:', error);
 
-    const sampleEpisodes: Episode[] = [
-      {
-        id: '1',
-        title: 'Lakers Championship Hopes: Mid-Season Analysis',
-        description:
-          'Deep dive into the Lakers current roster construction, trade possibilities, and championship aspirations for this season.',
-        audio_url: 'https://example.com/episode-1.mp3',
-        image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=400&fit=crop',
-        published_at: '2024-11-15T00:00:00Z',
-        duration: 3600,
-        episode_number: 209,
-        hosts: 'Ricky & Kwame',
-        topics: ['Lakers', 'NBA', 'Championship'],
-      },
-    ];
-
-    return limit ? sampleEpisodes.slice(0, limit) : sampleEpisodes;
+    // Do not present invented episodes or dead example.com audio as real content.
+    return [];
   }
 }

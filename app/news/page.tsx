@@ -32,8 +32,10 @@ export const metadata = {
   description: 'The pulse of the game. Every angle. Every day.',
 };
 
-export default async function NewsPage() {
-  const articles = await getArticles();
+export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string}>}) {
+  const {topic} = await searchParams;
+  const selectedTopic = ['Lakers', 'NBA', 'Tech', 'Culture', 'Lifestyle', 'Recruit Ready'].includes(topic || '') ? topic : undefined;
+  const articles = await fetchPublishedArticles(24, selectedTopic);
 
   // Helper for image rendering (matches ContentRowWithHero)
   const canUseNextImage = (url: string) => {
@@ -48,7 +50,7 @@ export default async function NewsPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
         <div className="relative z-10 max-w-7xl mx-auto px-6 pt-[30px] md:pt-[180px]">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
-            News
+            {selectedTopic || "Articles"}
           </h1>
           <p className="mt-4 text-lg md:text-2xl text-[var(--text-secondary)] max-w-xl">
             Every angle. Every day.
