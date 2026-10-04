@@ -1,13 +1,11 @@
+import { getSiteUrl } from '@/lib/site'
 import { requireAdmin } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from '@upstash/qstash'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 
 function buildArticleUrl(slug: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    'https://lnls.media'
+  const base = getSiteUrl()
   return `${base.replace(/\/$/, '')}/news/${slug}`
 }
 
@@ -50,11 +48,7 @@ export async function POST(request: NextRequest) {
       )
     }
     const client = new Client({ token: qstashToken })
-    const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      'https://lnls.media'
-    const jobUrl = `${baseUrl.replace(/\/$/, '')}/api/newsletter/send-job`
+    const jobUrl = `${getSiteUrl()}/api/newsletter/send-job`
 
     await client.publishJSON({
       url: jobUrl,

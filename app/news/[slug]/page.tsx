@@ -1,3 +1,4 @@
+import { getSiteUrl } from '@/lib/site'
 // app/news/[slug]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return { title: "Article not found" };
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://lnls.media";
+  const siteUrl = getSiteUrl();
   const url = `${siteUrl.replace(/\/$/, "")}/news/${slug}`;
   // No stored fallback: that asset does not exist. When an article has no
   // hero, the generated site card (app/opengraph-image.tsx) is inherited.
@@ -116,13 +117,10 @@ export default async function ArticlePage({ params }: PageProps) {
   const currentArticle = buildHeroArticle(article, slug);
   const relatedRowItems = mapRelatedRow(relatedArticles);
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    "";
-  const shareUrl = siteUrl
-    ? `${siteUrl.replace(/\/$/, "")}/news/${slug}`
-    : `/news/${slug}`;
+  // Always absolute: the share buttons copy and post this URL, so a relative
+  // path (the old behavior when the env var was unset) shared nothing useful.
+  const siteUrl = getSiteUrl();
+  const shareUrl = `${siteUrl}/news/${slug}`;
 
   // JSON-LD structured data for this article
   const jsonLd = {
@@ -134,7 +132,7 @@ export default async function ArticlePage({ params }: PageProps) {
     author: article.author_name ? { '@type': 'Person', name: article.author_name } : undefined,
     datePublished: article.published_at || article.created_at,
     url: shareUrl,
-    publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: 'https://lnls.media/uploads/articles/dribbles_favicon_1.png' } },
+    publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
   return (
     <>

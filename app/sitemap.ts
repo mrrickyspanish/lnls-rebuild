@@ -1,7 +1,8 @@
+import { getSiteUrl } from '@/lib/site'
 import type { MetadataRoute } from 'next'
 import { getPublishedArticles } from '@/lib/articles'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://lnls.media'
+const SITE_URL = getSiteUrl()
 
 export const revalidate = 3600
 
