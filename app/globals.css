@@ -807,3 +807,103 @@ a:active .tdd-cta { transform: translateY(1px); }
 @media (min-width: 760px) {
   .tdd-home { padding: 0 32px 88px; }
 }
+
+/* ---------- About -------------------------------------------------------- */
+/* Same system as the front page: left-aligned, radius 0, no glow, no card.
+   The previous page was centered throughout, with a rounded-2xl panel, an
+   orange hover glow on all three lanes (two of which are not orange), and a
+   pill CTA, none of which survive the shape and color locks above. */
+.tdd-about { padding-top: 40px; }
+
+.tdd-about-hero {
+  padding-bottom: 40px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-about-hero h1 {
+  font-size: clamp(60px, 15vw, 176px);
+  line-height: 0.88;
+}
+
+/* One word per line at every width: a designed stack, so no orphan to chase. */
+.tdd-about-hero h1 span {
+  display: block;
+  color: var(--family);
+}
+
+.tdd-about-hero p {
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.5;
+  color: var(--tdd-muted);
+  margin-top: 24px;
+  max-width: 40ch;
+}
+
+.tdd-about-section { margin-top: 64px; }
+
+.tdd-about-section > h2 {
+  font-size: clamp(30px, 4.6vw, 56px);
+  line-height: 0.95;
+}
+
+.tdd-about-section > p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  max-width: 56ch;
+}
+
+#about-lanes {
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-about-lane {
+  display: grid;
+  gap: 10px;
+  padding: 26px 0;
+}
+
+.tdd-about-lane + .tdd-about-lane { border-top: 1px solid var(--tdd-rule); }
+
+.tdd-about-lane h3 {
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 0.95;
+  color: var(--family);
+}
+
+.tdd-about-lane p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  max-width: 52ch;
+}
+
+@media (min-width: 760px) {
+  .tdd-about-lane {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 48px;
+    align-items: baseline;
+  }
+}
+
+.tdd-about-statement h2 {
+  font-size: clamp(40px, 7vw, 96px);
+  line-height: 0.92;
+}
+
+.tdd-about-statement h2 span { display: block; }
+.tdd-about-statement h2 span:first-child { color: var(--tdd-muted); }
+.tdd-about-statement > p { margin-top: 26px; }
+
+@media (min-width: 900px) {
+  /* Asymmetry: the statement's paragraph sits indented under the headline. */
+  .tdd-about-statement > p { margin-left: 8%; }
+}
+
+.tdd-about-cta {
+  padding-top: 32px;
+  border-top: 2px solid var(--tdd-ink);
+}
+
+.tdd-about-cta > p { margin-top: 14px; }
