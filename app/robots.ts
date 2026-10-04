@@ -1,6 +1,7 @@
+import { getSiteUrl } from '@/lib/site'
 import type { MetadataRoute } from 'next'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://lnls.media'
+const SITE_URL = getSiteUrl()
 
 /**
  * The site shipped without a robots.txt. Crawlers were left to guess, and

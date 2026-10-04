@@ -1,3 +1,4 @@
+import { getSiteUrl } from '@/lib/site'
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getYouTubeVideoBySlug, incrementVideoViews } from "@/lib/supabase/videos";
@@ -10,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const video: YouTubeVideoRow | null = await getYouTubeVideoBySlug(slug);
   if (!video) return { title: "Video not found" };
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://lnls.media";
+  const siteUrl = getSiteUrl();
   const url = `${siteUrl.replace(/\/$/, "")}/videos/${slug}`;
   const image = video.thumbnail_url || null;
   return {

@@ -1,3 +1,4 @@
+import { getSiteUrl } from '@/lib/site'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { Receiver } from '@upstash/qstash'
@@ -15,18 +16,12 @@ function resend(): Resend {
 }
 
 function buildArticleUrl(slug: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    'https://lnls.media'
+  const base = getSiteUrl()
   return `${base.replace(/\/$/, '')}/news/${slug}`
 }
 
 function buildUnsubscribeUrl(token: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    'https://lnls.media'
+  const base = getSiteUrl()
   return `${base.replace(/\/$/, '')}/api/newsletter/unsubscribe?token=${token}`
 }
 

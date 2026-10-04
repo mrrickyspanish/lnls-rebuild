@@ -330,7 +330,7 @@ Copyright © 2024 Late Night Lake Show. All rights reserved.
 
 ## 📞 Contact
 
-- **Website:** https://lnls.media
+- **Website:** https://thedailydribble.com
 - **X/Twitter:** [@latenightlakeshow](https://twitter.com/latenightlakeshow)
 - **Email:** hello@lnls.media
 - **YouTube:** [@latenightlakeshow](https://youtube.com/@latenightlakeshow)

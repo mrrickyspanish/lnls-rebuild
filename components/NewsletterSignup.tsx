@@ -38,8 +38,8 @@ export default function NewsletterSignup() {
   return (
     <div className="text-center">
       <div className="mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--netflix-red)]/20 mb-4">
-          <Mail className="w-7 h-7 text-[var(--netflix-red)]" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--neon-orange)]/20 mb-4">
+          <Mail className="w-7 h-7 text-[var(--neon-orange)]" />
         </div>
         <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 font-netflix">
           Never Miss a Dribble
@@ -63,12 +63,12 @@ export default function NewsletterSignup() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[var(--netflix-red)] transition-colors"
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[var(--neon-orange)] transition-colors"
             />
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="px-6 py-3 bg-[var(--netflix-red)] hover:bg-red-700 text-white font-bold rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-[var(--neon-orange)] hover:brightness-110 text-[#0D0D0D] font-bold rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
             </button>

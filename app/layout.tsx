@@ -1,3 +1,5 @@
+import { SOCIAL_HANDLE } from '@/lib/contact'
+import { getSiteUrl } from '@/lib/site'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter, Anton, IBM_Plex_Sans } from 'next/font/google'
@@ -19,7 +21,7 @@ const ibmPlex = IBM_Plex_Sans({
   variable: '--font-ibm-plex'
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://lnls.media'
+const SITE_URL = getSiteUrl()
 const DESCRIPTION =
   'All-sports perspectives, technology, and the culture around the game. Read The Daily Dribble and listen to Late Night Lake Show.'
 
@@ -51,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@dailydribble',
+    site: `@${SOCIAL_HANDLE}`,
     title: 'The Daily Dribble',
     description: DESCRIPTION,
   },

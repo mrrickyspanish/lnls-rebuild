@@ -90,11 +90,11 @@ function EpisodeCard({ episode, onClick, isCurrentlyPlaying }: EpisodeCardProps)
         >
           <div className={`w-16 h-16 rounded-full backdrop-blur-sm flex items-center justify-center shadow-2xl ${
             isCurrentlyPlaying 
-              ? 'bg-[var(--netflix-red)] animate-pulse' 
+              ? 'bg-[var(--neon-orange)] animate-pulse' 
               : 'bg-white/95'
           }`}>
             <Play className={`w-8 h-8 fill-current ml-1 ${
-              isCurrentlyPlaying ? 'text-white' : 'text-black'
+              'text-[#0D0D0D]'
             }`} />
           </div>
         </motion.div>
@@ -105,7 +105,7 @@ function EpisodeCard({ episode, onClick, isCurrentlyPlaying }: EpisodeCardProps)
           <div className="flex items-center gap-2 text-xs text-white/80">
             {episode.episode_number && (
               <>
-                <span className="font-bold text-[var(--netflix-red)]">
+                <span className="font-bold text-[var(--neon-orange)]">
                   Ep {episode.episode_number}
                 </span>
                 <span>•</span>
@@ -185,7 +185,7 @@ export default function EpisodeGrid({ episodes, onEpisodeSelect, currentEpisodeI
             onClick={() => setSelectedFilter(topic)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedFilter === topic
-                ? 'bg-[var(--netflix-red)] text-white'
+                ? 'bg-[var(--neon-orange)] text-[#0D0D0D]'
                 : 'bg-white/10 text-white/70 hover:bg-white/20'
             }`}
           >
