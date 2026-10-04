@@ -25,8 +25,8 @@ export default async function HomePage() {
     id:video.id, title:video.title, description:video.description, image_url:video.thumbnail,
     source_url:video.link, published_at:video.pubDate, content_type:'video',
   })) : []
-  return <main className="min-h-screen bg-[var(--netflix-bg)]">
+  return <div className="min-h-screen bg-[var(--netflix-bg)]">
     <QueueSetter episodes={podcasts} />
     <EditorialHome articles={articles} podcasts={podcasts} videos={videos} />
-  </main>
+  </div>
 }
