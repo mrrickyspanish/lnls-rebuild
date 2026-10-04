@@ -4,7 +4,7 @@ import { getYouTubeRSS } from '@/lib/youtube-rss';
 import VideoGrid from '@/components/video/VideoGrid';
 
 export const metadata: Metadata = {
-  title: 'Videos | Late Night Lake Show',
+  title: 'Videos',
   description: 'Watch the latest Lakers and NBA content from LNLS - full episodes, highlights, and analysis.',
 };
 
@@ -18,7 +18,7 @@ export default async function VideosPage() {
     <>
       <section className="relative min-h-screen">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
-          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-[30px] md:pt-[180px]">
+          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-10 md:pt-20">
             <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
               Videos
             </h1>

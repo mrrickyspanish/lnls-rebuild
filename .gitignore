@@ -34,3 +34,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.local
+
+# Runtime artifacts that were committed by mistake
+*.log
+supabase.db

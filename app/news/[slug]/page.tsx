@@ -70,8 +70,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!article) return { title: "Article not found" };
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://lnls.media";
   const url = `${siteUrl.replace(/\/$/, "")}/news/${slug}`;
-  const image = article.hero_image_url || 
-    "https://lnls.media/uploads/articles/dribbles_og_2024.png";
+  // No stored fallback: that asset does not exist. When an article has no
+  // hero, the generated site card (app/opengraph-image.tsx) is inherited.
+  const image = article.hero_image_url || null;
   const description = article.meta_description || article.excerpt || "TDD article";
   return {
     title: article.title,
@@ -81,20 +82,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url,
       type: "article",
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: article.title,
-        },
-      ],
+      ...(image
+        ? { images: [{ url: image, width: 1200, height: 630, alt: article.title }] }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description,
-      images: [image],
+      ...(image ? { images: [image] } : {}),
     },
   };
 }
@@ -147,7 +143,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <ReadProgress />
       <ShareBar url={shareUrl} title={article.title} slug={slug} initialLikes={article.likes || 0} />
       <BackToTop />
-      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-[30px] md:pt-[180px]">
+      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-10 md:pt-20">
         {/* Breadcrumbs */}
         <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
           <Link href="/">Home</Link>

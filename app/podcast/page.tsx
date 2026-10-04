@@ -3,7 +3,7 @@ import PodcastPageClient from '@/components/podcast/PodcastPageClient';
 import { fetchPodcastEpisodes } from '@/lib/podcast';
 
 export const metadata: Metadata = {
-  title: 'Podcast | The Daily Dribble',
+  title: 'Podcast',
   description: 'Listen to the The Daily Dribble podcast - Lakers news, analysis, and hot takes.',
 };
 
@@ -18,7 +18,7 @@ export default async function PodcastPage() {
     <>
       <section className="relative bg-gradient-to-t from-background to-transparent pb-8">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-[30px] md:pt-[180px]">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-10 md:pt-20">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
             Podcasts
           </h1>

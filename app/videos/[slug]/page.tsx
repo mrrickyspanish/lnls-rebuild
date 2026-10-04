@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!video) return { title: "Video not found" };
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://lnls.media";
   const url = `${siteUrl.replace(/\/$/, "")}/videos/${slug}`;
-  const image = video.thumbnail_url || "https://lnls.media/uploads/articles/dribbles_og_2024.png";
+  const image = video.thumbnail_url || null;
   return {
     title: video.title,
     description: video.description || "LNLS video",
@@ -21,20 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: video.description || "LNLS video",
       url,
       type: "video.other",
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: video.title,
-        },
-      ],
+      ...(image ? { images: [{ url: image, width: 1200, height: 630, alt: video.title }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: video.title,
       description: video.description || "LNLS video",
-      images: [image],
+      ...(image ? { images: [image] } : {}),
     },
   };
 }
@@ -56,7 +49,7 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
   };
 
   return (
-    <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-[30px] md:pt-[180px]">
+    <main className="min-h-screen bg-[var(--netflix-bg)] pb-8 pt-10 md:pt-20">
       <VideoModal videoId={video.video_id} onClose={handleClose} />
       {/* Add more video details and related videos here if needed */}
     </main>

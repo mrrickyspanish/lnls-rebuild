@@ -1,51 +1,30 @@
-/* Netflix-style Hero + Peek Carousel */
-.carousel-track {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-right: 16px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.carousel-track::-webkit-scrollbar {
-  display: none;
-}
-.hero-card {
-  flex: 0 0 85vw;
-  width: 85vw;
-  scroll-snap-align: start;
-  aspect-ratio: 16/9;
-}
-@media (min-width: 1024px) {
-  .hero-card {
-    flex: 0 0 70%;
-    width: 70%;
-  }
-}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Base – Matte Slate */
+  /* Base - Matte Slate */
   --bg-primary: #0D0D0D;
   --bg-surface: #1A1A1D;
   --bg-elevated: #25252A;
   --border-subtle: #2A2A2A;
-  --header-offset: 76px; /* Matches fixed header height */
+
+  /* Was only ever declared in styles/globals.css, which nothing imports, so
+     every `bg-[var(--netflix-bg)]` on the site resolved to nothing. Declared
+     here, in the stylesheet that is actually loaded. */
+  --netflix-bg: #141414;
 
   /* Text */
   --text-primary: #FFFFFF;
   --text-secondary: #9E9E9E;
   --text-tertiary: #5A5A5A;
 
-  /* Neon Accents */
+  /* Brand accents. The wordmark is three dots in these three colors. */
   --neon-orange: #FF6B35;
   --neon-blue: #00D4FF;
   --neon-purple: #B857FF;
 
-  /* Subtle glows – hover only */
+  /* Subtle glows - hover only (kept: /news, /about and VideoGrid use these) */
   --glow-orange: 0 0 20px rgba(255, 107, 53, 0.4);
   --glow-blue: 0 0 20px rgba(0, 212, 255, 0.4);
   --glow-purple: 0 0 20px rgba(184, 87, 255, 0.4);
@@ -55,20 +34,7 @@ body {
   @apply bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased;
 }
 
-main {
-  padding-top: var(--header-offset);
-}
-
-/* Subtle pulse for the ... dots */
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-.animate-dots {
-  animation: pulse 3s ease-in-out infinite;
-}
-
-/* On-deck cards (B&W + color reveal) */
+/* On-deck cards (B&W + color reveal) - used by components/home/ContentTile */
 .on-deck img {
   filter: grayscale(100%) contrast(1.2);
   transition: filter 0.4s ease;
@@ -128,7 +94,7 @@ main {
   gap: 0;
   padding: 8px 16px;
   background: var(--bg-primary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -138,7 +104,6 @@ main {
 @media (min-width: 768px) {
   .article-breadcrumbs {
     padding: 8px 24px;
-    font-size: 12px;
   }
 }
 
@@ -181,13 +146,11 @@ main {
 
 /* View Transitions API */
 @supports (view-transition-name: none) {
-  /* Smooth fade transition for page navigations */
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0.3s;
   }
 
-  /* Crossfade animation */
   ::view-transition-old(root) {
     animation-name: fade-out;
   }
@@ -197,24 +160,15 @@ main {
   }
 
   @keyframes fade-out {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
-  /* Slide up animation for main content */
   main {
     view-transition-name: main-content;
   }
@@ -228,28 +182,15 @@ main {
   }
 
   @keyframes slide-out {
-    from {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateY(-20px);
-      opacity: 0;
-    }
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-20px); opacity: 0; }
   }
 
   @keyframes slide-in {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 
-  /* Preserve header position during transitions */
   header {
     view-transition-name: header;
   }
@@ -263,59 +204,706 @@ main {
 
 /* Loading skeleton animations */
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
 
-/* Editorial reading experience: imagery supports visible story context. */
-.editorial-header{background:#101113;color:#f4f4ef;border-bottom:1px solid #ffffff24;position:relative;z-index:50}
-.editorial-header-inner{max-width:1240px;margin:auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.editorial-brand{font-size:16px;font-weight:800;line-height:1;letter-spacing:-.5px}.editorial-brand>span{font-size:30px;line-height:1.1}
-.editorial-subscribe{padding:11px 14px;background:#2FE6C8;color:#101113;font-size:13px;font-weight:700;border-radius:4px}
-.editorial-nav{display:flex;gap:24px;overflow-x:auto;max-width:1240px;margin:auto;padding:0 20px 13px;font-size:13px;font-weight:600;white-space:nowrap}.editorial-nav a{min-height:32px;display:flex;align-items:center}
-.editorial-home{max-width:1240px;margin:auto;padding:30px 20px 64px;color:#f4f4ef}
-.editorial-intro{padding-bottom:26px;border-bottom:1px solid #ffffff24;margin-bottom:26px}.editorial-kicker{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#2FE6C8;margin-bottom:10px}.editorial-intro h1{font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.08;letter-spacing:-1.3px;max-width:720px}.editorial-intro>p:last-child{font-size:15px;line-height:1.65;color:#b8bbc0;max-width:550px;margin-top:13px}
-.editorial-lead{display:grid;gap:22px;padding-bottom:30px;border-bottom:1px solid #ffffff24}.editorial-lead-image{aspect-ratio:16/9;overflow:hidden;border-radius:5px;background:#1c2025;display:grid;place-items:center;font-size:48px;font-weight:800}.editorial-lead-image img{width:100%;height:100%;object-fit:cover}.editorial-copy{min-width:0}.editorial-lead h2{font-size:clamp(25px,3vw,40px);font-weight:750;letter-spacing:-.8px;line-height:1.16}.editorial-summary{color:#b8bbc0;font-size:14px;line-height:1.65;margin-top:10px}.editorial-meta{color:#a5aab1;font-size:12px;margin-top:14px}.editorial-action{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#2FE6C8;min-height:44px;margin-top:10px}.editorial-section{margin-top:34px}.editorial-section-heading{display:flex;gap:20px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}.editorial-section-heading h2,.editorial-empty h2{font-size:25px;font-weight:750;letter-spacing:-.5px;line-height:1.15}.editorial-section-heading>a{font-size:12px;white-space:nowrap;min-height:44px;display:flex;align-items:center;color:#d2d5d8}.editorial-section-heading p:not(.editorial-kicker){font-size:13px;color:#a5aab1;margin-top:8px}
-.editorial-stories{display:grid;gap:0 32px}.editorial-story{display:flex;gap:16px;padding:20px 0;border-top:1px solid #ffffff24;align-items:flex-start}.editorial-thumb{flex:none;width:96px;aspect-ratio:1;overflow:hidden;background:#1c2025;border-radius:4px;display:grid;place-items:center;font-size:24px;font-weight:800}.editorial-thumb img{width:100%;height:100%;object-fit:cover}.editorial-story h3,.editorial-podcast h3,.editorial-video h3{font-size:17px;font-weight:700;line-height:1.3;letter-spacing:-.25px}.editorial-story .editorial-kicker{font-size:10px;letter-spacing:.7px;margin-bottom:7px}.editorial-story .editorial-summary{font-size:13px}.editorial-podcasts{display:grid;gap:16px}.editorial-podcast{display:flex;gap:16px;padding:20px;background:#191c20;border:1px solid #ffffff18;border-radius:6px}.editorial-podcast .editorial-thumb{width:64px}.editorial-video-grid{display:grid;gap:24px}.editorial-video .editorial-thumb{width:100%;aspect-ratio:16/9;margin-bottom:16px}.editorial-empty{padding:24px;border:1px solid #ffffff24;border-radius:5px}.editorial-empty>p:not(.editorial-kicker){margin-top:12px;color:#b8bbc0;line-height:1.6;font-size:14px}
-.editorial-home a:hover h2,.editorial-home a:hover h3{color:#2FE6C8}.editorial-home a:focus-visible,.editorial-home button:focus-visible,.editorial-header a:focus-visible{outline:2px solid #2FE6C8;outline-offset:5px}.editorial-home button:disabled{opacity:.5}
-@media(min-width:768px){.editorial-home{padding:42px 32px 80px}.editorial-lead{grid-template-columns:1.2fr 1fr;align-items:center;gap:32px}.editorial-stories{grid-template-columns:1fr 1fr}.editorial-podcasts{grid-template-columns:repeat(3,minmax(0,1fr))}.editorial-podcast{display:block}.editorial-podcast .editorial-thumb{width:96px;margin-bottom:18px}.editorial-video-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:1024px){.editorial-header{position:fixed;top:0;left:0;right:0}.editorial-header-inner{padding:14px 32px}.editorial-nav{padding:0 32px 10px}.editorial-home{padding-top:28px}}
-@media(max-width:359px){.editorial-home{padding-left:16px;padding-right:16px}.editorial-story{gap:12px}.editorial-story .editorial-thumb{width:72px}.editorial-podcast{padding:16px;display:block}.editorial-podcast .editorial-thumb{margin-bottom:14px}}
+/* ============================================================================
+   THE DAILY DRIBBLE - masthead and front page
+   ----------------------------------------------------------------------------
+   Honest label: this is a zine-maximalist aesthetic built from native CSS and
+   Tailwind v3. No design-system package is involved.
 
-/* The front page is an issue cover, with the story above the fold. */
-body:has(.editorial-home) main{padding-top:0}
-body:has(.editorial-home) .editorial-header{position:relative}
-.editorial-home{padding-top:24px}
-.editorial-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;padding-bottom:16px}
-.editorial-intro h1{font-family:var(--font-space),sans-serif;font-size:16px;letter-spacing:-.4px;line-height:1.4}
-.editorial-intro>p:last-child{margin:0;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1.3px;color:#2fe6c8;white-space:nowrap}
-.editorial-cover-grid{display:grid;gap:24px;align-items:stretch}
-.editorial-cover{min-width:0;position:relative;background:#171b1c;border-top:5px solid #2fe6c8}
-.editorial-cover-label{position:absolute;top:16px;left:16px;z-index:2;background:#2fe6c8;color:#101113;padding:7px 10px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
-.editorial-cover .editorial-lead{display:flex;flex-direction:column;gap:0;border:0;padding:0;height:100%;align-items:stretch}
-.editorial-cover .editorial-lead-image{aspect-ratio:16/9;border-radius:0;width:100%;position:relative}
-.editorial-cover .editorial-copy{padding:22px 20px 20px;border-top:1px solid #ffffff24}
-.editorial-cover h2{font-family:var(--font-space),sans-serif;font-size:clamp(28px,4.2vw,54px);font-weight:700;line-height:1.04;letter-spacing:-1.4px;text-wrap:balance}
-.editorial-cover .editorial-summary{font-size:16px;max-width:55ch;color:#d1d4d4}
-.editorial-cover .editorial-action{background:#2fe6c8;color:#101113;padding:0 16px;margin-top:18px;font-size:14px}
-.editorial-deck-label{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;padding-bottom:14px;border-bottom:3px solid #2fe6c8}
-.editorial-deck-story{position:relative;padding-top:14px}
-.editorial-deck-number{font-family:var(--font-space),sans-serif;font-size:38px;line-height:1;color:#2fe6c8;font-weight:700;letter-spacing:-2px}
-.editorial-on-deck .editorial-story{border:0;padding:10px 0 22px}
-.editorial-on-deck .editorial-story h3{font-family:var(--font-space),sans-serif;font-size:22px;line-height:1.15;letter-spacing:-.6px}
-.editorial-on-deck .editorial-summary{font-size:14px}
-.editorial-deck-story+.editorial-deck-story{border-top:1px solid #ffffff24}
-.editorial-section-heading h2{font-family:var(--font-space),sans-serif;font-size:32px;letter-spacing:-1px}
-.editorial-kicker,.editorial-story .editorial-kicker{font-size:12px}
-.editorial-summary,.editorial-story .editorial-summary{font-size:16px}
-.editorial-header .editorial-nav,.editorial-subscribe{font-size:14px}
-@media(min-width:900px){.editorial-cover-grid{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:28px}.editorial-cover .editorial-copy{padding:26px 28px}.editorial-on-deck .editorial-story{display:block}.editorial-on-deck .editorial-thumb{width:100%;aspect-ratio:2.3;margin-bottom:14px}.editorial-on-deck .editorial-summary{display:none}.editorial-cover .editorial-lead-image{aspect-ratio:2}.editorial-intro h1{font-size:18px}}
-@media(max-width:599px){.editorial-intro{display:block}.editorial-intro>p:last-child{margin-top:6px;font-size:12px}.editorial-home{padding-top:18px}.editorial-cover-label{top:12px;left:12px}.editorial-cover h2{font-size:30px}.editorial-cover .editorial-copy{padding:18px 18px 20px}.editorial-on-deck .editorial-thumb{width:88px}.editorial-on-deck .editorial-story h3{font-size:20px}.editorial-on-deck .editorial-summary{display:none}}
+   Three locks hold the page together. Breaking any one of them is what made
+   the previous version read as generic:
+
+   1. THEME LOCK. Dark only, top to bottom. No section inverts.
+   2. SHAPE LOCK. Radius 0 on everything. Nothing here is rounded, including
+      buttons and images. One shape system, no exceptions.
+   3. COLOR RULE. Orange is the single interaction accent: every CTA, focus
+      ring, hover and active state on the page is orange, in every section.
+      The other two brand neons appear ONLY as topic-family coding on story
+      tags and story art, per lib/topics.ts. Color therefore always carries
+      meaning. The previous version used one mint accent for all nine jobs,
+      which is the default generative look, while the brand's own three
+      colors sat unused in :root.
+   ========================================================================= */
+
+:root {
+  --tdd-ink: #F2F2EF;
+  --tdd-muted: #A8ACB2;
+  --tdd-rule: rgba(255, 255, 255, 0.14);
+  --tdd-max: 1240px;
+  --tdd-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Must live on body, not :root: next/font exposes --font-anton and
+   --font-ibm-plex via a class on <body>, so a var() written in :root cannot
+   see them and the declaration resolves to nothing. */
+body {
+  --tdd-display: var(--font-anton), 'Arial Narrow', Impact, sans-serif;
+  --tdd-text: var(--font-ibm-plex), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Topic families resolve to a single custom property that art, tags and rules
+   all read from, so a story can never be two colors at once. */
+[data-family='games']    { --family: var(--neon-orange); }
+[data-family='analysis'] { --family: var(--neon-blue); }
+[data-family='culture']  { --family: var(--neon-purple); }
+
+/* ---------- Masthead ------------------------------------------------------ */
+/* Sticky, not fixed, so it stays in flow and no page reserves space for it.
+   This retires the old `main { padding-top: var(--header-offset) }` rule,
+   which added 76px of dead gap to every page on top of their own padding. */
+.tdd-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--tdd-rule);
+  font-family: var(--tdd-text);
+}
+
+.tdd-nav-bar {
+  max-width: var(--tdd-max);
+  margin: 0 auto;
+  height: 64px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tdd-wordmark {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--tdd-ink);
+  line-height: 1;
+  flex: none;
+}
+
+.tdd-wordmark-the {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tdd-muted);
+}
+
+.tdd-wordmark-main {
+  font-family: var(--tdd-display);
+  font-size: 25px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+/* The three dots are the wordmark. They are the brand's identity, which is the
+   one place a colored dot on this page is not decoration. */
+.tdd-dots { display: inline-flex; gap: 3px; }
+.tdd-dots i {
+  width: 6px;
+  height: 6px;
+  background: var(--family);
+  display: block;
+}
+
+.tdd-nav-links {
+  display: none;
+  align-items: center;
+  gap: 26px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tdd-nav-links a {
+  color: var(--tdd-ink);
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.18s var(--tdd-ease), color 0.18s var(--tdd-ease);
+}
+
+.tdd-nav-links a:hover,
+.tdd-nav-links a.is-active {
+  border-bottom-color: var(--neon-orange);
+}
+
+.tdd-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.tdd-nav-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: var(--tdd-ink);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: border-color 0.18s var(--tdd-ease);
+}
+
+.tdd-nav-icon:hover { border-color: var(--tdd-rule); }
+
+a.tdd-nav-icon { display: none; }
+
+.tdd-subscribe {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 13px;
+  background: var(--neon-orange);
+  color: #0D0D0D;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tdd-subscribe:hover { background: #ff8257; }
+
+.tdd-nav-panel {
+  border-top: 1px solid var(--tdd-rule);
+  padding: 8px 16px 16px;
+  display: grid;
+  font-family: var(--tdd-text);
+}
+
+.tdd-nav-panel a {
+  font-family: var(--tdd-display);
+  font-size: 27px;
+  text-transform: uppercase;
+  color: var(--tdd-ink);
+  padding: 11px 0;
+  border-bottom: 1px solid var(--tdd-rule);
+}
+
+.tdd-nav-panel a:last-child { border-bottom: 0; }
+.tdd-nav-panel a.is-active { color: var(--neon-orange); }
+
+@media (min-width: 1024px) {
+  .tdd-nav-bar { height: 72px; padding: 0 32px; gap: 32px; }
+  .tdd-nav-links { display: flex; margin-left: auto; }
+  .tdd-nav-actions { margin-left: 0; gap: 10px; }
+  a.tdd-nav-icon { display: grid; }
+  .tdd-subscribe { padding: 0 16px; }
+  .tdd-nav-toggle { display: none; }
+  .tdd-wordmark-main { font-size: 28px; }
+}
+
+/* ---------- Front page shell --------------------------------------------- */
+.tdd-home {
+  max-width: var(--tdd-max);
+  margin: 0 auto;
+  padding: 0 16px 72px;
+  color: var(--tdd-ink);
+  font-family: var(--tdd-text);
+}
+
+.tdd-home h1,
+.tdd-home h2,
+.tdd-home h3 {
+  font-family: var(--tdd-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.tdd-home a:focus-visible,
+.tdd-home button:focus-visible,
+.tdd-nav a:focus-visible,
+.tdd-nav button:focus-visible {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 3px;
+}
+
+/* ---------- Dateline ----------------------------------------------------- */
+/* The only uppercase micro-label on the page. A publication called The Daily
+   Dribble had no date on it anywhere. */
+.tdd-dateline {
+  display: grid;
+  gap: 6px;
+  padding: 16px 0 18px;
+  border-bottom: 2px solid var(--tdd-ink);
+  margin-bottom: 24px;
+}
+
+.tdd-dateline-date {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.tdd-dateline-line {
+  font-size: 16px;
+  color: var(--tdd-muted);
+  line-height: 1.5;
+}
+
+@media (min-width: 760px) {
+  .tdd-dateline {
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 20px;
+  }
+  .tdd-dateline-line { text-align: right; }
+}
+
+/* ---------- Art: the recurring device ------------------------------------ */
+/* Every image is cast in its story's family color and returns to full color on
+   hover. Static filter plus one blend overlay, so scrolling costs nothing. */
+.tdd-shot {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #16181B;
+  display: grid;
+  place-items: center;
+}
+
+.tdd-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.07) brightness(0.93);
+}
+
+.tdd-shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--family, var(--neon-orange));
+  mix-blend-mode: color;
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+.tdd-shot-fallback {
+  font-family: var(--tdd-display);
+  font-size: 34px;
+  color: var(--family, var(--neon-orange));
+  letter-spacing: 0.04em;
+}
+
+@media (hover: hover) {
+  .tdd-shot img,
+  .tdd-shot::after { transition: filter 0.45s var(--tdd-ease), opacity 0.45s var(--tdd-ease); }
+  a:hover .tdd-shot img { filter: none; }
+  a:hover .tdd-shot::after { opacity: 0; }
+}
+
+/* ---------- Topic tag ---------------------------------------------------- */
+.tdd-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--family);
+  border-bottom: 3px solid var(--family);
+  padding-bottom: 3px;
+  margin-bottom: 13px;
+}
+
+/* ---------- Shared bits -------------------------------------------------- */
+.tdd-credit {
+  font-size: 13px;
+  color: var(--tdd-muted);
+  margin-top: 10px;
+}
+
+/* One CTA style. Orange everywhere, square, 48px tall, label never wraps. */
+.tdd-cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  margin-top: 20px;
+  padding: 0 22px;
+  background: var(--neon-orange);
+  color: #0D0D0D;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.18s var(--tdd-ease), transform 0.12s var(--tdd-ease);
+}
+
+.tdd-cta:hover { background: #ff8257; }
+a:active .tdd-cta { transform: translateY(1px); }
+
+.tdd-more {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tdd-ink);
+  border-bottom: 2px solid var(--neon-orange);
+  padding-bottom: 2px;
+  white-space: nowrap;
+}
+
+.tdd-section { margin-top: 56px; }
+
+.tdd-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tdd-ink);
+  margin-bottom: 26px;
+}
+
+.tdd-section-head h2 {
+  font-size: clamp(28px, 4.4vw, 50px);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+}
+
+/* ---------- Cover -------------------------------------------------------- */
+.tdd-cover-link { display: block; }
+
+.tdd-cover-art {
+  width: 100%;
+  height: clamp(210px, 34vh, 310px);
+}
+
+.tdd-cover-art .tdd-shot { width: 100%; height: 100%; }
+
+.tdd-cover-copy {
+  position: relative;
+  background: var(--bg-primary);
+  padding-top: 22px;
+}
+
+.tdd-cover-copy h1 {
+  font-size: clamp(38px, 7vw, 82px);
+  line-height: 0.9;
+  letter-spacing: 0.002em;
+}
+
+.tdd-cover-summary {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  margin-top: 16px;
+  max-width: 62ch;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .tdd-cover-art { height: clamp(300px, 40vh, 392px); }
+  /* The copy block breaks the image's left edge. The overlap is the crop. */
+  .tdd-cover-copy {
+    margin: -84px 0 0 0;
+    width: 100%;
+    padding: 24px 8% 4px 0;
+  }
+  .tdd-cover-summary { -webkit-line-clamp: 2; }
+}
+
+/* ---------- Deck --------------------------------------------------------- */
+.tdd-deck {
+  display: grid;
+  gap: 32px;
+  margin-top: 44px;
+  padding-top: 32px;
+  border-top: 1px solid var(--tdd-rule);
+}
+
+.tdd-deck-story { display: block; }
+
+.tdd-deck-art {
+  aspect-ratio: 16 / 10;
+  margin-bottom: 18px;
+}
+
+.tdd-deck-story h3 {
+  font-size: clamp(23px, 3.1vw, 34px);
+  line-height: 1.02;
+}
+
+@media (min-width: 700px) {
+  .tdd-deck { grid-template-columns: 1fr 1fr; gap: 36px; }
+  /* Asymmetry: the second story sits lower than the first. */
+  .tdd-deck-cell:nth-child(2) { padding-top: 46px; }
+}
+
+/* ---------- Index -------------------------------------------------------- */
+/* Type only, no art. The density drop against the cover is deliberate: a front
+   page that never changes gear reads as a template. No hairline per row and no
+   rank numerals, both of which are furniture rather than information. */
+.tdd-index {
+  display: grid;
+  gap: 34px;
+}
+
+.tdd-index-story { display: block; }
+
+.tdd-index-story h3 {
+  font-size: clamp(21px, 2.5vw, 29px);
+  line-height: 1.05;
+  transition: color 0.18s var(--tdd-ease);
+}
+
+.tdd-index-story:hover h3,
+.tdd-deck-story:hover h3,
+.tdd-video-story:hover h3 { color: var(--neon-orange); }
+
+.tdd-index-story .tdd-tag { margin-bottom: 10px; }
+
+@media (min-width: 700px) {
+  .tdd-index { grid-template-columns: 1fr 1fr; gap: 40px 48px; }
+}
+
+/* ---------- Podcast ------------------------------------------------------ */
+.tdd-pod {
+  display: grid;
+  gap: 26px;
+  background: var(--bg-surface);
+  border-left: 5px solid var(--neon-purple);
+  padding: 22px;
+}
+
+.tdd-pod-art { aspect-ratio: 1; }
+
+.tdd-pod-list { display: grid; }
+
+.tdd-pod-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--tdd-rule);
+}
+
+.tdd-pod-list li:last-child { border-bottom: 0; }
+.tdd-pod-list li:first-child { padding-top: 0; }
+
+.tdd-pod-copy h3 {
+  font-size: 20px;
+  line-height: 1.12;
+}
+
+.tdd-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  min-height: 44px;
+  padding: 0 15px;
+  background: transparent;
+  color: var(--tdd-ink);
+  border: 1px solid var(--tdd-ink);
+  font-family: var(--tdd-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.18s var(--tdd-ease), color 0.18s var(--tdd-ease), border-color 0.18s var(--tdd-ease);
+}
+
+.tdd-play:hover:not(:disabled) {
+  background: var(--neon-orange);
+  border-color: var(--neon-orange);
+  color: #0D0D0D;
+}
+
+.tdd-play:active:not(:disabled) { transform: translateY(1px); }
+.tdd-play:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (min-width: 760px) {
+  .tdd-pod {
+    grid-template-columns: 236px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+    padding: 30px;
+  }
+}
+
+/* ---------- Videos ------------------------------------------------------- */
+.tdd-video { display: grid; gap: 26px; }
+
+.tdd-video-story { display: block; }
+.tdd-video-art { aspect-ratio: 16 / 9; margin-bottom: 14px; }
+
+.tdd-video-story h3 {
+  font-size: 20px;
+  line-height: 1.12;
+  transition: color 0.18s var(--tdd-ease);
+}
+
+@media (min-width: 900px) {
+  /* One lead plus two stacked, rather than three equal tiles. */
+  .tdd-video { grid-template-columns: 1.55fr 1fr; gap: 26px 30px; }
+  .tdd-video-lead { grid-row: span 2; }
+  .tdd-video-lead h3 { font-size: 28px; }
+}
+
+/* ---------- Empty state -------------------------------------------------- */
+.tdd-empty {
+  padding: 40px 0 8px;
+  border-bottom: 1px solid var(--tdd-rule);
+}
+
+.tdd-empty h1 {
+  font-size: clamp(34px, 6vw, 68px);
+  line-height: 0.95;
+}
+
+.tdd-empty p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  margin-top: 16px;
+  max-width: 54ch;
+}
+
+/* ---------- No-script floor ---------------------------------------------- */
+/* Scroll reveals render with inline opacity:0 until JS hydrates. If scripting
+   is unavailable the stories must still be readable, so they are forced on. */
+@media (scripting: none) {
+  .tdd-home [style*='opacity'] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------- Reduced motion ----------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .tdd-shot img,
+  .tdd-shot::after,
+  .tdd-index-story h3,
+  .tdd-deck-story h3,
+  .tdd-video-story h3,
+  .tdd-cta,
+  .tdd-play,
+  .tdd-nav-links a,
+  .tdd-nav-icon {
+    transition: none;
+  }
+  a:active .tdd-cta,
+  .tdd-play:active:not(:disabled) { transform: none; }
+}
+
+@media (min-width: 760px) {
+  .tdd-home { padding: 0 32px 88px; }
+}
+
+/* ---------- About -------------------------------------------------------- */
+/* Same system as the front page: left-aligned, radius 0, no glow, no card.
+   The previous page was centered throughout, with a rounded-2xl panel, an
+   orange hover glow on all three lanes (two of which are not orange), and a
+   pill CTA, none of which survive the shape and color locks above. */
+.tdd-about { padding-top: 40px; }
+
+.tdd-about-hero {
+  padding-bottom: 40px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-about-hero h1 {
+  font-size: clamp(60px, 15vw, 176px);
+  line-height: 0.88;
+}
+
+/* One word per line at every width: a designed stack, so no orphan to chase. */
+.tdd-about-hero h1 span {
+  display: block;
+  color: var(--family);
+}
+
+.tdd-about-hero p {
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.5;
+  color: var(--tdd-muted);
+  margin-top: 24px;
+  max-width: 40ch;
+}
+
+.tdd-about-section { margin-top: 64px; }
+
+.tdd-about-section > h2 {
+  font-size: clamp(30px, 4.6vw, 56px);
+  line-height: 0.95;
+}
+
+.tdd-about-section > p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  max-width: 56ch;
+}
+
+#about-lanes {
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-about-lane {
+  display: grid;
+  gap: 10px;
+  padding: 26px 0;
+}
+
+.tdd-about-lane + .tdd-about-lane { border-top: 1px solid var(--tdd-rule); }
+
+.tdd-about-lane h3 {
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 0.95;
+  color: var(--family);
+}
+
+.tdd-about-lane p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  max-width: 52ch;
+}
+
+@media (min-width: 760px) {
+  .tdd-about-lane {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 48px;
+    align-items: baseline;
+  }
+}
+
+.tdd-about-statement h2 {
+  font-size: clamp(40px, 7vw, 96px);
+  line-height: 0.92;
+}
+
+.tdd-about-statement h2 span { display: block; }
+.tdd-about-statement h2 span:first-child { color: var(--tdd-muted); }
+.tdd-about-statement > p { margin-top: 26px; }
+
+@media (min-width: 900px) {
+  /* Asymmetry: the statement's paragraph sits indented under the headline. */
+  .tdd-about-statement > p { margin-left: 8%; }
+}
+
+.tdd-about-cta {
+  padding-top: 32px;
+  border-top: 2px solid var(--tdd-ink);
+}
+
+.tdd-about-cta > p { margin-top: 14px; }
