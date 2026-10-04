@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         <head><title>Unsubscribed</title></head>
         <body style="font-family:Arial,sans-serif;line-height:1.6;padding:24px">
           <h1>You're unsubscribed</h1>
-          <p>You will no longer receive newsletter emails from LNLS.</p>
+          <p>You will no longer receive newsletter emails from The Daily Dribble.</p>
         </body>
       </html>
     `

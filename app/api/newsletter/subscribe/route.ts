@@ -1,3 +1,4 @@
+import { BRAND_NAME, EMAIL_REPLY_TO, emailFrom, sendOrThrow } from "@/lib/email";
 // app/api/newsletter/subscribe/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import type { PostgrestError } from "@supabase/supabase-js";
@@ -52,14 +53,17 @@ export async function POST(request: NextRequest) {
     // Send welcome email (best-effort; do not fail subscription if email send errors)
     if (resendApiKey) {
       try {
-        await resend().emails.send({
-          from: "LNLS <newsletter@lnls.media>",
+        await sendOrThrow(resend(), {
+          from: emailFrom(),
+          replyTo: EMAIL_REPLY_TO,
           to: email,
-          subject: "Welcome to LNLS!",
+          subject: `Welcome to ${BRAND_NAME}`,
           html: `
-            <h1>Welcome to Late Night Lake Show!</h1>
-            <p>Thanks for subscribing. You'll now get the latest Lakers news and LNLS updates.</p>
-            <p>— The LNLS Team</p>
+            <div style="font-family:Arial,sans-serif;line-height:1.6">
+              <h1>Welcome to ${BRAND_NAME}</h1>
+              <p>Thanks for subscribing. You'll get new stories as we publish them: sports, tech, and the culture around the game.</p>
+              <p>${BRAND_NAME}</p>
+            </div>
           `,
         });
       } catch (mailErr) {

@@ -1,3 +1,4 @@
+import { BRAND_NAME, EMAIL_REPLY_TO, emailFrom, escapeHtml, sendOrThrow } from '@/lib/email'
 import { getSiteUrl } from '@/lib/site'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
@@ -38,10 +39,16 @@ async function verifyQstash(request: NextRequest, body: string): Promise<boolean
     nextSigningKey: next,
   })
 
-  return receiver.verify({
-    signature,
-    body,
-  })
+  // Receiver.verify() THROWS on a bad signature rather than returning false, so
+  // a forged request used to fall into the route's catch-all and answer 500.
+  try {
+    return await receiver.verify({
+      signature,
+      body,
+    })
+  } catch {
+    return false
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -97,7 +104,7 @@ export async function POST(request: NextRequest) {
     const list = subscribers ?? []
     const articleUrl = buildArticleUrl(article.slug)
     const subject = `New article: ${article.title}`
-    const from = process.env.RESEND_FROM_EMAIL || 'LNLS <newsletter@lnls.media>'
+    const from = emailFrom()
 
     let sent = 0
     let failed = 0
@@ -118,8 +125,9 @@ export async function POST(request: NextRequest) {
 
           const unsubscribeUrl = buildUnsubscribeUrl(token)
 
-          await resend().emails.send({
+          await sendOrThrow(resend(), {
             from,
+            replyTo: EMAIL_REPLY_TO,
             to: subscriber.email,
             subject,
             headers: {
@@ -128,12 +136,12 @@ export async function POST(request: NextRequest) {
             html: `
               <div style="font-family:Arial,sans-serif;line-height:1.6">
                 <p>Hi there,</p>
-                <h1>${article.title}</h1>
-                ${article.hero_image_url ? `<img src="${article.hero_image_url}" alt="${article.title}" style="max-width:100%;border-radius:12px" />` : ''}
-                <p>${article.excerpt || ''}</p>
+                <h1>${escapeHtml(article.title)}</h1>
+                ${article.hero_image_url ? `<img src="${escapeHtml(article.hero_image_url)}" alt="${escapeHtml(article.title)}" style="max-width:100%" />` : ''}
+                <p>${escapeHtml(article.excerpt)}</p>
                 <p><a href="${articleUrl}">Read the full article</a></p>
                 <p style="font-size:12px;color:#777">If you want to stop receiving these emails, <a href="${unsubscribeUrl}">unsubscribe here</a>.</p>
-                <p>— The LNLS Team</p>
+                <p>${BRAND_NAME}</p>
               </div>
             `,
           })
@@ -143,6 +151,21 @@ export async function POST(request: NextRequest) {
           console.warn('Resend send error:', mailErr)
         }
       }))
+    }
+
+    // Mark the article as emailed only if at least one message was accepted.
+    // It used to be marked unconditionally, so a job where every send failed
+    // still locked the admin's Send button for that article for good.
+    if (sent === 0) {
+      if (failed > 0) {
+        console.error(`Newsletter job for "${article.slug}" delivered 0 of ${list.length}; leaving it unmarked so it can be retried.`)
+        // A non-2xx lets QStash retry. Nothing went out, so a retry cannot double-send.
+        return NextResponse.json(
+          { ok: false, error: 'No emails were delivered', total: list.length, sent, failed },
+          { status: 502 }
+        )
+      }
+      return NextResponse.json({ ok: true, total: 0, sent: 0, failed: 0 })
     }
 
     await supabase
