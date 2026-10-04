@@ -28,7 +28,7 @@ function formatDate(dateString?: string | null): string {
 }
 
 export const metadata = {
-  title: 'News – The Daily Dribble',
+  title: 'News',
   description: 'The pulse of the game. Every angle. Every day.',
 };
 
@@ -48,7 +48,7 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
     <section className="relative min-h-screen">
       {/* HERO — title top-left, cinematic but clean */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
-        <div className="relative z-10 max-w-7xl mx-auto px-6 pt-[30px] md:pt-[180px]">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 pt-10 md:pt-20">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
             {selectedTopic || "Articles"}
           </h1>

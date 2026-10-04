@@ -16,12 +16,22 @@ module.exports = {
         'neon-orange': '#FF6B35',
         'neon-blue': '#00D4FF',
         'neon-purple': '#B857FF',
+        // Semantic aliases. These lived in a tailwind.config.ts that was never
+        // loaded, so classes using them produced no CSS. Same mapping, in the
+        // config that is actually read.
+        background: 'var(--bg-primary)',
+        surface: 'var(--bg-surface)',
+        elevated: 'var(--bg-elevated)',
+        primary: 'var(--neon-orange)',
+        secondary: 'var(--neon-blue)',
+        accent: 'var(--neon-purple)',
       },
       fontFamily: {
         'bebas': ['Inter', 'sans-serif'], // Replacing Bebas with Inter Bold for headlines
         'inter': ['Inter', 'sans-serif'],
         'anton': ['var(--font-anton)', 'Arial Narrow', 'sans-serif'],
         'plex': ['var(--font-ibm-plex)', 'system-ui', 'sans-serif'],
+        'display': ['var(--font-anton)', 'Arial Narrow', 'sans-serif'],
         'netflix': ['Inter', 'sans-serif'], // Fallback
       },
     },

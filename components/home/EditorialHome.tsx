@@ -222,7 +222,14 @@ export default function EditorialHome({
           <div className="tdd-video">
             {videos.slice(0, 3).map((item, position) => (
               <Reveal key={item.id} delay={position * 0.08} className={position === 0 ? 'tdd-video-lead' : undefined}>
-                <a href={item.source_url || '/videos'} className="tdd-video-story">
+                {/* Video links point at YouTube. Open off-site, so the reader
+                    does not lose the front page. */}
+                <a
+                  href={item.source_url || '/videos'}
+                  className="tdd-video-story"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Shot item={item} family={VIDEO_FAMILY} className="tdd-video-art" />
                   <h3>{item.title}</h3>
                   {date(item.published_at) && <p className="tdd-credit">{date(item.published_at)}</p>}

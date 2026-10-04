@@ -20,21 +20,21 @@ const lanes = [
 ];
 
 export const metadata = {
-  title: 'About – The Daily Dribble',
+  title: 'About',
   description: 'Court. Code. Culture.',
 };
 
 export default function AboutPage() {
   return (
     <section className="relative min-h-screen bg-gradient-to-b from-background via-background/95 to-background overflow-x-hidden">
-      <div className="max-w-6xl mx-auto px-6 pt-[30px] md:pt-[180px] pb-32 space-y-24">
+      <div className="max-w-6xl mx-auto px-6 pt-10 md:pt-20 pb-32 space-y-24">
         
         {/* COURT. CODE. CULTURE. - Lead with value prop */}
         <div className="text-center">
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-display font-bold mb-6 leading-tight">
             Court. Code. Culture.
           </h1>
-          <p className="text-lg md:text-xl text-secondary max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
             Where basketball meets technology and lifestyle.
           </p>
         </div>
@@ -50,7 +50,7 @@ export default function AboutPage() {
                 <div className={`text-6xl md:text-7xl font-display font-bold mb-4 ${lane.className}`}>
                   {lane.title}
                 </div>
-                <p className="text-base md:text-lg text-secondary leading-relaxed">{lane.desc}</p>
+                <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed">{lane.desc}</p>
               </div>
             ))}
           </div>
@@ -62,7 +62,7 @@ export default function AboutPage() {
             We don&apos;t just cover the game.
             <span className="block text-primary mt-3">We live it.</span>
           </h2>
-          <p className="text-lg md:text-xl text-secondary leading-relaxed max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed max-w-3xl mx-auto">
             No corporate talking heads. No recycled press releases. Just real fans, writers, creators, and analysts who breathe this world every single day.
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function AboutPage() {
           <h3 className="text-3xl md:text-4xl font-display font-bold mb-6">
             Join the movement.
           </h3>
-          <p className="text-lg md:text-xl text-secondary mb-8 max-w-xl mx-auto">
+          <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-8 max-w-xl mx-auto">
             Subscribe free and never miss a dribble.
           </p>
           <Link

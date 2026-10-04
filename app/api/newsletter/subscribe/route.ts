@@ -5,7 +5,14 @@ import { Resend } from "resend";
 import { subscribeToNewsletter } from "@/lib/supabase/client";
 
 const resendApiKey = process.env.RESEND_API_KEY;
-const resend = new Resend(resendApiKey);
+// Constructed on first use. `new Resend(undefined)` throws at import time, so
+// building without RESEND_API_KEY failed while collecting page data even
+// though the guards below never send mail without a key.
+let resendClient: Resend | null = null
+function resend(): Resend {
+  if (!resendClient) resendClient = new Resend(resendApiKey)
+  return resendClient
+}
 
 /**
  * Minimal email check; keep server-only logic here.
@@ -45,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Send welcome email (best-effort; do not fail subscription if email send errors)
     if (resendApiKey) {
       try {
-        await resend.emails.send({
+        await resend().emails.send({
           from: "LNLS <newsletter@lnls.media>",
           to: email,
           subject: "Welcome to LNLS!",
