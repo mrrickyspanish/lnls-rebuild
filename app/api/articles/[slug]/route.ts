@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/auth/guard'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
@@ -56,6 +57,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { slug } = await params
     const rawPayload = (await request.json()) as UpdateArticlePayload
@@ -121,6 +125,9 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { slug } = await params
     const supabase = createSupabaseServiceClient()

@@ -1,10 +1,13 @@
+import { requireAdminOrCron } from '@/lib/auth/guard'
 import { NextResponse } from 'next/server'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 import { parseDuration } from '@/lib/supabase/youtube'
 
 const PLAYLIST_ID = 'PLiOrRDJyF1LnL-6ogW743LfT8hYrqRcp3'
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await requireAdminOrCron(request)
+  if (denied) return denied
   try {
     const channelId = process.env.YOUTUBE_CHANNEL_ID
     const apiKey = process.env.YOUTUBE_API_KEY

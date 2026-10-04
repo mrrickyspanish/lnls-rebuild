@@ -907,3 +907,82 @@ a:active .tdd-cta { transform: translateY(1px); }
 }
 
 .tdd-about-cta > p { margin-top: 14px; }
+
+/* ---------- Auth (login, admin sign-up) ---------------------------------- */
+/* Same locks as the rest of the site: radius 0, orange only as the
+   interaction accent (focus ring, button), one muted text color. */
+.tdd-auth { padding-top: 56px; max-width: 560px; }
+
+.tdd-auth h1 {
+  font-size: clamp(44px, 9vw, 84px);
+  line-height: 0.92;
+}
+
+.tdd-auth-lede {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--tdd-muted);
+  margin-top: 18px;
+  max-width: 46ch;
+}
+
+.tdd-form {
+  display: grid;
+  gap: 22px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 2px solid var(--tdd-ink);
+}
+
+.tdd-field { display: grid; gap: 8px; }
+
+.tdd-field label {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tdd-field input {
+  height: 52px;
+  padding: 0 14px;
+  background: var(--bg-surface);
+  color: var(--tdd-ink);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0;
+  font: inherit;
+  font-size: 17px;
+}
+
+.tdd-field input:focus-visible {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 2px;
+  border-color: var(--neon-orange);
+}
+
+.tdd-field-help {
+  font-size: 14px;
+  color: var(--tdd-muted);
+  line-height: 1.5;
+}
+
+.tdd-form-error {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #FF8A8A;
+  border-left: 3px solid #FF8A8A;
+  padding-left: 12px;
+}
+
+/* .tdd-cta is styled for links; as a form button it needs the resets. */
+button.tdd-cta {
+  border: 0;
+  cursor: pointer;
+  font-family: var(--tdd-text);
+  justify-self: start;
+  margin-top: 4px;
+}
+
+button.tdd-cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

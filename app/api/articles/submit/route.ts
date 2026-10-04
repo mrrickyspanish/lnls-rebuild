@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/auth/guard'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
@@ -55,6 +56,9 @@ function validatePayload(payload: SubmitArticlePayload) {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const rawPayload = (await request.json()) as SubmitArticlePayload
     const errorMessage = validatePayload(rawPayload)

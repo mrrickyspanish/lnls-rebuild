@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -172,6 +173,9 @@ function sanitizeTipTapDoc(value: unknown, rawText: string): AnyRecord {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse<AIAssistResponse>> {
+  const denied = await requireAdmin();
+  if (denied) return denied as NextResponse<AIAssistResponse>;
+
   try {
     const body: AIAssistRequest = await req.json();
     const { action, content, context } = body;

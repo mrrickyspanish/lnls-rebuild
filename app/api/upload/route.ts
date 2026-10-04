@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/auth/guard'
 /**
  * Image Upload API
  * Handles uploading images to Supabase Storage
@@ -8,6 +9,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 
 export async function POST(request: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File

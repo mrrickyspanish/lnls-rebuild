@@ -40,9 +40,29 @@ RESEND_FROM_EMAIL=hello@lnls.media
 YOUTUBE_API_KEY=AIza...
 YOUTUBE_CHANNEL_ID=UC...
 SPREAKER_RSS_URL=https://www.spreaker.com/show/.../episodes/feed
+ADMIN_SIGNUP_CODE=            # 16+ chars. Only while creating admin accounts; see "Admin access".
+CRON_SECRET=                  # 16+ chars. Required for the hourly RSS cron to be accepted.
 ```
 
 Add optional keys (Perplexity, etc.) as needed.
+
+## Admin access
+
+`/admin` and every admin-only API route require a real Supabase account that has an active row in `public.admin_profiles`. There is no shared password. This is the same model as the clw-wizards admin.
+
+**One-time setup**
+
+1. In the Supabase SQL Editor for this project, run `supabase/add_admin_accounts.sql`.
+2. In Vercel (Project Settings, Environment Variables, Production and Preview) set:
+   - `ADMIN_SIGNUP_CODE`: any 16+ character secret.
+   - `CRON_SECRET`: any 16+ character secret. Vercel then sends it to the cron route automatically.
+3. Redeploy (environment variable changes only apply to new deployments).
+4. Open `/admin-signup`, enter your name, email, a 12+ character password, and the access code. Then sign in at `/login`.
+5. Once every person who needs admin has an account, **delete `ADMIN_SIGNUP_CODE` and redeploy**. Sign-up is closed whenever the variable is unset or shorter than 16 characters.
+
+**Lost a password?** In Supabase, Authentication, Users, open the user and send a recovery email or set a new password. To add another admin later, set `ADMIN_SIGNUP_CODE` again, have them use `/admin-signup`, then remove it.
+
+**What is protected:** `/admin/*` (middleware), plus `POST /api/upload`, `POST /api/ai/assist`, `POST /api/articles/submit`, `PATCH|DELETE /api/articles/[slug]`, `PATCH /api/articles/[slug]/status` and `POST /api/newsletter/send` (each calls `requireAdmin()`). `/api/rss/aggregate` and `/api/youtube/sync` accept either the cron secret or an admin session. Public routes (like, view tracking, newsletter subscribe and unsubscribe, podcast feed) are intentionally open.
 
 ## 4. Verify Locally
 
