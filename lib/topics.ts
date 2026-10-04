@@ -12,6 +12,39 @@
  * (components/admin/ArticleForm.tsx). Add new topics here when the editor
  * gains them, otherwise they fall back to `games`.
  */
+/**
+ * Every topic an article can have: the ONE list. The admin editor's dropdown,
+ * the /news filter and the footer's topic links all read it.
+ *
+ * They used to be three separate lists that disagreed. /news accepted `Tech`
+ * and `Culture`, which no article can be given, so the footer's "Tech & Culture"
+ * and "Sports Culture" links always came back empty, while Football, Analysis
+ * and Rumors were silently ignored by the filter (the page just showed
+ * everything). Add a topic here and it appears everywhere.
+ *
+ * FEATURED is an editorial flag kept as a topic by the editor, so it is valid
+ * but is not offered as a public link.
+ */
+export const ARTICLE_TOPICS = [
+  'FEATURED',
+  'Recruit Ready',
+  'Lakers',
+  'NBA',
+  'Football',
+  'Rumors',
+  'Analysis',
+  'Lifestyle',
+] as const
+
+export type ArticleTopic = (typeof ARTICLE_TOPICS)[number]
+
+/** Topics offered as public links, in display order. */
+export const PUBLIC_TOPICS: readonly ArticleTopic[] = ['Lakers', 'NBA', 'Football', 'Recruit Ready', 'Analysis', 'Rumors', 'Lifestyle']
+
+export function isArticleTopic(value: string | null | undefined): value is ArticleTopic {
+  return (ARTICLE_TOPICS as readonly string[]).includes(value ?? '')
+}
+
 export type TopicFamily = 'games' | 'analysis' | 'culture'
 
 const FAMILY_BY_TOPIC: Record<string, TopicFamily> = {

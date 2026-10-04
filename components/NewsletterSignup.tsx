@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('')
@@ -23,64 +23,49 @@ export default function NewsletterSignup() {
 
       if (response.ok) {
         setStatus('success')
-        setMessage('Thanks for subscribing! Check your email to confirm.')
+        // There is no confirmation step: a subscriber is active the moment they
+        // submit. The old copy told them to "check your email to confirm".
+        setMessage("You're on the list. New stories will land in your inbox.")
         setEmail('')
       } else {
         setStatus('error')
         setMessage(data.error || 'Something went wrong. Please try again.')
       }
-    } catch (error) {
+    } catch {
       setStatus('error')
       setMessage('Network error. Please try again.')
     }
   }
 
   return (
-    <div className="text-center">
-      <div className="mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--neon-orange)]/20 mb-4">
-          <Mail className="w-7 h-7 text-[var(--neon-orange)]" />
-        </div>
-        <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 font-netflix">
-          Never Miss a Dribble
-        </h3>
-        <p className="text-white/60 text-sm md:text-base">
-          Get the latest Lakers news, culture, and tech insights delivered daily.
-        </p>
-      </div>
+    <div className="tdd-news">
+      <h2>Never miss a dribble</h2>
+      <p className="tdd-news-lede">
+        New stories from The Daily Dribble: sports, tech, and the culture around the game.
+      </p>
 
       {status === 'success' ? (
-        <div className="flex items-center justify-center space-x-2 text-green-400 bg-green-500/10 border border-green-500/30 rounded-lg py-4 px-6">
-          <Check className="w-5 h-5" />
-          <span className="font-semibold">{message}</span>
-        </div>
+        <p className="tdd-news-success" role="status">
+          <Check size={20} strokeWidth={2.5} aria-hidden="true" />
+          {message}
+        </p>
       ) : (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[var(--neon-orange)] transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="px-6 py-3 bg-[var(--neon-orange)] hover:brightness-110 text-[#0D0D0D] font-bold rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
-            </button>
-          </div>
-
-          {status === 'error' && (
-            <p className="text-red-400 text-sm">{message}</p>
-          )}
-
-          <p className="text-xs text-white/40">
-            We respect your privacy. Unsubscribe anytime.
-          </p>
+        <form onSubmit={handleSubmit} className="tdd-news-form">
+          <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+          <input
+            id="newsletter-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
+          <button type="submit" className="tdd-cta" disabled={status === 'loading'}>
+            {status === 'loading' ? 'Subscribing' : 'Subscribe'}
+          </button>
+          {status === 'error' && <p className="tdd-form-error" role="alert">{message}</p>}
+          <p className="tdd-news-fine">We respect your privacy. Unsubscribe anytime.</p>
         </form>
       )}
     </div>

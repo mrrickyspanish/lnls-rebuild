@@ -3,18 +3,20 @@ import Link from 'next/link';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { fetchPublishedArticles } from '@/lib/supabase/articles';
 import type { Article } from '@/types/supabase';
+import { isArticleTopic, topicFamily } from '@/lib/topics';
 
 async function getArticles(): Promise<Article[]> {
   return fetchPublishedArticles(12);
 }
 
-const categoryColors: Record<string, string> = {
-  'Recruit Ready': 'border-green-500 text-green-500',
-  Lakers: 'border-orange-500 text-orange-500',
-  NBA: 'border-blue-500 text-blue-500',
-  Tech: 'border-purple-500 text-purple-500',
-  Culture: 'border-pink-500 text-pink-500',
-  Lifestyle: 'border-pink-500 text-pink-500',
+// Chip color follows the topic family used across the site (lib/topics.ts):
+// on-field coverage orange, analysis blue, culture purple. This used to be a
+// separate per-topic map that had no entry for Football, Analysis or Rumors, so
+// those chips fell back to grey.
+const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
+  games: 'border-neon-orange text-neon-orange',
+  analysis: 'border-neon-blue text-neon-blue',
+  culture: 'border-neon-purple text-neon-purple',
 };
 
 function formatDate(dateString?: string | null): string {
@@ -34,7 +36,7 @@ export const metadata = {
 
 export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string}>}) {
   const {topic} = await searchParams;
-  const selectedTopic = ['Lakers', 'NBA', 'Tech', 'Culture', 'Lifestyle', 'Recruit Ready'].includes(topic || '') ? topic : undefined;
+  const selectedTopic = isArticleTopic(topic) ? topic : undefined;
   const articles = await fetchPublishedArticles(24, selectedTopic);
 
   // Helper for image rendering (matches ContentRowWithHero)
@@ -70,7 +72,7 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article, i) => {
                   const isHero = i === 0;
-                  const colorClass = categoryColors[article.topic] || 'border-white/30 text-white/70';
+                  const colorClass = article.topic ? FAMILY_CHIP[topicFamily(article.topic)] : 'border-white/30 text-white/70';
 
                   return (
                     <Link href={`/news/${article.slug}`} key={article.id}>
