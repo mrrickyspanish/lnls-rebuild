@@ -1,225 +1,91 @@
-import Link from 'next/link';
-import { Twitter, Instagram, Youtube, Facebook } from 'lucide-react';
-import NewsletterSignup from './NewsletterSignup';
-import { SOCIAL_URLS } from '@/lib/contact';
+import Link from 'next/link'
+
+import NewsletterSignup from './NewsletterSignup'
+import { CONTACT_EMAIL, SOCIAL_HANDLE, SOCIALS } from '@/lib/contact'
+import { PUBLIC_TOPICS } from '@/lib/topics'
+
+const SECTIONS = [
+  { href: '/news', label: 'News' },
+  { href: '/podcast', label: 'Podcast' },
+  { href: '/videos', label: 'Videos' },
+  { href: '/about', label: 'About' },
+]
+
+// Pitches go to the inbox. "Write for Us" used to link to /admin, which is the
+// staff login, so a prospective writer landed on a sign-in wall.
+const WRITE_FOR_US = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Write for The Daily Dribble')}`
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-black border-t border-white/10 mt-auto">
-      {/* Newsletter Section - Full Width */}
-      <div className="border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-12">
+    <footer className="tdd-footer">
+      <div className="tdd-footer-news">
+        <div className="tdd-footer-inner">
           <NewsletterSignup />
         </div>
       </div>
 
-      <div className="max-w-[1920px] mx-auto px-6 py-12">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* About Section */}
-          <div>
-            <h3 className="text-white font-bold text-lg mb-4 font-netflix">
-              The Daily Dribble
-            </h3>
-            <p className="text-white/60 text-sm leading-relaxed mb-4">
-              Sports. Tech. Culture. Where sports meet technology and lifestyle.
-            </p>
-            {/* Social Links */}
-            <div className="flex items-center gap-3">
-              <a
-                href={SOCIAL_URLS.x}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                aria-label="X (Twitter)"
-              >
-                <Twitter className="w-5 h-5 text-white" />
-              </a>
-              <a
-                href={SOCIAL_URLS.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5 text-white" />
-              </a>
-              <a
-                href={SOCIAL_URLS.youtube}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                aria-label="YouTube"
-              >
-                <Youtube className="w-5 h-5 text-white" />
-              </a>
-              <a
-                href={SOCIAL_URLS.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5 text-white" />
-              </a>
-            </div>
+      <div className="tdd-footer-inner">
+        <div className="tdd-footer-main">
+          <div className="tdd-footer-brand">
+            <p className="tdd-footer-wordmark">The Daily Dribble</p>
+            <p>Sports, tech, and the culture around the game.</p>
           </div>
 
-          {/* Content Links */}
-          <div>
-            <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
-              Content
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/news"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Articles
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/podcast"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Podcast
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/videos"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Videos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
+          <nav aria-label="Sections">
+            <h2>Sections</h2>
+            <ul className="tdd-footer-links">
+              {SECTIONS.map(link => (
+                <li key={link.href}><Link href={link.href}>{link.label}</Link></li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Topics */}
-          <div>
-            <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
-              Topics
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/news?topic=Lakers"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Lakers News
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/news?topic=NBA"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  NBA Coverage
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/news?topic=Tech"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Tech & Culture
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/news?topic=Culture"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Sports Culture
-                </Link>
-              </li>
+          <nav aria-label="Topics">
+            <h2>Topics</h2>
+            <ul className="tdd-footer-links">
+              {PUBLIC_TOPICS.map(topic => (
+                <li key={topic}>
+                  <Link href={`/news?topic=${encodeURIComponent(topic)}`}>{topic}</Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Connect Section */}
-          <div>
-            <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
-              Connect
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Write for Us
-                </Link>
-              </li>
+          <nav aria-label="Connect">
+            <h2>Connect</h2>
+            <ul className="tdd-footer-links">
+              <li><Link href="/contact">Contact</Link></li>
+              <li><a href={WRITE_FOR_US}>Write for us</a></li>
+              {SOCIALS.map(social => (
+                <li key={social.label}>
+                  <a
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${social.label} (@${SOCIAL_HANDLE}), opens in a new tab`}
+                  >
+                    {social.label}
+                  </a>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            {/* Copyright */}
-            <p className="text-white/40 text-sm">
-              © {currentYear} The Daily Dribble. All rights reserved.
-            </p>
-
-            {/* Legal Links */}
-            <div className="flex items-center gap-6">
-              <Link
-                href="/privacy"
-                className="text-white/40 hover:text-white/60 text-sm transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-white/40 hover:text-white/60 text-sm transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <Link
-                href="/contact"
-                className="text-white/40 hover:text-white/60 text-sm transition-colors"
-              >
-                Contact
-              </Link>
-            </div>
-          </div>
-
-          {/* Disclaimer */}
-          <p className="text-white/30 text-xs mt-4 text-center md:text-left">
+        <div className="tdd-footer-legal">
+          <p>&copy; {currentYear} The Daily Dribble. All rights reserved.</p>
+          <nav aria-label="Legal" className="tdd-footer-legal-links">
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Service</Link>
+            <Link href="/login">Staff sign in</Link>
+          </nav>
+          <p className="tdd-footer-disclaimer">
             The Daily Dribble is an independent media outlet and is not affiliated with the NBA or any specific team.
           </p>
         </div>
       </div>
     </footer>
-  );
+  )
 }

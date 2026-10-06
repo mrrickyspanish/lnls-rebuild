@@ -1069,3 +1069,244 @@ button.tdd-cta:disabled {
   outline: 2px solid var(--neon-orange);
   outline-offset: 3px;
 }
+
+/* ---------- Footer and newsletter ---------------------------------------- */
+/* Same locks as the rest of the site: radius 0, one orange accent, ruled
+   sections instead of cards. The old footer used round icon buttons, a
+   different type scale, and a centered newsletter block. */
+.tdd-footer {
+  margin-top: 24px;
+  border-top: 2px solid var(--tdd-ink);
+  background: var(--bg-primary);
+  color: var(--tdd-ink);
+  font-family: var(--tdd-text);
+}
+
+.tdd-footer-inner {
+  max-width: var(--tdd-max);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 760px) {
+  .tdd-footer-inner { padding: 0 32px; }
+}
+
+.tdd-footer-news { border-bottom: 1px solid var(--tdd-rule); }
+
+.tdd-news { padding: 52px 0 48px; max-width: 760px; }
+
+.tdd-news h2 {
+  font-family: var(--tdd-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(42px, 7.5vw, 88px);
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.tdd-news-lede {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--tdd-muted);
+  margin-top: 16px;
+  max-width: 46ch;
+}
+
+.tdd-news-form { display: grid; gap: 12px; margin-top: 28px; }
+
+.tdd-news-form input {
+  height: 52px;
+  min-width: 0;
+  padding: 0 14px;
+  background: var(--bg-surface);
+  color: var(--tdd-ink);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0;
+  font: inherit;
+  font-size: 17px;
+}
+
+.tdd-news-form input::placeholder { color: #8D9197; }
+
+.tdd-news-form input:focus-visible {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 2px;
+  border-color: var(--neon-orange);
+}
+
+/* .tdd-cta carries top margin for link use; in the form row it must line up. */
+.tdd-news-form .tdd-cta { margin-top: 0; height: 52px; justify-self: start; }
+
+.tdd-news-fine { font-size: 14px; color: var(--tdd-muted); }
+.tdd-news-fine a { text-decoration: underline; text-underline-offset: 3px; }
+.tdd-news-fine a:hover { color: var(--tdd-ink); }
+
+@media (min-width: 640px) {
+  .tdd-news-form { grid-template-columns: minmax(0, 1fr) auto; }
+  .tdd-news-form > p { grid-column: 1 / -1; }
+}
+
+.tdd-news-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding-left: 12px;
+  border-left: 3px solid var(--tdd-ink);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.tdd-footer-main {
+  display: grid;
+  /* Two columns even on a phone: the link labels are short, and a single
+     stacked column made the footer run to several screens. */
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 20px;
+  padding: 44px 0 28px;
+}
+
+.tdd-footer-brand { grid-column: 1 / -1; margin-bottom: 20px; }
+
+.tdd-footer-wordmark {
+  font-family: var(--tdd-display);
+  font-size: 34px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.tdd-footer-brand p:last-child {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--tdd-muted);
+  margin-top: 12px;
+  max-width: 30ch;
+}
+
+/* Scoped to the nav columns so it cannot override the newsletter heading. */
+.tdd-footer nav h2 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tdd-muted);
+  margin: 12px 0 4px;
+}
+
+.tdd-footer-links a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 16px;
+  transition: color 0.18s var(--tdd-ease);
+}
+
+.tdd-footer-links a:hover { color: var(--neon-orange); }
+
+.tdd-footer a:focus-visible {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 3px;
+}
+
+@media (min-width: 1000px) {
+  .tdd-footer-main { grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 8px 48px; }
+  .tdd-footer-brand { grid-column: auto; margin-bottom: 0; }
+  .tdd-footer nav h2 { margin-top: 6px; }
+  .tdd-footer-links a { min-height: 38px; }
+}
+
+.tdd-footer-legal {
+  display: grid;
+  gap: 4px 24px;
+  padding: 22px 0 40px;
+  border-top: 1px solid var(--tdd-rule);
+  font-size: 14px;
+  color: var(--tdd-muted);
+}
+
+.tdd-footer-legal-links { display: flex; flex-wrap: wrap; gap: 0 22px; }
+
+.tdd-footer-legal-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tdd-muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.tdd-footer-legal-links a:hover { color: var(--tdd-ink); }
+
+.tdd-footer-disclaimer { line-height: 1.5; }
+
+@media (min-width: 760px) {
+  .tdd-footer-legal { grid-template-columns: 1fr auto; align-items: center; }
+  .tdd-footer-disclaimer { grid-column: 1 / -1; }
+}
+
+/* ---------- Legal pages (privacy, terms) --------------------------------- */
+/* Long-form reading: a measure of about 68 characters, 18px body, and section
+   headings that organize the page without shouting the way a hero does. */
+.tdd-legal { padding-top: 40px; padding-bottom: 88px; }
+
+.tdd-legal-head {
+  padding-bottom: 28px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-legal-head h1 {
+  font-size: clamp(52px, 10vw, 120px);
+  line-height: 0.9;
+}
+
+.tdd-legal-updated {
+  font-size: 15px;
+  color: var(--tdd-muted);
+  margin-top: 18px;
+}
+
+.tdd-legal-body { max-width: 68ch; }
+
+.tdd-legal-body p,
+.tdd-legal-body li {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #D7D9DC;
+}
+
+.tdd-legal-body > p:first-child { margin-top: 32px; font-size: 20px; color: var(--tdd-ink); }
+
+.tdd-legal-body p + p,
+.tdd-legal-body ul + p,
+.tdd-legal-body p + ul { margin-top: 16px; }
+
+.tdd-legal-body section { margin-top: 44px; }
+
+.tdd-legal-body h2 {
+  font-size: clamp(26px, 3.2vw, 34px);
+  line-height: 1;
+  margin-bottom: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--tdd-rule);
+}
+
+.tdd-legal-body ul { display: grid; gap: 12px; padding-left: 1.2em; list-style: disc; }
+.tdd-legal-body li::marker { color: var(--tdd-muted); }
+.tdd-legal-body strong { color: var(--tdd-ink); }
+
+.tdd-legal-body a {
+  color: var(--tdd-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--neon-orange);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+
+.tdd-legal-body a:hover { color: var(--neon-orange); }
+
+.tdd-legal a:focus-visible {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 3px;
+}
