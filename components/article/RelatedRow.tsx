@@ -11,18 +11,18 @@ export default function RelatedRow({ articles, title }: RelatedRowProps) {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <section className="mt-12 mb-12">
+    <section className="mt-4 mb-16">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12">
         {/* Row Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-white font-netflix">
+          <h2 className="font-display uppercase text-3xl md:text-4xl leading-none text-white">
             {title}
           </h2>
           <Link
             href="/news"
-            className="flex items-center gap-1 text-white/70 hover:text-white transition-colors group"
+            className="flex items-center gap-1 text-white/80 hover:text-[var(--neon-orange)] transition-colors group"
           >
-            <span className="text-sm font-medium">View All</span>
+            <span className="text-[15px] font-semibold">View all</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
