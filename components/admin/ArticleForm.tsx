@@ -8,6 +8,7 @@ import type { JSONContent } from '@tiptap/react'
 
 import RichTextEditor from '@/components/admin/RichTextEditor'
 import { blocksToTipTapDoc, isArticleBodyBlocks, isTipTapDoc } from '@/lib/articles/body'
+import { attachLegacyCaptions } from '@/lib/articles/captions'
 import { generateSlug } from '@/lib/slug'
 import type { Article } from '@/types/supabase'
 
@@ -148,8 +149,8 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         }))
       } else {
         setArticleImages(prev => [data.path, ...prev])
-        const caption = window.prompt('Enter image caption (optional):')?.trim()
-        insertArticleImage?.(data.path, caption)
+        // Opens the editor's image dialog (caption, description, width).
+        insertArticleImage?.(data.path)
       }
 
       setError('')
@@ -631,9 +632,12 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             value={bodyContent} 
             onChange={handleBodyChange}
             onReady={handleEditorReady}
+            topic={formData.topic}
           />
-          <p className="text-xs text-neutral-500">
-            Use the toolbar to add formatting, links, images/GIFs, and embedded YouTube or Vimeo videos.
+          <p className="text-sm text-neutral-400">
+            The editor previews the published page. Use the toolbar for headings, pull quotes, stats, a key-takeaways
+            box, stat tables, images (with caption and width), links, tweets and videos. Double-click an image or a
+            stat block to edit it.
           </p>
         </div>
 
@@ -653,7 +657,8 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
 
 function toEditorContent(body?: Article['body']): JSONContent {
   if (!body) return EMPTY_DOC
-  if (isTipTapDoc(body)) return body as JSONContent
+  // Upgrade old-style caption paragraphs so they edit as real captions.
+  if (isTipTapDoc(body)) return attachLegacyCaptions(body as JSONContent)
   if (isArticleBodyBlocks(body)) return blocksToTipTapDoc(body)
   return EMPTY_DOC
 }

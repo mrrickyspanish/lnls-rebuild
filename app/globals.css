@@ -1362,6 +1362,10 @@ button.tdd-cta:disabled {
 }
 
 /* ---------- Text column and the share rail beside it --------------------- */
+/* The rail hides while a full-width image passes behind it (ShareBar.tsx). */
+.tdd-share { transition: opacity 0.2s var(--tdd-ease); }
+.tdd-share.is-covered { opacity: 0; pointer-events: none; }
+
 .tdd-story-main { margin-top: 32px; }
 
 .tdd-story-text {
@@ -1431,6 +1435,7 @@ button.tdd-cta:disabled {
 
 /* ---------- Body copy ---------------------------------------------------- */
 .tdd-prose {
+  font-family: var(--tdd-text);
   font-size: 18px;
   line-height: 1.65;
   color: var(--tdd-ink);
@@ -1564,6 +1569,15 @@ button.tdd-cta:disabled {
   .tdd-share { margin-right: 160px; }
 }
 
+/* Per-image width, chosen in the editor. "wide" is the default above. */
+.tdd-prose .tdd-figure[data-size='column'] img { max-width: 100%; }
+
+.tdd-prose .tdd-figure[data-size='full'] img { max-width: calc(100% + 40px); max-height: 85vh; }
+
+@media (min-width: 768px) {
+  .tdd-prose .tdd-figure[data-size='full'] img { max-width: min(1176px, calc(100vw - 72px)); }
+}
+
 .tdd-figure { margin: 1.8em 0; }
 .tdd-figure img { margin-top: 0; margin-bottom: 0; }
 
@@ -1576,6 +1590,113 @@ button.tdd-cta:disabled {
 
 .tdd-prose .tiptap-video-wrapper { margin: 1.8em auto; }
 .tdd-prose .tiptap-twitter-embed { display: flex; justify-content: center; margin: 1.8em 0; }
+
+/* ---------- Stat block --------------------------------------------------- */
+/* Phones: one stat per row, number beside its label. Wider: side by side. */
+.tdd-stats {
+  margin: 2em 0;
+  border-top: 2px solid var(--tdd-ink);
+  border-bottom: 1px solid var(--tdd-rule);
+}
+
+.tdd-stat {
+  display: grid;
+  grid-template-columns: minmax(96px, auto) 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+}
+
+.tdd-stat + .tdd-stat { border-top: 1px solid var(--tdd-rule); }
+
+.tdd-stat-value {
+  font-family: var(--tdd-display);
+  font-size: 44px;
+  line-height: 0.95;
+  color: var(--family);
+  overflow-wrap: anywhere;
+}
+
+.tdd-stat-label {
+  font-size: 16px;
+  line-height: 1.35;
+  color: #C9CCD1;
+}
+
+.tdd-prose .tdd-stats-source {
+  margin: 0;
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--tdd-rule);
+  font-size: 14px;
+  color: var(--tdd-muted);
+}
+
+@media (min-width: 560px) {
+  .tdd-stats { display: grid; grid-template-columns: repeat(var(--stat-cols, 1), minmax(0, 1fr)); }
+  .tdd-stats[data-count='2'] { --stat-cols: 2; }
+  .tdd-stats[data-count='3'] { --stat-cols: 3; }
+  .tdd-stat { display: block; padding: 18px 20px 18px 0; }
+  .tdd-stat + .tdd-stat { border-top: 0; border-left: 1px solid var(--tdd-rule); padding-left: 20px; }
+  .tdd-stat-value { display: block; font-size: clamp(48px, 5.6vw, 64px); }
+  .tdd-stat-label { display: block; margin-top: 10px; }
+  .tdd-prose .tdd-stats-source { grid-column: 1 / -1; }
+}
+
+/* ---------- Key takeaways ------------------------------------------------ */
+.tdd-takeaways {
+  margin: 2em 0;
+  padding: 20px 22px 6px;
+  background: var(--bg-surface);
+  border-top: 4px solid var(--family);
+}
+
+.tdd-prose .tdd-takeaways-title {
+  margin: 0 0 12px;
+  font-family: var(--tdd-display);
+  font-size: 26px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--tdd-ink);
+}
+
+.tdd-takeaways li { margin-bottom: 0.6em; }
+
+/* ---------- Tables ------------------------------------------------------- */
+/* Scrolls sideways inside the column on a phone rather than widening the page. */
+.tdd-table {
+  margin: 2em 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tdd-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.tdd-prose th,
+.tdd-prose td {
+  padding: 10px 14px 10px 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--tdd-rule);
+  min-width: 72px;
+}
+
+.tdd-prose th {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tdd-muted);
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-prose th p,
+.tdd-prose td p { margin: 0; }
 
 /* ---------- Author ------------------------------------------------------- */
 .tdd-author {
@@ -1620,4 +1741,81 @@ button.tdd-cta:disabled {
   font-size: 17px;
   line-height: 1.6;
   color: #C9CCD1;
+}
+
+/* =========================================================================
+   Article editor (components/admin/RichTextEditor.tsx)
+   The editor uses .tdd-prose, so it previews the published body. These
+   rules only undo what doesn't fit inside the editor box (wide images) and
+   add editing affordances.
+   ========================================================================= */
+
+.tdd-prose--editor {
+  max-width: 680px;
+  min-height: 420px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+  outline: none;
+}
+
+/* Every width previews at column width; a badge names the chosen width. */
+.tdd-prose.tdd-prose--editor .tdd-figure img,
+.tdd-prose.tdd-prose--editor img {
+  max-width: 100%;
+  max-height: 60vh;
+  margin: 0 auto;
+  transform: none;
+}
+
+.tdd-prose--editor .tdd-figure { position: relative; }
+
+.tdd-prose--editor .tdd-figure::before {
+  content: attr(data-size);
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  padding: 2px 8px;
+  background: rgba(13, 13, 13, 0.85);
+  color: var(--tdd-ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tdd-prose--editor .tdd-figure,
+.tdd-prose--editor .tdd-stats { cursor: pointer; }
+
+.tdd-prose--editor .ProseMirror-selectednode {
+  outline: 2px solid var(--neon-orange);
+  outline-offset: 4px;
+}
+
+.tdd-prose--editor td,
+.tdd-prose--editor th { position: relative; min-width: 72px; }
+
+.tdd-prose--editor .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 107, 53, 0.15);
+  pointer-events: none;
+}
+
+/* The editor's table has no wrapper (tiptap only adds one with column
+   resizing), so the table scrolls itself, like .tdd-table on the page. */
+.tdd-prose--editor table {
+  display: block;
+  max-width: 100%;
+  margin: 2em 0;
+  overflow-x: auto;
+}
+
+.tdd-prose--editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--tdd-muted);
+  pointer-events: none;
 }
