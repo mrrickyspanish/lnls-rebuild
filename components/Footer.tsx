@@ -74,11 +74,13 @@ export default function Footer() {
           </nav>
         </div>
 
-        {/* No Privacy Policy or Terms links: /privacy and /terms do not exist,
-            so those links were 404s. Add them back when the pages are written. */}
         <div className="tdd-footer-legal">
           <p>&copy; {currentYear} The Daily Dribble. All rights reserved.</p>
-          <Link href="/login" className="tdd-footer-staff">Staff sign in</Link>
+          <nav aria-label="Legal" className="tdd-footer-legal-links">
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Service</Link>
+            <Link href="/login">Staff sign in</Link>
+          </nav>
           <p className="tdd-footer-disclaimer">
             The Daily Dribble is an independent media outlet and is not affiliated with the NBA or any specific team.
           </p>

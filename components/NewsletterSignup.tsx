@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Check } from 'lucide-react'
 
 export default function NewsletterSignup() {
@@ -65,7 +66,9 @@ export default function NewsletterSignup() {
             {status === 'loading' ? 'Subscribing' : 'Subscribe'}
           </button>
           {status === 'error' && <p className="tdd-form-error" role="alert">{message}</p>}
-          <p className="tdd-news-fine">We respect your privacy. Unsubscribe anytime.</p>
+          <p className="tdd-news-fine">
+            We respect your privacy. Unsubscribe anytime. <Link href="/privacy">Privacy Policy</Link>
+          </p>
         </form>
       )}
     </div>
