@@ -3,7 +3,6 @@ import { getSiteUrl } from '@/lib/site'
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Heart } from "lucide-react";
 
 import ArticleHero from "@/components/article/ArticleHero";
 import ArticleBody from "@/components/article/ArticleBody";
@@ -15,6 +14,7 @@ import BackToTop from "@/components/article/BackToTop";
 import ViewTracker from "@/components/article/ViewTracker";
 import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
+import { isArticleTopic, topicFamily } from "@/lib/topics";
 
 type ArticleSlide = {
   image_url: string;
@@ -134,71 +134,74 @@ export default async function ArticlePage({ params }: PageProps) {
     url: shareUrl,
     publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
+  const family = topicFamily(article.topic);
+  const publishedAt = currentArticle.publishedAt;
+  // FEATURED is an editorial flag, not a section a reader can browse.
+  const topicLink = article.topic && article.topic !== 'FEATURED' && isArticleTopic(article.topic)
+    ? article.topic
+    : null;
+
   return (
     <>
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ViewTracker slug={slug} />
       <ReadProgress />
-      <ShareBar url={shareUrl} title={article.title} slug={slug} initialLikes={article.likes || 0} />
       <BackToTop />
-      <article className="px-4 md:px-8 lg:px-24 xl:px-48 pt-10 md:pt-20">
-        {/* Breadcrumbs */}
-        <nav className="article-breadcrumbs mb-2" aria-label="Breadcrumb">
-          <Link href="/">Home</Link>
-          <span className="article-breadcrumbs__separator">/</span>
-          <Link href="/news">News</Link>
-          <span className="article-breadcrumbs__separator">/</span>
-          <span className="article-breadcrumbs__current" aria-current="page">
-            {article.title}
-          </span>
-        </nav>
-        {/* Title */}
-        <h1 className="text-3xl md:text-5xl font-bold mb-2 mt-2 leading-tight">{article.title}</h1>
-        {/* Author, Date, Read Time */}
-        <div className="mb-6 text-base text-gray-600 flex flex-wrap gap-2 items-center">
-          {typeof article.views === 'number' && (
-            <span className="flex items-center gap-1">
-              <span role="img" aria-label="views">👁️</span> {article.views.toLocaleString()} views
-            </span>
-          )}
-          {typeof article.likes === 'number' && (
-            <>
-              <span>•</span>
-              <span className="flex items-center gap-1 text-cyan-400">
-                <Heart className="w-4 h-4 fill-cyan-400" aria-label="likes" /> {article.likes.toLocaleString()} likes
-              </span>
-            </>
-          )}
-          <span>•</span>
-          <span>By {article.author_name}</span>
-          <span>•</span>
-          <span>{currentArticle.publishedAt ? new Date(currentArticle.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
-          <span>•</span>
-          <span>{currentArticle.readTime} min read</span>
+      {/* View counts are tracked (ViewTracker) but only shown in admin: a
+          public count invites comparison, and a small one reads as "nobody
+          is here". Likes stay public, on the like button. */}
+      <article className="tdd-story" data-family={family}>
+        <header className="tdd-story-head">
+          <div className="tdd-story-intro">
+            <nav className="tdd-story-crumbs" aria-label="Breadcrumb">
+              <Link href="/news">News</Link>
+              {topicLink && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <Link href={`/news?topic=${encodeURIComponent(topicLink)}`} className="tdd-story-topic">
+                    {topicLink}
+                  </Link>
+                </>
+              )}
+            </nav>
+            <h1 className="tdd-story-title" data-length={article.title.length > 70 ? "long" : undefined}>{article.title}</h1>
+            {article.excerpt && <p className="tdd-story-dek">{article.excerpt}</p>}
+            <p className="tdd-story-byline">
+              {article.author_name && (
+                <>
+                  <span>By <strong>{article.author_name}</strong></span>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
+              {publishedAt && (
+                <>
+                  <time dateTime={publishedAt}>
+                    {new Date(publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+                  </time>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
+              <span>{currentArticle.readTime} min read</span>
+            </p>
+          </div>
+          <ArticleHero currentArticle={currentArticle} />
+        </header>
+
+        <div className="tdd-story-main">
+          <ShareBar url={shareUrl} title={article.title} slug={slug} initialLikes={article.likes || 0} />
+          <div className="tdd-story-text">
+            {article.body && <ArticleBody content={article.body} />}
+            <AuthorCard
+              author={{
+                name: article.author_name,
+                bio: article.author_bio || undefined,
+                twitter: article.author_twitter || undefined,
+              }}
+            />
+          </div>
         </div>
       </article>
-      {/* Hero Image - Full Width (breaks out of article padding) */}
-      <div className="w-full mb-8">
-        <ArticleHero currentArticle={currentArticle} />
-      </div>
-      <article className="px-4 md:px-8 lg:px-24 xl:px-48">
-        {/* Article Body */}
-        {article.body && (
-          <ArticleBody content={article.body} />
-        )}
-        {/* Author Bio */}
-        <AuthorCard
-          author={{
-            name: article.author_name,
-            bio: article.author_bio || undefined,
-            twitter: article.author_twitter || undefined,
-          }}
-        />
-        <RelatedRow
-          articles={relatedRowItems}
-          title="Keep Digging"
-        />
-      </article>
+      <RelatedRow articles={relatedRowItems} title="Keep Digging" />
     </>
   );
 }

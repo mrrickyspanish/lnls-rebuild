@@ -1,9 +1,6 @@
 "use client";
 
-import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import { canUseNextImage } from '@/lib/images';
+import { useState } from 'react';
 
 type Article = {
   slug: string;
@@ -22,110 +19,57 @@ type ArticleHeroProps = {
   currentArticle: Article;
 };
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function MediaLayer({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
-  const isBarnesBirthday = src.includes('barnes_birthday_post_');
-  const objectPositionClass = isBarnesBirthday ? 'object-bottom' : 'object-center';
-  const zoomStyle = isBarnesBirthday ? { transform: 'scale(1.15)' } : undefined;
-  // Always use <img> for /uploads/ images for reliability
-  if (src.startsWith('/uploads/')) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className={`absolute inset-0 h-full w-full object-cover ${objectPositionClass}`}
-        loading={priority ? 'eager' : 'lazy'}
-        style={{ width: '100%', height: 'auto', borderRadius: '12px', ...zoomStyle }}
-      />
-    );
-  }
-
-  // DEBUG: If the image is from basketballforever, try <img> instead of <Image>
-  if (src.includes('basketballforever.com')) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className={`absolute inset-0 h-full w-full object-cover ${objectPositionClass}`}
-        loading={priority ? 'eager' : 'lazy'}
-        style={{ width: '100%', height: 'auto', borderRadius: '12px', ...zoomStyle }}
-      />
-    );
-  }
-
-  // Use Next.js <Image> for all other images
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      priority={priority}
-      sizes="100vw"
-      className={`object-cover ${objectPositionClass}`}
-      style={{ borderRadius: '12px', ...zoomStyle }}
-    />
-  );
-}
-
 function isDirectVideoUrl(url?: string | null): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
   return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov');
 }
 
+/**
+ * The page adds "Photo:" itself, so a credit typed as "Photo: Jane Doe" would
+ * otherwise read "Photo: Photo: Jane Doe".
+ */
+function cleanCredit(credit?: string | null): string | null {
+  const cleaned = credit?.replace(/^\s*(?:photo|image|credit)s?\s*(?:by\b|:)\s*/i, '').trim();
+  return cleaned || null;
+}
+
+/**
+ * Hero art is shown whole, at its own shape. Story art in this library ranges
+ * from tall phone shots to wide banners, and much of it has words baked in, so
+ * the old fixed 16:8 crop cut through faces and type, and a dark gradient sat
+ * over the bottom half of every image even though no text was overlaid on it.
+ * The frame now caps the height and letterboxes on the page color instead.
+ */
 export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
   const [videoError, setVideoError] = useState(false);
   const heroVideo = currentArticle.heroVideo || undefined;
-  const showVideo = useMemo(
-    () => !videoError && isDirectVideoUrl(heroVideo),
-    [heroVideo, videoError]
-  );
-  const isBarnesBirthday = currentArticle.heroImage.includes('barnes_birthday_post_');
-  const heroAspectClass = isBarnesBirthday ? 'aspect-[4/3] md:aspect-[4/3]' : 'aspect-[16/10] md:aspect-[16/8]';
+  const showVideo = !videoError && isDirectVideoUrl(heroVideo);
+  const credit = cleanCredit(currentArticle.imageCredit);
 
   return (
-    <section className="article-hero w-full flex justify-center px-4 md:px-8 lg:px-16 xl:px-32">
-      <div className={`relative w-full max-w-7xl ${heroAspectClass} rounded-xl overflow-hidden`}>
-        <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1.08, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
-        >
-          {showVideo ? (
-            <video
-              src={heroVideo}
-              className="absolute inset-0 h-full w-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-              onError={() => setVideoError(true)}
-              poster={currentArticle.heroImage}
-            />
-          ) : (
-            <MediaLayer src={currentArticle.heroImage} alt={currentArticle.title} priority />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-[5%] bg-gradient-to-t from-black via-black/85 to-transparent" />
-        </motion.div>
-
-        {currentArticle.imageCredit && (
-          <div className="absolute bottom-4 right-4 md:right-8 z-20">
-            <div className="bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-[10px] md:text-[11px] uppercase tracking-[0.25em] text-white/80 border border-white/10">
-              Photo: {currentArticle.imageCredit}
-            </div>
-          </div>
+    <figure className="tdd-story-hero">
+      <div className="tdd-story-hero-frame">
+        {showVideo ? (
+          <video
+            src={heroVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            onError={() => setVideoError(true)}
+            poster={currentArticle.heroImage}
+          />
+        ) : (
+          <img
+            src={currentArticle.heroImage}
+            alt={currentArticle.title}
+            loading="eager"
+            decoding="async"
+          />
         )}
       </div>
-    </section>
+      {credit && <figcaption className="tdd-story-credit">Photo: {credit}</figcaption>}
+    </figure>
   );
 }

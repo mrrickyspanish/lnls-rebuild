@@ -89,8 +89,8 @@ export default function LikeButton({ slug, initialLikes, className = "" }: LikeB
         <Heart
           className={`w-5 h-5 transition-all ${
             isLiked
-              ? 'fill-cyan-400 text-cyan-400'
-              : 'text-white group-hover:text-cyan-300'
+              ? 'fill-[var(--neon-orange)] text-[var(--neon-orange)]'
+              : 'text-white group-hover:text-[var(--neon-orange)]'
           }`}
         />
         
@@ -101,7 +101,7 @@ export default function LikeButton({ slug, initialLikes, className = "" }: LikeB
               {[...Array(6)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute top-1/2 left-1/2 w-1 h-1 bg-cyan-400 rounded-full"
+                  className="absolute top-1/2 left-1/2 w-1 h-1 bg-[var(--neon-orange)] rounded-full"
                   initial={{ scale: 0, x: 0, y: 0 }}
                   animate={{
                     scale: [0, 1, 0],
@@ -117,7 +117,7 @@ export default function LikeButton({ slug, initialLikes, className = "" }: LikeB
         </AnimatePresence>
       </motion.div>
       
-      <span className="text-sm font-medium text-white">
+      <span className="text-[15px] font-medium text-white tabular-nums">
         {likes.toLocaleString()}
       </span>
     </button>

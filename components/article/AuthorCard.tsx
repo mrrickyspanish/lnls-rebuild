@@ -13,41 +13,31 @@ type AuthorCardProps = {
 };
 
 export default function AuthorCard({ author }: AuthorCardProps) {
+  if (!author.name) return null;
+  // Some saved handles include the @ and some do not. Normalize so the card
+  // never shows @@name or links to x.com/@name.
+  const handle = author.twitter?.replace(/^@/, '');
+
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12 py-8 border-t border-white/10">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-start gap-4">
-          {author.avatar && (
-            <Image
-              src={author.avatar}
-              alt={author.name}
-              width={64}
-              height={64}
-              className="rounded-full flex-shrink-0"
-            />
-          )}
-          <div className="flex-1">
-            <p className="font-bold text-lg mb-1">{author.name}</p>
-            {author.twitter && (
-              <p className="text-sm text-white/60 mb-3">
-                {/* Some saved handles include the @ and some do not. Normalize
-                    so the card never shows @@name or links to twitter.com/@name. */}
-                <Link
-                  href={`https://x.com/${author.twitter.replace(/^@/, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-[var(--neon-orange)] transition-colors"
-                >
-                  @{author.twitter.replace(/^@/, '')}
-                </Link>
-              </p>
-            )}
-            {author.bio && (
-              <p className="text-white/80 leading-relaxed">{author.bio}</p>
-            )}
-          </div>
-        </div>
+    <aside className="tdd-author" aria-label="About the author">
+      {author.avatar && (
+        <Image src={author.avatar} alt="" width={64} height={64} className="tdd-author-avatar" />
+      )}
+      <div>
+        <p className="tdd-author-label">Written by</p>
+        <p className="tdd-author-name">{author.name}</p>
+        {handle && (
+          <Link
+            href={`https://x.com/${handle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tdd-author-handle"
+          >
+            @{handle}
+          </Link>
+        )}
+        {author.bio && <p className="tdd-author-bio">{author.bio}</p>}
       </div>
-    </div>
+    </aside>
   );
 }

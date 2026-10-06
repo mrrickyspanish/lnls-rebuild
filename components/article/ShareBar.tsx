@@ -11,6 +11,12 @@ type ShareBarProps = {
   initialLikes: number;
 };
 
+/**
+ * One bar, two layouts (see .tdd-share in globals.css): a row above the text
+ * on phones and tablets, and a sticky rail in the margin beside the text
+ * column on desktop. The old bar was position: fixed at every width, so on a
+ * phone it floated over the article text and on desktop over the hero.
+ */
 export default function ShareBar({ url, title, slug, initialLikes }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
 
@@ -31,40 +37,20 @@ export default function ShareBar({ url, title, slug, initialLikes }: ShareBarPro
   };
 
   return (
-    <div className="fixed bottom-24 right-6 md:right-12 flex flex-col gap-3 z-40">
-      {/* Like Button */}
-      <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-        <LikeButton slug={slug} initialLikes={initialLikes} />
-      </div>
+    <div className="tdd-share" aria-label="Like and share">
+      <LikeButton slug={slug} initialLikes={initialLikes} className="tdd-share-btn tdd-share-like" />
 
-      {/* Share Buttons */}
-      <button
-        onClick={shareToTwitter}
-        className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-[#1da1f2] transition-colors group"
-        aria-label="Share on Twitter"
-      >
-        <Twitter className="w-5 h-5 text-white" />
+      <button onClick={shareToTwitter} className="tdd-share-btn" aria-label="Share on X">
+        <Twitter className="w-5 h-5" />
       </button>
 
-      <button
-        onClick={shareToFacebook}
-        className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-[#4267B2] transition-colors group"
-        aria-label="Share on Facebook"
-      >
-        <Facebook className="w-5 h-5 text-white" />
+      <button onClick={shareToFacebook} className="tdd-share-btn" aria-label="Share on Facebook">
+        <Facebook className="w-5 h-5" />
       </button>
 
-      <button
-        onClick={handleCopyLink}
-        className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors relative group"
-        aria-label="Copy link"
-      >
-        <Link2 className="w-5 h-5 text-white" />
-        {copied && (
-          <span className="absolute -left-20 bg-white text-black text-xs px-2 py-1 rounded whitespace-nowrap">
-            Copied!
-          </span>
-        )}
+      <button onClick={handleCopyLink} className="tdd-share-btn" aria-label="Copy link">
+        <Link2 className="w-5 h-5" />
+        <span className="tdd-share-copied" role="status">{copied ? 'Link copied' : ''}</span>
       </button>
     </div>
   );
