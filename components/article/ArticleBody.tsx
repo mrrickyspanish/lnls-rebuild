@@ -17,6 +17,7 @@ import { CalloutCard } from '@/lib/tiptap/callout-card-extension';
 import { ArticleImage } from '@/lib/tiptap/article-image-extension';
 import { StatBlock } from '@/lib/tiptap/stat-block-extension';
 import { KeyTakeaways } from '@/lib/tiptap/key-takeaways-extension';
+import { PullQuote } from '@/lib/tiptap/pull-quote-extension';
 import { PublishedTable } from '@/lib/tiptap/stat-table-extension';
 import { TableRow, TableHeader, TableCell } from '@tiptap/extension-table';
 import type { ArticleBodyBlock, TipTapDocNode } from '@/types/supabase';
@@ -134,6 +135,7 @@ function generateTipTapHTML(doc: JSONContent) {
     CalloutCard,
     StatBlock,
     KeyTakeaways,
+    PullQuote,
     PublishedTable,
     TableRow,
     TableHeader,

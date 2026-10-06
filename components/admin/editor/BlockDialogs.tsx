@@ -288,3 +288,165 @@ export function TakeawaysDialog({ initialTitle, mode, onCancel, onSave }: Takeaw
     </DialogShell>
   )
 }
+
+/* ---------- Link ----------------------------------------------------------- */
+
+/**
+ * Accepts what writers actually paste: a full URL, a bare domain
+ * ("espn.com/nba"), a site path ("/news/some-story"), or an email address.
+ * Returns null when it can't be made into a usable link.
+ */
+export function normalizeLinkUrl(input: string): string | null {
+  const value = input.trim()
+  if (!value) return null
+  if (value.startsWith('/') || value.startsWith('#')) return value
+  if (/^mailto:/i.test(value)) return value
+  if (/^[^\s@/]+@[^\s@/]+\.[^\s@/]+$/.test(value)) return `mailto:${value}`
+  const withProtocol = /^[a-z][a-z\d+.-]*:/i.test(value) ? value : `https://${value}`
+  try {
+    const url = new URL(withProtocol)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+    if (!url.hostname.includes('.')) return null
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
+export type LinkDialogValue = { href: string; text: string }
+
+type LinkDialogProps = {
+  initialHref: string
+  /** Ask for the link text when nothing is selected in the article. */
+  askForText: boolean
+  onCancel: () => void
+  onSave: (value: LinkDialogValue) => void
+  /** Present when editing an existing link. */
+  onRemove?: () => void
+}
+
+export function LinkDialog({ initialHref, askForText, onCancel, onSave, onRemove }: LinkDialogProps) {
+  const [href, setHref] = useState(initialHref)
+  const [text, setText] = useState('')
+  const [touched, setTouched] = useState(false)
+  const normalized = normalizeLinkUrl(href)
+  const invalid = touched && href.trim() !== '' && !normalized
+
+  return (
+    <DialogShell
+      title={onRemove ? 'Edit link' : 'Add link'}
+      submitLabel={onRemove ? 'Save link' : 'Add link'}
+      canSubmit={Boolean(normalized)}
+      onCancel={onCancel}
+      onSubmit={() => normalized && onSave({ href: normalized, text: text.trim() })}
+    >
+      <div>
+        <label className={labelClass} htmlFor="link-url">Link to</label>
+        <input
+          id="link-url"
+          className={inputClass}
+          value={href}
+          onChange={(e) => setHref(e.target.value)}
+          onBlur={() => setTouched(true)}
+          placeholder="espn.com/nba/story… or /news/our-story"
+          aria-invalid={invalid}
+          aria-describedby="link-url-hint"
+        />
+        <p id="link-url-hint" className={invalid ? 'mt-1 text-sm text-red-400' : hintClass}>
+          {invalid
+            ? 'That doesn’t look like a web address.'
+            : 'Links to other sites open in a new tab; links to The Daily Dribble open in the same tab.'}
+        </p>
+      </div>
+
+      {askForText && (
+        <div>
+          <label className={labelClass} htmlFor="link-text">Text to show</label>
+          <input id="link-text" className={inputClass} value={text} onChange={(e) => setText(e.target.value)} placeholder="Leave blank to show the address" />
+        </div>
+      )}
+
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="min-h-[40px] rounded-md border border-neutral-700 px-4 text-sm font-semibold text-neutral-300 hover:border-red-400 hover:text-red-300"
+        >
+          Remove link
+        </button>
+      )}
+    </DialogShell>
+  )
+}
+
+/* ---------- Video ---------------------------------------------------------- */
+
+export type VideoSize = 'small' | 'medium' | 'full'
+
+// The video node also accepts 'full', but in the 680px text column it is
+// within a few pixels of 'medium', so the dialog offers the two real choices.
+// Videos already saved as 'full' keep rendering as before.
+const VIDEO_SIZES: { value: VideoSize; label: string; hint: string }[] = [
+  { value: 'medium', label: 'Column width', hint: 'Same width as the text' },
+  { value: 'small', label: 'Smaller', hint: 'About two-thirds of the text width' },
+]
+
+type VideoDialogProps = {
+  /** Returns true when the URL is a supported video link. */
+  isSupported: (url: string) => boolean
+  onCancel: () => void
+  onSave: (value: { url: string; size: VideoSize }) => void
+}
+
+export function VideoDialog({ isSupported, onCancel, onSave }: VideoDialogProps) {
+  const [url, setUrl] = useState('')
+  const [size, setSize] = useState<VideoSize>('medium')
+  const [touched, setTouched] = useState(false)
+  const trimmed = url.trim()
+  const supported = trimmed !== '' && isSupported(trimmed)
+  const invalid = touched && trimmed !== '' && !supported
+
+  return (
+    <DialogShell title="Embed video" submitLabel="Embed video" canSubmit={supported} onCancel={onCancel} onSubmit={() => onSave({ url: trimmed, size })}>
+      <div>
+        <label className={labelClass} htmlFor="video-url">Video link</label>
+        <input
+          id="video-url"
+          className={inputClass}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onBlur={() => setTouched(true)}
+          placeholder="https://youtube.com/watch?v=…"
+          aria-invalid={invalid}
+          aria-describedby="video-url-hint"
+        />
+        <p id="video-url-hint" className={invalid ? 'mt-1 text-sm text-red-400' : hintClass}>
+          {invalid
+            ? 'Only YouTube, Vimeo, Streamable, or a direct .mp4 / .webm / .mov link can be embedded.'
+            : 'YouTube, Vimeo, Streamable, or a direct .mp4 / .webm / .mov link.'}
+        </p>
+      </div>
+
+      <fieldset>
+        <legend className={labelClass}>Size</legend>
+        <div className="grid grid-cols-2 gap-2">
+          {VIDEO_SIZES.map((option) => {
+            const active = size === option.value
+            return (
+              <label
+                key={option.value}
+                className={`cursor-pointer rounded-md border p-3 text-left transition-colors focus-within:ring-2 focus-within:ring-[var(--neon-orange)] ${
+                  active ? 'border-[var(--neon-orange)] bg-[var(--neon-orange)]/10' : 'border-neutral-700 hover:border-neutral-500'
+                }`}
+              >
+                <input type="radio" name="video-size" value={option.value} checked={active} onChange={() => setSize(option.value)} className="sr-only" />
+                <span className="block text-sm font-semibold text-white">{option.label}</span>
+                <span className="mt-0.5 block text-[13px] leading-snug text-neutral-400">{option.hint}</span>
+              </label>
+            )
+          })}
+        </div>
+      </fieldset>
+    </DialogShell>
+  )
+}

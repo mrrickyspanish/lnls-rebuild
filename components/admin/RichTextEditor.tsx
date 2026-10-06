@@ -10,19 +10,24 @@ import TextAlign from '@tiptap/extension-text-align'
 import HardBreak from '@tiptap/extension-hard-break'
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 
-import { VideoEmbed } from '@/lib/tiptap/video-extension'
+import { VideoEmbed, getVideoAttributes } from '@/lib/tiptap/video-extension'
 import { CalloutCard } from '@/lib/tiptap/callout-card-extension'
 import { TwitterEmbed, parseTweetUrl } from '@/lib/tiptap/twitter-extension'
 import { ArticleImage, type ImageSize } from '@/lib/tiptap/article-image-extension'
 import { StatBlock, cleanStats } from '@/lib/tiptap/stat-block-extension'
 import { KeyTakeaways, DEFAULT_TAKEAWAYS_TITLE } from '@/lib/tiptap/key-takeaways-extension'
+import { PullQuote } from '@/lib/tiptap/pull-quote-extension'
 import { topicFamily } from '@/lib/topics'
 import {
   ImageDialog,
+  LinkDialog,
   StatDialog,
   TakeawaysDialog,
+  VideoDialog,
   type ImageDialogValue,
+  type LinkDialogValue,
   type StatDialogValue,
+  type VideoSize,
 } from '@/components/admin/editor/BlockDialogs'
 
 const DEFAULT_CONTENT: JSONContent = {
@@ -52,11 +57,13 @@ type DialogState =
   | { kind: 'image'; mode: 'insert' | 'edit'; askForUrl: boolean; initial: ImageDialogValue }
   | { kind: 'stats'; mode: 'insert' | 'edit'; initial: StatDialogValue }
   | { kind: 'takeaways'; mode: 'insert' | 'edit'; title: string }
+  | { kind: 'link'; href: string; editing: boolean; askForText: boolean }
+  | { kind: 'video' }
   | null
 
 const NO_ACTIVE_STATE = {
   paragraph: false, h2: false, h3: false, bold: false, italic: false, bulletList: false,
-  orderedList: false, blockquote: false, callout: false, link: false, image: false,
+  orderedList: false, blockquote: false, pullQuote: false, callout: false, link: false, image: false,
   stats: false, takeaways: false, table: false, canUndo: false, canRedo: false,
 }
 
@@ -80,6 +87,10 @@ function ToolButton({
   return (
     <button
       type="button"
+      // Keep focus (and the selection) in the article while clicking: a
+      // focused button would otherwise take the next keystroke, so Enter
+      // typed right after a click re-pressed the button.
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -132,6 +143,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
       ArticleImage,
       StatBlock,
       KeyTakeaways,
+      PullQuote,
       Table.configure({ resizable: false }),
       TableRow,
       TableHeader,
@@ -195,6 +207,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
             bulletList: e.isActive('bulletList'),
             orderedList: e.isActive('orderedList'),
             blockquote: e.isActive('blockquote'),
+            pullQuote: e.isActive('pullQuote'),
             callout: e.isActive('calloutCard'),
             link: e.isActive('link'),
             image: e.isActive('image'),
@@ -297,30 +310,33 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
 
   const addLink = useCallback(() => {
     if (!editor) return
+    const editing = editor.isActive('link')
+    setDialog({
+      kind: 'link',
+      href: editing ? editor.getAttributes('link').href || '' : '',
+      editing,
+      askForText: !editing && editor.state.selection.empty,
+    })
+  }, [editor])
 
-    const previousUrl = editor.getAttributes('link').href
-    const input = window.prompt('Enter URL:', previousUrl)
-
-    if (input === null) return
-
-    const url = input.trim()
-
-    if (!url) {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
-    }
-
-    if (editor.state.selection.empty) {
+  const saveLink = ({ href, text }: LinkDialogValue) => {
+    if (!editor) return
+    if (editor.state.selection.empty && !editor.isActive('link')) {
       editor.chain().focus().insertContent({
         type: 'text',
-        text: url,
-        marks: [{ type: 'link', attrs: { href: url } }],
+        text: text || href.replace(/^mailto:/, ''),
+        marks: [{ type: 'link', attrs: { href } }],
       }).run()
-      return
+    } else {
+      editor.chain().focus().extendMarkRange('link').setLink({ href }).run()
     }
+    setDialog(null)
+  }
 
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }, [editor])
+  const removeLink = () => {
+    editor?.chain().focus().extendMarkRange('link').unsetLink().run()
+    setDialog(null)
+  }
 
   const addImage = useCallback(() => {
     if (uploadingImage) return
@@ -369,18 +385,12 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
     }
   }, [editor, openImageDialog])
 
-  const addVideo = useCallback(() => {
+  const saveVideo = ({ url, size }: { url: string; size: VideoSize }) => {
     if (!editor) return
-
-    const url = window.prompt('Enter video URL (YouTube, Vimeo, Streamable, or direct .mp4/.webm/.mov):')
-    if (!url) return
-
-    const sizeChoice = window.prompt('Choose size:\nType: small, medium, or full (default: medium)')?.toLowerCase().trim()
-    const size = sizeChoice === 'small' || sizeChoice === 'medium' || sizeChoice === 'full' ? sizeChoice : 'medium'
-
     // @ts-expect-error - custom command from VideoEmbed extension
     editor.chain().focus().setVideoEmbed(url, size).run()
-  }, [editor])
+    setDialog(null)
+  }
 
   const addTweet = useCallback(() => {
     if (!editor) return
@@ -451,7 +461,24 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
         {/* Lists and story blocks */}
         <ToolButton label="•" title="Bullet list" active={active.bulletList} onClick={() => chain().toggleBulletList().run()} />
         <ToolButton label="1." title="Numbered list" active={active.orderedList} onClick={() => chain().toggleOrderedList().run()} />
-        <ToolButton label="&quot; Quote" title="Pull quote" active={active.blockquote} onClick={() => chain().toggleBlockquote().run()} />
+        {/* The two quote styles swap rather than nest: Quote on a pull quote
+            turns it into a quoted paragraph, and the reverse. */}
+        <ToolButton
+          label="&quot; Quote"
+          title="Quote (a quoted passage)"
+          active={active.blockquote}
+          onClick={() =>
+            active.pullQuote ? chain().setParagraph().toggleBlockquote().run() : chain().toggleBlockquote().run()
+          }
+        />
+        <ToolButton
+          label="❝ Pull quote"
+          title="Pull quote (one standout line, shown big)"
+          active={active.pullQuote}
+          onClick={() =>
+            active.blockquote ? chain().lift('blockquote').togglePullQuote().run() : chain().togglePullQuote().run()
+          }
+        />
         <ToolButton label="💡 Callout" title="Callout box" active={active.callout} onClick={() => chain().toggleCalloutCard().run()} />
         <ToolButton
           label="# Stats"
@@ -489,7 +516,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
         {/* Media */}
         <ToolButton label="🔗" title="Add link" active={active.link} onClick={addLink} />
         <ToolButton label="X" title="Embed tweet" onClick={addTweet} />
-        <ToolButton label="🎬" title="Embed video" onClick={addVideo} />
+        <ToolButton label="🎬" title="Embed video" onClick={() => setDialog({ kind: 'video' })} />
         <ToolButton label={uploadingImage ? '…' : '🖼️ Upload'} title="Upload image" disabled={uploadingImage} onClick={addImage} />
         <ToolButton label="🖼️ URL" title="Insert image by URL" onClick={() => openImageDialog({}, true)} />
 
@@ -571,6 +598,22 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
           mode={dialog.mode}
           onCancel={closeDialog}
           onSave={(title) => saveTakeaways(title, dialog.mode)}
+        />
+      )}
+      {dialog?.kind === 'link' && (
+        <LinkDialog
+          initialHref={dialog.href}
+          askForText={dialog.askForText}
+          onCancel={closeDialog}
+          onSave={saveLink}
+          onRemove={dialog.editing ? removeLink : undefined}
+        />
+      )}
+      {dialog?.kind === 'video' && (
+        <VideoDialog
+          isSupported={(url) => getVideoAttributes(url) !== null}
+          onCancel={closeDialog}
+          onSave={saveVideo}
         />
       )}
     </div>

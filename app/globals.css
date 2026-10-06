@@ -1506,8 +1506,20 @@ button.tdd-cta:disabled {
 .tdd-prose li::marker { color: var(--family); font-weight: 700; }
 .tdd-prose li p { margin: 0; }
 
-/* Pull quote. Twitter's fallback markup is also a blockquote, so leave it be. */
+/* Quote: a quoted passage, at reading size so a long one stays readable.
+   Twitter's fallback markup is also a blockquote, so leave it be. */
 .tdd-prose blockquote:not(.twitter-tweet) {
+  margin: 1.6em 0;
+  padding: 2px 0 2px 20px;
+  border-left: 3px solid rgba(255, 255, 255, 0.35);
+  color: #DADCDF;
+}
+
+.tdd-prose blockquote:not(.twitter-tweet) p { margin: 0; }
+.tdd-prose blockquote:not(.twitter-tweet) p + p { margin-top: 0.8em; }
+
+/* Pull quote: one standout line, big, with an orange rule. */
+.tdd-prose blockquote.tdd-pullquote {
   margin: 1.8em 0;
   padding: 4px 0 4px 22px;
   border-left: 4px solid var(--neon-orange);
@@ -1518,9 +1530,6 @@ button.tdd-cta:disabled {
   color: #fff;
   text-wrap: balance;
 }
-
-.tdd-prose blockquote:not(.twitter-tweet) p { margin: 0; }
-.tdd-prose blockquote:not(.twitter-tweet) p + p { margin-top: 0.5em; }
 
 .tdd-prose .callout-card {
   margin: 1.8em 0;
