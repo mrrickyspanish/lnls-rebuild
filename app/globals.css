@@ -34,15 +34,6 @@ body {
   @apply bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased;
 }
 
-/* On-deck cards (B&W + color reveal) - used by components/home/ContentTile */
-.on-deck img {
-  filter: grayscale(100%) contrast(1.2);
-  transition: filter 0.4s ease;
-}
-.on-deck:hover img {
-  filter: none;
-}
-
 .callout-card {
   @apply border-l-4 border-orange-500/60 pl-4 text-neutral-200 my-4 text-lg leading-relaxed;
 }
@@ -1506,8 +1497,20 @@ button.tdd-cta:disabled {
 .tdd-prose li::marker { color: var(--family); font-weight: 700; }
 .tdd-prose li p { margin: 0; }
 
-/* Pull quote. Twitter's fallback markup is also a blockquote, so leave it be. */
+/* Quote: a quoted passage, at reading size so a long one stays readable.
+   Twitter's fallback markup is also a blockquote, so leave it be. */
 .tdd-prose blockquote:not(.twitter-tweet) {
+  margin: 1.6em 0;
+  padding: 2px 0 2px 20px;
+  border-left: 3px solid rgba(255, 255, 255, 0.35);
+  color: #DADCDF;
+}
+
+.tdd-prose blockquote:not(.twitter-tweet) p { margin: 0; }
+.tdd-prose blockquote:not(.twitter-tweet) p + p { margin-top: 0.8em; }
+
+/* Pull quote: one standout line, big, with an orange rule. */
+.tdd-prose blockquote.tdd-pullquote {
   margin: 1.8em 0;
   padding: 4px 0 4px 22px;
   border-left: 4px solid var(--neon-orange);
@@ -1518,9 +1521,6 @@ button.tdd-cta:disabled {
   color: #fff;
   text-wrap: balance;
 }
-
-.tdd-prose blockquote:not(.twitter-tweet) p { margin: 0; }
-.tdd-prose blockquote:not(.twitter-tweet) p + p { margin-top: 0.5em; }
 
 .tdd-prose .callout-card {
   margin: 1.8em 0;
@@ -1697,6 +1697,98 @@ button.tdd-cta:disabled {
 
 .tdd-prose th p,
 .tdd-prose td p { margin: 0; }
+
+/* ---------- End of story: newsletter, then Keep Digging ------------------ */
+/* The compact signup sits where readers finish. When it's on the page, the
+   footer's full-size signup is hidden so nobody is asked twice. */
+body:has(.tdd-news--story) .tdd-footer-news { display: none; }
+
+.tdd-news--story {
+  max-width: none;
+  margin: 8px 0 0;
+  padding: 24px 22px 22px;
+  background: var(--bg-surface);
+  border-top: 4px solid var(--neon-orange);
+}
+
+.tdd-news--story h2 { font-size: clamp(32px, 4vw, 40px); line-height: 0.95; }
+.tdd-news--story .tdd-news-lede { margin-top: 10px; font-size: 17px; }
+.tdd-news--story .tdd-news-form { margin-top: 18px; }
+.tdd-news--story .tdd-news-success { margin-top: 18px; }
+
+.tdd-related { margin-top: 64px; }
+
+.tdd-related-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tdd-ink);
+  margin-bottom: 24px;
+}
+
+.tdd-related-head h2 {
+  font-family: var(--tdd-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 0.95;
+}
+
+.tdd-related-grid { display: grid; gap: 32px; }
+
+.tdd-related-story { display: block; }
+
+.tdd-related-art {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+
+.tdd-related-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s var(--tdd-ease);
+}
+
+.tdd-related-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--tdd-display);
+  font-size: 40px;
+  color: var(--tdd-muted);
+}
+
+.tdd-related-story h3 {
+  font-family: var(--tdd-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  text-wrap: balance;
+  font-size: clamp(24px, 2.4vw, 28px);
+  line-height: 1;
+  transition: color 0.18s var(--tdd-ease);
+}
+
+.tdd-related-story .tdd-credit { margin-top: 10px; font-size: 14px; }
+
+@media (hover: hover) {
+  .tdd-related-story:hover h3 { color: var(--neon-orange); }
+  .tdd-related-story:hover .tdd-related-art img { transform: scale(1.03); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tdd-related-art img { transition: none; }
+}
+
+@media (min-width: 768px) {
+  .tdd-related-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+}
 
 /* ---------- Author ------------------------------------------------------- */
 .tdd-author {

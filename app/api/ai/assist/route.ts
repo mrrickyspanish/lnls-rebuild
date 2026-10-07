@@ -1,10 +1,13 @@
 import { requireAdmin } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { askClaude } from '@/lib/ai/claude';
+import { cleanStats } from '@/lib/tiptap/stat-block-extension';
+import { DEFAULT_TAKEAWAYS_TITLE } from '@/lib/tiptap/key-takeaways-extension';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+// Formatting a long article (the whole piece written back out as JSON, with
+// thinking) can run past Vercel's default function time limit.
+export const maxDuration = 300;
+
 
 // AI Assistant Actions
 type AIAction = 
@@ -61,6 +64,51 @@ function makeFallbackDoc(rawText: string): AnyRecord {
   };
 }
 
+// Marks the editor and article page know. An unknown mark type in the
+// returned JSON would make the editor refuse the whole document.
+const ALLOWED_MARKS = new Set(['bold', 'italic', 'underline']);
+
+/** Lowercased with spaces and thousands separators removed, for loose matching. */
+function squash(text: string): string {
+  return text.toLowerCase().replace(/[\s,]/g, '');
+}
+
+/**
+ * True when every number in `text` appears in the writer's raw text. The
+ * formatter may restructure and summarize, but a sports site can't publish a
+ * stat the model made up, so blocks built around numbers (stats, tables,
+ * takeaways) only keep numbers that are in the source.
+ */
+function numbersAreSourced(text: string, source: string): boolean {
+  const numbers = text.match(/\d[\d.,]*/g) ?? [];
+  const haystack = squash(source);
+  return numbers.every((n) => haystack.includes(squash(n).replace(/[.,]+$/, '')));
+}
+
+/** True when `text` appears in the source, ignoring case, spacing and punctuation. */
+function appearsInSource(text: string, source: string): boolean {
+  const plain = (value: string) => squash(value.replace(/[“”"‘’'.,!?;:()\u2014\u2013-]/g, ''));
+  const needle = plain(text);
+  return needle.length > 0 && plain(source).includes(needle);
+}
+
+/** All text inside a sanitized node tree, joined. */
+function allText(node: unknown): string {
+  if (Array.isArray(node)) return node.map(allText).join(' ');
+  if (!isRecord(node)) return '';
+  return (typeof node.text === 'string' ? node.text : '') + ' ' + allText(node.content ?? []);
+}
+
+function inlineText(content: unknown[]): string {
+  return content.map((node) => (isRecord(node) && typeof node.text === 'string' ? node.text : '')).join('');
+}
+
+function sanitizeInline(node: AnyRecord): AnyRecord[] {
+  return Array.isArray(node.content)
+    ? (node.content.map(sanitizeInlineNode).filter(Boolean) as AnyRecord[])
+    : [];
+}
+
 function extractJsonObject(text: string): string {
   const trimmed = text.trim();
   const withoutFences = trimmed
@@ -90,7 +138,9 @@ function sanitizeInlineNode(node: unknown): AnyRecord | null {
     if (!text) return null;
 
     const marks = Array.isArray(node.marks)
-      ? node.marks.filter((mark) => isRecord(mark) && typeof mark.type === 'string')
+      ? node.marks
+          .filter((mark) => isRecord(mark) && typeof mark.type === 'string' && ALLOWED_MARKS.has(mark.type))
+          .map((mark) => ({ type: (mark as AnyRecord).type }))
       : undefined;
 
     return marks && marks.length > 0
@@ -105,21 +155,37 @@ function sanitizeInlineNode(node: unknown): AnyRecord | null {
   return null;
 }
 
-function sanitizeBlockNode(node: unknown): AnyRecord | null {
+function sanitizeBlockNode(node: unknown, source: string): AnyRecord | null {
   if (!isRecord(node) || typeof node.type !== 'string') return null;
 
   if (node.type === 'paragraph' || node.type === 'calloutCard') {
-    const inline = Array.isArray(node.content)
-      ? node.content.map(sanitizeInlineNode).filter(Boolean)
-      : [];
+    const inline = sanitizeInline(node);
     if (inline.length === 0) return null;
     return { type: node.type, content: inline };
   }
 
-  if (node.type === 'heading') {
-    const inline = Array.isArray(node.content)
-      ? node.content.map(sanitizeInlineNode).filter(Boolean)
+  // A pull quote repeats a line from the story, so it has to be one. If the
+  // model wrote its own line, keep the words as an ordinary paragraph.
+  if (node.type === 'pullQuote') {
+    const inline = sanitizeInline(node);
+    if (inline.length === 0) return null;
+    return appearsInSource(inlineText(inline), source)
+      ? { type: 'pullQuote', content: inline }
+      : { type: 'paragraph', content: inline };
+  }
+
+  if (node.type === 'blockquote') {
+    const paragraphs = Array.isArray(node.content)
+      ? node.content
+          .map((child) => sanitizeBlockNode(child, source))
+          .filter((child): child is AnyRecord => isRecord(child) && child.type === 'paragraph')
       : [];
+    if (paragraphs.length === 0) return null;
+    return { type: 'blockquote', content: paragraphs };
+  }
+
+  if (node.type === 'heading') {
+    const inline = sanitizeInline(node);
     if (inline.length === 0) return null;
     const level = isRecord(node.attrs) && typeof node.attrs.level === 'number'
       ? node.attrs.level
@@ -131,7 +197,7 @@ function sanitizeBlockNode(node: unknown): AnyRecord | null {
   if (node.type === 'bulletList' || node.type === 'orderedList') {
     const items = Array.isArray(node.content)
       ? node.content
-          .map((item) => sanitizeBlockNode(item))
+          .map((item) => sanitizeBlockNode(item, source))
           .filter((item): item is AnyRecord => isRecord(item) && item.type === 'listItem')
       : [];
 
@@ -142,12 +208,74 @@ function sanitizeBlockNode(node: unknown): AnyRecord | null {
   if (node.type === 'listItem') {
     const children = Array.isArray(node.content)
       ? node.content
-          .map((child) => sanitizeBlockNode(child))
+          .map((child) => sanitizeBlockNode(child, source))
           .filter(Boolean)
       : [];
 
     if (children.length === 0) return null;
     return { type: 'listItem', content: children };
+  }
+
+  if (node.type === 'keyTakeaways') {
+    const list = Array.isArray(node.content)
+      ? node.content.find((child) => isRecord(child) && child.type === 'bulletList')
+      : null;
+    const sanitized = list ? sanitizeBlockNode(list, source) : null;
+    const items = Array.isArray(sanitized?.content)
+      ? (sanitized.content as AnyRecord[]).filter((item) =>
+          numbersAreSourced(allText(item), source)
+        )
+      : [];
+    if (items.length === 0) return null;
+    const rawTitle = isRecord(node.attrs) && typeof node.attrs.title === 'string' ? node.attrs.title.trim() : '';
+    return {
+      type: 'keyTakeaways',
+      attrs: { title: rawTitle && rawTitle.length <= 40 ? rawTitle : DEFAULT_TAKEAWAYS_TITLE },
+      content: [{ type: 'bulletList', content: items }],
+    };
+  }
+
+  if (node.type === 'statBlock') {
+    const attrs = isRecord(node.attrs) ? node.attrs : {};
+    const stats = cleanStats(attrs.stats).filter((stat) =>
+      numbersAreSourced(`${stat.value} ${stat.label}`, source)
+    );
+    if (stats.length === 0) return null;
+    const statSource = typeof attrs.source === 'string' ? attrs.source.trim().slice(0, 80) : '';
+    return { type: 'statBlock', attrs: { stats, source: statSource } };
+  }
+
+  if (node.type === 'table') {
+    const rows = Array.isArray(node.content)
+      ? node.content.filter((row): row is AnyRecord => isRecord(row) && row.type === 'tableRow').slice(0, 30)
+      : [];
+    const firstRow = rows[0];
+    const width = Math.min(Array.isArray(firstRow?.content) ? firstRow.content.length : 0, 8);
+    if (rows.length < 2 || width < 2) return null;
+
+    let sourced = true;
+    const cleanRows = rows.map((row, rowIndex) => {
+      const cells = Array.isArray(row.content) ? row.content.slice(0, width) : [];
+      while (cells.length < width) cells.push({});
+      return {
+        type: 'tableRow',
+        content: cells.map((cell) => {
+          const paragraphs = isRecord(cell) && Array.isArray(cell.content)
+            ? cell.content
+                .map((child) => sanitizeBlockNode(child, source))
+                .filter((child): child is AnyRecord => isRecord(child) && child.type === 'paragraph')
+            : [];
+          if (!numbersAreSourced(allText(paragraphs), source)) sourced = false;
+          return {
+            type: rowIndex === 0 ? 'tableHeader' : 'tableCell',
+            content: paragraphs.length > 0 ? paragraphs : [{ type: 'paragraph' }],
+          };
+        }),
+      };
+    });
+    // A table with a number that isn't in the writer's text is dropped whole:
+    // one invented figure makes the rest untrustworthy.
+    return sourced ? { type: 'table', content: cleanRows } : null;
   }
 
   return null;
@@ -159,7 +287,7 @@ function sanitizeTipTapDoc(value: unknown, rawText: string): AnyRecord {
   }
 
   const content = Array.isArray(value.content)
-    ? value.content.map((node) => sanitizeBlockNode(node)).filter(Boolean)
+    ? value.content.map((node) => sanitizeBlockNode(node, rawText)).filter(Boolean)
     : [];
 
   if (content.length === 0) {
@@ -244,12 +372,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AIAssistRespo
 
 // Summarize article content for newsletters or previews
 async function summarizeContent(content: string, context?: any): Promise<string> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `Summarize this Lakers/NBA article in 2-3 concise sentences. Keep the tone conversational and engaging, like you're explaining it to a basketball fan at a bar.
+  const text = await askClaude(`Summarize this Lakers/NBA article in 2-3 concise sentences. Keep the tone conversational and engaging, like you're explaining it to a basketball fan at a bar.
 
 Title: ${context?.title || 'Untitled'}
 Category: ${context?.category || 'NBA News'}
@@ -257,12 +380,8 @@ Category: ${context?.category || 'NBA News'}
 Article:
 ${content}
 
-Summary:`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  return textContent?.type === 'text' ? textContent.text.trim() : '';
+Summary:`);
+  return text.trim();
 }
 
 // Generate social media captions for multiple platforms
@@ -299,31 +418,22 @@ ${content.substring(0, 800)}
 
 Caption:`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: prompt
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+  const text = await askClaude(prompt);
+  if (!text) {
     return { error: 'Failed to generate captions' };
   }
 
   if (platform === 'all') {
     try {
       // Extract JSON from response (handle markdown code blocks)
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: textContent.text };
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: text };
     } catch {
-      return { raw: textContent.text };
+      return { raw: text };
     }
   }
 
-  return { [platform]: textContent.text.trim() };
+  return { [platform]: text.trim() };
 }
 
 // Generate SEO metadata
@@ -332,12 +442,7 @@ async function generateSEO(content: string, context?: any): Promise<{
   metaDescription: string;
   keywords: string[];
 }> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `Generate SEO metadata for this Lakers/NBA article:
+  const text = await askClaude(`Generate SEO metadata for this Lakers/NBA article:
 
 Title: ${context?.title || 'Untitled'}
 Category: ${context?.category || 'NBA News'}
@@ -355,12 +460,8 @@ Format as JSON:
   "metaTitle": "...",
   "metaDescription": "...",
   "keywords": ["keyword1", "keyword2", ...]
-}`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+}`);
+  if (!text) {
     return {
       metaTitle: context?.title || 'LNLS Article',
       metaDescription: '',
@@ -369,7 +470,7 @@ Format as JSON:
   }
 
   try {
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     return jsonMatch ? JSON.parse(jsonMatch[0]) : {
       metaTitle: context?.title || 'LNLS Article',
       metaDescription: '',
@@ -386,28 +487,19 @@ Format as JSON:
 
 // Suggest related topics or articles
 async function suggestRelatedTopics(content: string, context?: any): Promise<string[]> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 400,
-    messages: [{
-      role: 'user',
-      content: `Based on this Lakers/NBA article, suggest 5 related topics or article ideas that LNLS should cover next. Think about: player storylines, trade implications, tactical analysis, or cultural angles.
+  const text = await askClaude(`Based on this Lakers/NBA article, suggest 5 related topics or article ideas that LNLS should cover next. Think about: player storylines, trade implications, tactical analysis, or cultural angles.
 
 Title: ${context?.title || 'Untitled'}
 
 Article excerpt:
 ${content.substring(0, 800)}
 
-List 5 specific, actionable article ideas (one per line):`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+List 5 specific, actionable article ideas (one per line):`);
+  if (!text) {
     return [];
   }
 
-  return textContent.text
+  return text
     .split('\n')
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^\d+\.\s*/, '').trim())
@@ -416,52 +508,46 @@ List 5 specific, actionable article ideas (one per line):`
 
 // Create Twitter thread from article
 async function createTwitterThread(content: string, context?: any): Promise<string[]> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1200,
-    messages: [{
-      role: 'user',
-      content: `Convert this Lakers/NBA article into a Twitter thread (5-7 tweets, 280 chars each). Make it engaging, punchy, and use NBA Twitter language.
+  const text = await askClaude(`Convert this Lakers/NBA article into a Twitter thread (5-7 tweets, 280 chars each). Make it engaging, punchy, and use NBA Twitter language.
 
 Title: ${context?.title || 'Untitled'}
 
 Article:
 ${content}
 
-Thread (one tweet per line, numbered):`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+Thread (one tweet per line, numbered):`);
+  if (!text) {
     return [];
   }
 
-  return textContent.text
+  return text
     .split('\n')
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^\d+\.\s*/, '').trim());
 }
 // Format raw article text into structured TipTap JSON
 async function formatArticle(content: string, context?: any) {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
-    temperature: 0.3,
-    messages: [{
-      role: 'user',
-      content: `You are a professional sports editor formatting an article for The Daily Dribble, a Lakers/NBA publication.
+  // The answer is the whole article as JSON, several times longer than the
+  // prose, plus the model's thinking. A cut-off document can't be parsed, so
+  // the limit is generous; tokens are only billed when used.
+  const text = await askClaude(`You are a professional sports editor formatting an article for The Daily Dribble, a Lakers/NBA publication.
 
-Transform this raw text into a properly structured TipTap JSON document with excellent visual formatting:
+Transform this raw text into a properly structured TipTap JSON document with excellent visual formatting. Keep the writer's words: restructure and format, don't rewrite.
 
 FORMATTING GUIDELINES:
 - Use H2 headings for major sections (player analysis, game recap sections, etc.)
 - Use H3 for subsections if needed
 - Bold player names, key stats, and important phrases
-- Use calloutCard nodes for standout quotes, key takeaways, or critical stats
 - Create proper paragraph breaks for readability
-- Use bullet lists for stats, lineups, or key points
-- Ensure good flow and visual hierarchy
+- Use bullet lists for lineups or lists of points
+- Use a blockquote for a quoted passage (a player's or coach's words that run a sentence or more)
+- Use at most one pullQuote: a single striking line copied word-for-word from the text, placed a few paragraphs after where it appears
+- Use calloutCard for one important aside or note
+- Use keyTakeaways (2-4 short bullets) near the top only for longer pieces with several distinct points
+- Use statBlock for 1-3 standout numbers, and a table for comparisons across players or games
+
+NUMBERS - STRICT:
+- Every number in a statBlock, table, or keyTakeaways bullet must appear in the raw text exactly. Never calculate, round, convert, or invent a number. If the text has no standout numbers, use no statBlock or table.
 
 RAW TEXT:
 ${content}
@@ -472,22 +558,26 @@ Return ONLY valid TipTap JSON in this exact structure (no markdown, no explanati
   "content": [
     {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Heading text"}]},
     {"type": "paragraph", "content": [{"type": "text", "text": "Regular text"}, {"type": "text", "marks": [{"type": "bold"}], "text": "bold text"}]},
+    {"type": "blockquote", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A quoted passage."}]}]},
+    {"type": "pullQuote", "content": [{"type": "text", "text": "One line copied from the text"}]},
     {"type": "calloutCard", "content": [{"type": "text", "text": "Important callout"}]},
+    {"type": "keyTakeaways", "attrs": {"title": "The short version"}, "content": [{"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A key point"}]}]}]}]},
+    {"type": "statBlock", "attrs": {"stats": [{"value": "31.4", "label": "Points per game"}], "source": "NBA.com"}},
+    {"type": "table", "content": [
+      {"type": "tableRow", "content": [{"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Player"}]}]}, {"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "PPG"}]}]}]},
+      {"type": "tableRow", "content": [{"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Name"}]}]}, {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "24.8"}]}]}]}
+    ]},
     {"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "List item"}]}]}]}
   ]
 }
 
-IMPORTANT: Return only the JSON object, no other text.`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+IMPORTANT: Return only the JSON object, no other text.`, { maxTokens: 64000 });
+  if (!text) {
     throw new Error('No text content in AI response');
   }
 
   try {
-    const jsonText = extractJsonObject(textContent.text);
+    const jsonText = extractJsonObject(text);
     const formatted = JSON.parse(jsonText);
     return sanitizeTipTapDoc(formatted, content);
   } catch (error) {
@@ -501,12 +591,7 @@ async function generateShowNotes(transcript: string, context?: any): Promise<{
   topics: Array<{ timestamp: string; topic: string }>;
   keyQuotes: string[];
 }> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1500,
-    messages: [{
-      role: 'user',
-      content: `Generate detailed show notes for this LNLS podcast episode:
+  const text = await askClaude(`Generate detailed show notes for this LNLS podcast episode:
 
 Episode: ${context?.title || 'Untitled Episode'}
 
@@ -526,12 +611,8 @@ Format as JSON:
     ...
   ],
   "keyQuotes": ["...", "...", ...]
-}`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+}`);
+  if (!text) {
     return {
       summary: '',
       topics: [],
@@ -540,7 +621,7 @@ Format as JSON:
   }
 
   try {
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     return jsonMatch ? JSON.parse(jsonMatch[0]) : {
       summary: '',
       topics: [],
@@ -557,28 +638,19 @@ Format as JSON:
 
 // Extract notable quotes from article
 async function extractQuotes(content: string, context?: any): Promise<string[]> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 600,
-    messages: [{
-      role: 'user',
-      content: `Extract 3-5 of the most shareable, quotable lines from this Lakers/NBA article. Look for hot takes, strong opinions, or memorable phrases.
+  const text = await askClaude(`Extract 3-5 of the most shareable, quotable lines from this Lakers/NBA article. Look for hot takes, strong opinions, or memorable phrases.
 
 Title: ${context?.title || 'Untitled'}
 
 Article:
 ${content}
 
-Quotes (one per line):`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+Quotes (one per line):`);
+  if (!text) {
     return [];
   }
 
-  return textContent.text
+  return text
     .split('\n')
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^["']|["']$/g, '').trim())

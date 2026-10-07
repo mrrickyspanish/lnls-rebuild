@@ -125,7 +125,7 @@ function parseDirectFile(url: URL): VideoAttributes | null {
 /**
  * Get video attributes from URL
  */
-function getVideoAttributes(src: string): VideoAttributes | null {
+export function getVideoAttributes(src: string): VideoAttributes | null {
   try {
     const url = new URL(src)
     return (
