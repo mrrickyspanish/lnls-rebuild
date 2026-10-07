@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 
 import ArticleHero from "@/components/article/ArticleHero";
 import ArticleBody from "@/components/article/ArticleBody";
-import RelatedRow from "@/components/article/RelatedRow";
+import RelatedStories from "@/components/article/RelatedStories";
+import NewsletterSignup from "@/components/NewsletterSignup";
 import AuthorCard from "@/components/article/AuthorCard";
 import ShareBar from "@/components/article/ShareBar";
 import ReadProgress from "@/components/article/ReadProgress";
@@ -52,19 +53,6 @@ function buildHeroArticle(article: ArticleWithSlideshow, slug: string) {
   };
 }
 
-function mapRelatedRow(articles: Article[]) {
-  return articles.map((article) => ({
-    id: article.id,
-    title: article.title,
-    image_url: article.hero_image_url,
-    content_type: "article",
-    source: "TDD",
-    source_url: `/news/${article.slug}`,
-    published_at: article.published_at || article.created_at,
-    excerpt: article.excerpt,
-  }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
@@ -101,21 +89,22 @@ export default async function ArticlePage({ params }: PageProps) {
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
 
-  let relatedArticles = await fetchRelatedArticles(article.id, article.topic, 6);
+  // Three stories to read next: same topic first, topped up with the latest
+  // stories when the topic has fewer than three others.
+  let relatedArticles = (await fetchRelatedArticles(article.id, article.topic, 3)).slice(0, 3);
 
-  if (relatedArticles.length < 2) {
-    const fallbackArticles = await fetchPublishedArticles(6, article.topic);
+  if (relatedArticles.length < 3) {
+    const fallbackArticles = await fetchPublishedArticles(6);
     const fillers = fallbackArticles
       .filter((candidate) =>
         candidate.id !== article.id &&
         !relatedArticles.some((existing) => existing.id === candidate.id)
       )
-      .slice(0, 2 - relatedArticles.length);
+      .slice(0, 3 - relatedArticles.length);
 
     relatedArticles = [...relatedArticles, ...fillers];
   }
   const currentArticle = buildHeroArticle(article, slug);
-  const relatedRowItems = mapRelatedRow(relatedArticles);
 
   // Always absolute: the share buttons copy and post this URL, so a relative
   // path (the old behavior when the env var was unset) shared nothing useful.
@@ -198,10 +187,11 @@ export default async function ArticlePage({ params }: PageProps) {
                 twitter: article.author_twitter || undefined,
               }}
             />
+            <NewsletterSignup variant="story" />
           </div>
         </div>
+        <RelatedStories articles={relatedArticles} />
       </article>
-      <RelatedRow articles={relatedRowItems} title="Keep Digging" />
     </>
   );
 }

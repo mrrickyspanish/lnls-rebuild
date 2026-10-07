@@ -450,3 +450,49 @@ export function VideoDialog({ isSupported, onCancel, onSave }: VideoDialogProps)
     </DialogShell>
   )
 }
+
+/* ---------- Post on X ------------------------------------------------------ */
+
+type TweetDialogProps = {
+  /** Returns the embed attributes for a supported post link, or null. */
+  parse: (url: string) => unknown | null
+  onCancel: () => void
+  onSave: (url: string) => void
+}
+
+/** Adds https:// when a writer pastes "x.com/…" without it. */
+export function withProtocol(value: string): string {
+  const trimmed = value.trim()
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
+export function TweetDialog({ parse, onCancel, onSave }: TweetDialogProps) {
+  const [url, setUrl] = useState('')
+  const [touched, setTouched] = useState(false)
+  const trimmed = url.trim()
+  const supported = trimmed !== '' && parse(withProtocol(trimmed)) !== null
+  const invalid = touched && trimmed !== '' && !supported
+
+  return (
+    <DialogShell title="Embed a post from X" submitLabel="Embed post" canSubmit={supported} onCancel={onCancel} onSubmit={() => onSave(withProtocol(trimmed))}>
+      <div>
+        <label className={labelClass} htmlFor="tweet-url">Post link</label>
+        <input
+          id="tweet-url"
+          className={inputClass}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onBlur={() => setTouched(true)}
+          placeholder="https://x.com/Lakers/status/…"
+          aria-invalid={invalid}
+          aria-describedby="tweet-url-hint"
+        />
+        <p id="tweet-url-hint" className={invalid ? 'mt-1 text-sm text-red-400' : hintClass}>
+          {invalid
+            ? 'That isn’t a link to a single post. Open the post on X, then copy its address (it contains /status/).'
+            : 'On X, open the post and copy its link. x.com and twitter.com links both work.'}
+        </p>
+      </div>
+    </DialogShell>
+  )
+}

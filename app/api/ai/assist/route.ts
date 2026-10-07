@@ -1,12 +1,13 @@
 import { requireAdmin } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { askClaude } from '@/lib/ai/claude';
 import { cleanStats } from '@/lib/tiptap/stat-block-extension';
 import { DEFAULT_TAKEAWAYS_TITLE } from '@/lib/tiptap/key-takeaways-extension';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+// Formatting a long article (the whole piece written back out as JSON, with
+// thinking) can run past Vercel's default function time limit.
+export const maxDuration = 300;
+
 
 // AI Assistant Actions
 type AIAction = 
@@ -371,12 +372,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AIAssistRespo
 
 // Summarize article content for newsletters or previews
 async function summarizeContent(content: string, context?: any): Promise<string> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `Summarize this Lakers/NBA article in 2-3 concise sentences. Keep the tone conversational and engaging, like you're explaining it to a basketball fan at a bar.
+  const text = await askClaude(`Summarize this Lakers/NBA article in 2-3 concise sentences. Keep the tone conversational and engaging, like you're explaining it to a basketball fan at a bar.
 
 Title: ${context?.title || 'Untitled'}
 Category: ${context?.category || 'NBA News'}
@@ -384,12 +380,8 @@ Category: ${context?.category || 'NBA News'}
 Article:
 ${content}
 
-Summary:`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  return textContent?.type === 'text' ? textContent.text.trim() : '';
+Summary:`);
+  return text.trim();
 }
 
 // Generate social media captions for multiple platforms
@@ -426,31 +418,22 @@ ${content.substring(0, 800)}
 
 Caption:`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: prompt
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+  const text = await askClaude(prompt);
+  if (!text) {
     return { error: 'Failed to generate captions' };
   }
 
   if (platform === 'all') {
     try {
       // Extract JSON from response (handle markdown code blocks)
-      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: textContent.text };
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: text };
     } catch {
-      return { raw: textContent.text };
+      return { raw: text };
     }
   }
 
-  return { [platform]: textContent.text.trim() };
+  return { [platform]: text.trim() };
 }
 
 // Generate SEO metadata
@@ -459,12 +442,7 @@ async function generateSEO(content: string, context?: any): Promise<{
   metaDescription: string;
   keywords: string[];
 }> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `Generate SEO metadata for this Lakers/NBA article:
+  const text = await askClaude(`Generate SEO metadata for this Lakers/NBA article:
 
 Title: ${context?.title || 'Untitled'}
 Category: ${context?.category || 'NBA News'}
@@ -482,12 +460,8 @@ Format as JSON:
   "metaTitle": "...",
   "metaDescription": "...",
   "keywords": ["keyword1", "keyword2", ...]
-}`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+}`);
+  if (!text) {
     return {
       metaTitle: context?.title || 'LNLS Article',
       metaDescription: '',
@@ -496,7 +470,7 @@ Format as JSON:
   }
 
   try {
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     return jsonMatch ? JSON.parse(jsonMatch[0]) : {
       metaTitle: context?.title || 'LNLS Article',
       metaDescription: '',
@@ -513,28 +487,19 @@ Format as JSON:
 
 // Suggest related topics or articles
 async function suggestRelatedTopics(content: string, context?: any): Promise<string[]> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 400,
-    messages: [{
-      role: 'user',
-      content: `Based on this Lakers/NBA article, suggest 5 related topics or article ideas that LNLS should cover next. Think about: player storylines, trade implications, tactical analysis, or cultural angles.
+  const text = await askClaude(`Based on this Lakers/NBA article, suggest 5 related topics or article ideas that LNLS should cover next. Think about: player storylines, trade implications, tactical analysis, or cultural angles.
 
 Title: ${context?.title || 'Untitled'}
 
 Article excerpt:
 ${content.substring(0, 800)}
 
-List 5 specific, actionable article ideas (one per line):`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+List 5 specific, actionable article ideas (one per line):`);
+  if (!text) {
     return [];
   }
 
-  return textContent.text
+  return text
     .split('\n')
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^\d+\.\s*/, '').trim())
@@ -543,45 +508,29 @@ List 5 specific, actionable article ideas (one per line):`
 
 // Create Twitter thread from article
 async function createTwitterThread(content: string, context?: any): Promise<string[]> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1200,
-    messages: [{
-      role: 'user',
-      content: `Convert this Lakers/NBA article into a Twitter thread (5-7 tweets, 280 chars each). Make it engaging, punchy, and use NBA Twitter language.
+  const text = await askClaude(`Convert this Lakers/NBA article into a Twitter thread (5-7 tweets, 280 chars each). Make it engaging, punchy, and use NBA Twitter language.
 
 Title: ${context?.title || 'Untitled'}
 
 Article:
 ${content}
 
-Thread (one tweet per line, numbered):`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+Thread (one tweet per line, numbered):`);
+  if (!text) {
     return [];
   }
 
-  return textContent.text
+  return text
     .split('\n')
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^\d+\.\s*/, '').trim());
 }
 // Format raw article text into structured TipTap JSON
 async function formatArticle(content: string, context?: any) {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    // The output is the whole article as JSON, several times longer than
-    // the prose. At 4096 a long piece could be cut off mid-document, and a
-    // truncated document fails to parse and falls back to one unformatted
-    // paragraph.
-    max_tokens: 16000,
-    temperature: 0.3,
-    messages: [{
-      role: 'user',
-      content: `You are a professional sports editor formatting an article for The Daily Dribble, a Lakers/NBA publication.
+  // The answer is the whole article as JSON, several times longer than the
+  // prose, plus the model's thinking. A cut-off document can't be parsed, so
+  // the limit is generous; tokens are only billed when used.
+  const text = await askClaude(`You are a professional sports editor formatting an article for The Daily Dribble, a Lakers/NBA publication.
 
 Transform this raw text into a properly structured TipTap JSON document with excellent visual formatting. Keep the writer's words: restructure and format, don't rewrite.
 
@@ -622,17 +571,13 @@ Return ONLY valid TipTap JSON in this exact structure (no markdown, no explanati
   ]
 }
 
-IMPORTANT: Return only the JSON object, no other text.`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+IMPORTANT: Return only the JSON object, no other text.`, { maxTokens: 64000 });
+  if (!text) {
     throw new Error('No text content in AI response');
   }
 
   try {
-    const jsonText = extractJsonObject(textContent.text);
+    const jsonText = extractJsonObject(text);
     const formatted = JSON.parse(jsonText);
     return sanitizeTipTapDoc(formatted, content);
   } catch (error) {
@@ -646,12 +591,7 @@ async function generateShowNotes(transcript: string, context?: any): Promise<{
   topics: Array<{ timestamp: string; topic: string }>;
   keyQuotes: string[];
 }> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1500,
-    messages: [{
-      role: 'user',
-      content: `Generate detailed show notes for this LNLS podcast episode:
+  const text = await askClaude(`Generate detailed show notes for this LNLS podcast episode:
 
 Episode: ${context?.title || 'Untitled Episode'}
 
@@ -671,12 +611,8 @@ Format as JSON:
     ...
   ],
   "keyQuotes": ["...", "...", ...]
-}`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+}`);
+  if (!text) {
     return {
       summary: '',
       topics: [],
@@ -685,7 +621,7 @@ Format as JSON:
   }
 
   try {
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     return jsonMatch ? JSON.parse(jsonMatch[0]) : {
       summary: '',
       topics: [],
@@ -702,28 +638,19 @@ Format as JSON:
 
 // Extract notable quotes from article
 async function extractQuotes(content: string, context?: any): Promise<string[]> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 600,
-    messages: [{
-      role: 'user',
-      content: `Extract 3-5 of the most shareable, quotable lines from this Lakers/NBA article. Look for hot takes, strong opinions, or memorable phrases.
+  const text = await askClaude(`Extract 3-5 of the most shareable, quotable lines from this Lakers/NBA article. Look for hot takes, strong opinions, or memorable phrases.
 
 Title: ${context?.title || 'Untitled'}
 
 Article:
 ${content}
 
-Quotes (one per line):`
-    }]
-  });
-
-  const textContent = message.content.find(block => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+Quotes (one per line):`);
+  if (!text) {
     return [];
   }
 
-  return textContent.text
+  return text
     .split('\n')
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^["']|["']$/g, '').trim())

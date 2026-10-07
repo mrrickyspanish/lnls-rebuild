@@ -23,6 +23,7 @@ import {
   LinkDialog,
   StatDialog,
   TakeawaysDialog,
+  TweetDialog,
   VideoDialog,
   type ImageDialogValue,
   type LinkDialogValue,
@@ -59,6 +60,7 @@ type DialogState =
   | { kind: 'takeaways'; mode: 'insert' | 'edit'; title: string }
   | { kind: 'link'; href: string; editing: boolean; askForText: boolean }
   | { kind: 'video' }
+  | { kind: 'tweet' }
   | null
 
 const NO_ACTIVE_STATE = {
@@ -392,17 +394,11 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
     setDialog(null)
   }
 
-  const addTweet = useCallback(() => {
+  const insertTweet = (url: string) => {
     if (!editor) return
-
-    const url = window.prompt('Enter tweet URL (x.com or twitter.com):')?.trim()
-    if (!url) return
-
     const attributes = parseTweetUrl(url)
-    if (!attributes) {
-      window.alert('Unsupported tweet URL.')
-      return
-    }
+    if (!attributes) return
+    setDialog(null)
 
     if (editor.isActive('calloutCard')) {
       const { $from } = editor.state.selection
@@ -430,7 +426,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
         attrs: attributes,
       })
       .run()
-  }, [editor])
+  }
 
   if (!editor) {
     return <div className="text-neutral-400">Loading editor...</div>
@@ -515,7 +511,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
 
         {/* Media */}
         <ToolButton label="🔗" title="Add link" active={active.link} onClick={addLink} />
-        <ToolButton label="X" title="Embed tweet" onClick={addTweet} />
+        <ToolButton label="X" title="Embed a post from X" onClick={() => setDialog({ kind: 'tweet' })} />
         <ToolButton label="🎬" title="Embed video" onClick={() => setDialog({ kind: 'video' })} />
         <ToolButton label={uploadingImage ? '…' : '🖼️ Upload'} title="Upload image" disabled={uploadingImage} onClick={addImage} />
         <ToolButton label="🖼️ URL" title="Insert image by URL" onClick={() => openImageDialog({}, true)} />
@@ -608,6 +604,9 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
           onSave={saveLink}
           onRemove={dialog.editing ? removeLink : undefined}
         />
+      )}
+      {dialog?.kind === 'tweet' && (
+        <TweetDialog parse={parseTweetUrl} onCancel={closeDialog} onSave={insertTweet} />
       )}
       {dialog?.kind === 'video' && (
         <VideoDialog

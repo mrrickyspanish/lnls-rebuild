@@ -4,7 +4,30 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
 
-export default function NewsletterSignup() {
+type NewsletterSignupProps = {
+  /**
+   * "footer": the full-size block at the bottom of every page.
+   * "story": the compact version at the end of an article, where readers
+   * finish. Pages that show it hide the footer one (see .tdd-news--story in
+   * globals.css), so a reader is never asked twice on one page.
+   */
+  variant?: 'footer' | 'story'
+}
+
+const COPY = {
+  footer: {
+    heading: 'Never miss a dribble',
+    lede: 'New stories from The Daily Dribble: sports, tech, and the culture around the game.',
+  },
+  story: {
+    heading: 'Get the next one',
+    lede: 'New stories from The Daily Dribble, in your inbox.',
+  },
+}
+
+export default function NewsletterSignup({ variant = 'footer' }: NewsletterSignupProps) {
+  const copy = COPY[variant]
+  const inputId = `newsletter-email-${variant}`
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -39,11 +62,9 @@ export default function NewsletterSignup() {
   }
 
   return (
-    <div className="tdd-news">
-      <h2>Never miss a dribble</h2>
-      <p className="tdd-news-lede">
-        New stories from The Daily Dribble: sports, tech, and the culture around the game.
-      </p>
+    <div className={variant === 'story' ? 'tdd-news tdd-news--story' : 'tdd-news'}>
+      <h2>{copy.heading}</h2>
+      <p className="tdd-news-lede">{copy.lede}</p>
 
       {status === 'success' ? (
         <p className="tdd-news-success" role="status">
@@ -52,9 +73,9 @@ export default function NewsletterSignup() {
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="tdd-news-form">
-          <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+          <label htmlFor={inputId} className="sr-only">Email address</label>
           <input
-            id="newsletter-email"
+            id={inputId}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
