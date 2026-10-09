@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAnonClient } from '@/lib/supabase/client';
+import { createSupabaseServiceClient } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,8 +33,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, counted: false, reason: 'bot' });
     }
 
-    // Increment view count in database
-    const supabase = createSupabaseAnonClient();
+    // Increment view count in database. Server-side, with the service key:
+    // the public key may only read articles (enable_rls_policies.sql), and
+    // increment_article_views as saved in supabase/increment_article_views.sql
+    // is not SECURITY DEFINER, so with the public key its UPDATE can match no
+    // rows and drop the view without an error. This route stays the only way
+    // in: one +1 per call, bots skipped above, and ViewTracker counts a reader
+    // once a day.
+    const supabase = createSupabaseServiceClient();
     const { error } = await supabase.rpc('increment_article_views', { 
       article_slug: slug 
     });
