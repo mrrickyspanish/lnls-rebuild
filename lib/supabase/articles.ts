@@ -1,5 +1,5 @@
 import { normalizeArticleBody } from '@/lib/articles/body'
-import { createSupabaseAnonClient } from '@/lib/supabase/client'
+import { createSupabaseAnonClient, createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { Article, Database } from '@/types/supabase'
 
 const ARTICLE_FIELDS = `
@@ -124,8 +124,13 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   return data ? mapArticle(data) : null
 }
 
+/**
+ * Admin only (app/admin/submit/[slug], which middleware gates). Uses the
+ * service key: the public key can only read published articles, so drafts
+ * could not be opened for editing.
+ */
 export async function fetchArticleForEdit(slug: string): Promise<Article | null> {
-  const supabase = createSupabaseAnonClient()
+  const supabase = createSupabaseServiceClient()
   const { data, error } = await supabase
     .from('articles')
     .select(ARTICLE_FIELDS)
@@ -169,8 +174,13 @@ export async function fetchRelatedArticles(
   return (data ?? []).map(mapArticle)
 }
 
+/**
+ * Admin only (app/admin, which middleware gates). Uses the service key: the
+ * public key can only read published articles, so the dashboard's Drafts
+ * table came back empty.
+ */
 export async function fetchAllArticles(): Promise<Article[]> {
-  const supabase = createSupabaseAnonClient()
+  const supabase = createSupabaseServiceClient()
   const { data, error } = await supabase
     .from('articles')
     .select(ARTICLE_FIELDS)
@@ -182,13 +192,4 @@ export async function fetchAllArticles(): Promise<Article[]> {
   }
 
   return (data ?? []).map(mapArticle)
-}
-
-// Increment view count for an article
-export async function incrementArticleViews(slug: string): Promise<void> {
-  const supabase = createSupabaseAnonClient();
-  const { error } = await supabase.rpc('increment_article_views', { article_slug: slug });
-  if (error) {
-    console.error('Failed to increment article views:', error);
-  }
 }
