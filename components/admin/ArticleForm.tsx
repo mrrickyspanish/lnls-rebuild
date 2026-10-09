@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 import type { JSONContent } from '@tiptap/react'
 
 import RichTextEditor from '@/components/admin/RichTextEditor'
+import AiFormatSheet, { type AiFormatResult } from '@/components/admin/editor/AiFormatSheet'
+import { countMedia, docToPlainText } from '@/lib/articles/plain-text'
 import { blocksToTipTapDoc, isArticleBodyBlocks, isTipTapDoc } from '@/lib/articles/body'
 import { attachLegacyCaptions } from '@/lib/articles/captions'
 import { generateSlug } from '@/lib/slug'
@@ -114,9 +116,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     featured: initialData?.featured || false
   })
 
-  const [rawText, setRawText] = useState('')
-  const [isFormatting, setIsFormatting] = useState(false)
-  const [showFormatter, setShowFormatter] = useState(false)
+  const [aiOpen, setAiOpen] = useState(false)
 
   const [bodyContent, setBodyContent] = useState<JSONContent>(
     toEditorContent(initialData?.body)
@@ -222,50 +222,20 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     }
   }
 
-  const handleAutoFormat = async () => {
-    if (!rawText.trim()) {
-      setError('Please enter some text to format')
-      return
-    }
-
-    setIsFormatting(true)
+  // AI Auto-Format (components/admin/editor/AiFormatSheet.tsx). The writer
+  // has already reviewed and chosen everything in `result`; nothing is saved
+  // until the article is.
+  const applyAiFormat = (result: AiFormatResult) => {
+    setBodyContent(result.doc)
+    setFormData((prev) => ({
+      ...prev,
+      title: result.headline ?? prev.title,
+      excerpt: result.summary ?? prev.excerpt,
+      metaDescription: result.metaDescription ?? prev.metaDescription,
+      readTime: result.readTime ?? prev.readTime,
+    }))
+    setAiOpen(false)
     setError('')
-
-    try {
-      const response = await fetch('/api/ai/assist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'format-article',
-          content: rawText,
-          context: {
-            title: formData.title,
-            category: formData.topic
-          }
-        })
-      })
-
-      const result = await response.json()
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to format article')
-      }
-
-      if (!result.data || typeof result.data !== 'object' || result.data.type !== 'doc') {
-        throw new Error('AI formatter returned invalid editor content')
-      }
-
-      // Load the formatted JSON into the editor
-      setBodyContent(result.data)
-      setRawText('')
-      setShowFormatter(false)
-      setError('')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to format article'
-      setError(message)
-    } finally {
-      setIsFormatting(false)
-    }
   }
 
   const saveLabel = loading
@@ -313,6 +283,23 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
       <section className="space-y-5" aria-labelledby="story-heading">
         <h1 id="story-heading" className="sr-only">{mode === 'create' ? 'New article' : 'Edit article'}</h1>
 
+        {/* Stories usually start as a draft written elsewhere, so pasting
+            one in is the first thing on the page. The same sheet opens
+            from the ✨ AI button in the editor toolbar. */}
+        <button
+          type="button"
+          onClick={() => setAiOpen(true)}
+          className="flex w-full min-h-[64px] items-center gap-4 rounded-lg border border-orange-500/50 bg-orange-500/10 px-4 py-3 text-left hover:border-orange-400"
+        >
+          <span className="text-2xl" aria-hidden="true">✨</span>
+          <span className="flex-1">
+            <span className="block text-base font-bold text-white">Paste &amp; format with AI</span>
+            <span className="mt-0.5 block text-sm text-neutral-300">
+              Formats your draft, fixes typos, and suggests a headline, summary and search description. You review it all first.
+            </span>
+          </span>
+        </button>
+
         <div>
           <label htmlFor="article-title" className={LABEL}>Headline</label>
           <textarea
@@ -352,61 +339,13 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           </select>
         </div>
 
-        {/* AI Auto-Format */}
-        <div className={DISCLOSURE}>
-          <button
-            type="button"
-            onClick={() => setShowFormatter(!showFormatter)}
-            aria-expanded={showFormatter}
-            className={`${DISCLOSURE_SUMMARY} w-full text-left`}
-          >
-            <span>
-              🤖 Paste a draft and format it with AI
-              <span className="mt-0.5 block text-sm font-normal text-neutral-400">Adds headings, quotes, stats and takeaways from your text.</span>
-            </span>
-            <span className="text-neutral-500" aria-hidden="true">{showFormatter ? '▲' : '▼'}</span>
-          </button>
-
-          {showFormatter && (
-            <div className="space-y-3 px-4 pb-4">
-              <label htmlFor="ai-raw" className="sr-only">Draft text to format</label>
-              <textarea
-                id="ai-raw"
-                value={rawText}
-                onChange={(e) => setRawText(e.target.value)}
-                placeholder="Paste your draft here. It replaces what's in the editor below, so you can review it there before saving."
-                className={`${FIELD} h-48`}
-              />
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleAutoFormat}
-                  disabled={isFormatting || !rawText.trim()}
-                  className="min-h-[44px] rounded bg-orange-600 px-4 font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isFormatting ? 'Formatting…' : '✨ Format with AI'}
-                </button>
-                {rawText && (
-                  <button
-                    type="button"
-                    onClick={() => setRawText('')}
-                    className="min-h-[44px] rounded bg-neutral-700 px-4 font-semibold text-white hover:bg-neutral-600"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              <p className={HINT}>Add the headline first; the AI uses it for context.</p>
-            </div>
-          )}
-        </div>
-
         <div>
           <p className={LABEL} id="body-label">Story</p>
           <RichTextEditor
             value={bodyContent}
             onChange={handleBodyChange}
             topic={formData.topic}
+            onAiFormat={() => setAiOpen(true)}
           />
           <p className={HINT}>
             The editor previews the published page. Tap an image, stat block or table to get its edit buttons.
@@ -609,6 +548,21 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           </div>
         </details>
       </section>
+
+      {aiOpen && (
+        <AiFormatSheet
+          editorText={docToPlainText(bodyContent)}
+          editorMediaCount={countMedia(bodyContent)}
+          current={{
+            title: formData.title,
+            summary: formData.excerpt,
+            metaDescription: formData.metaDescription,
+            topic: formData.topic,
+          }}
+          onClose={() => setAiOpen(false)}
+          onApply={applyAiFormat}
+        />
+      )}
 
       <button
         type="submit"

@@ -164,14 +164,12 @@ function sanitizeBlockNode(node: unknown, source: string): AnyRecord | null {
     return { type: node.type, content: inline };
   }
 
-  // A pull quote repeats a line from the story, so it has to be one. If the
-  // model wrote its own line, keep the words as an ordinary paragraph.
+  // A pull quote repeats a line from the story; sanitizeTipTapDoc checks
+  // that it does once the whole document is known.
   if (node.type === 'pullQuote') {
     const inline = sanitizeInline(node);
     if (inline.length === 0) return null;
-    return appearsInSource(inlineText(inline), source)
-      ? { type: 'pullQuote', content: inline }
-      : { type: 'paragraph', content: inline };
+    return { type: 'pullQuote', content: inline };
   }
 
   if (node.type === 'blockquote') {
@@ -294,9 +292,72 @@ function sanitizeTipTapDoc(value: unknown, rawText: string): AnyRecord {
     return makeFallbackDoc(rawText);
   }
 
+  // A pull quote has to be a line from the story. The formatter fixes typos,
+  // so a genuine line can differ from the raw text by a corrected word: it
+  // counts if it matches either the raw text or the rest of the story. A line
+  // the model wrote itself is kept as an ordinary paragraph.
+  const storyText = allText((content as AnyRecord[]).filter((node) => node.type !== 'pullQuote'));
+  const checked = (content as AnyRecord[]).map((node) =>
+    node.type === 'pullQuote' &&
+    !appearsInSource(inlineText(node.content as unknown[]), rawText) &&
+    !appearsInSource(inlineText(node.content as unknown[]), storyText)
+      ? { type: 'paragraph', content: node.content }
+      : node
+  );
+
   return {
     type: 'doc',
-    content,
+    content: checked,
+  };
+}
+
+export type FormatSuggestions = {
+  headlines: string[];
+  summary: string | null;
+  metaDescription: string | null;
+  readTime: number;
+};
+
+/** Average adult reading speed for this kind of copy. */
+const WORDS_PER_MINUTE = 230;
+
+/** Trims to at most `max` characters, ending on a whole word. */
+function clip(text: string, max: number): string {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max + 1).replace(/\s+\S*$/, '').replace(/[,;:\-–—]$/, '').trim();
+}
+
+/**
+ * The headline, summary and search-description ideas that come back with a
+ * formatted story. Each is only a suggestion: the editor shows them for the
+ * writer to accept or not. Any idea with a number that isn't in the writer's
+ * text is dropped, the same rule as stats and tables. Read time is counted,
+ * not asked of the model.
+ */
+function sanitizeSuggestions(value: unknown, rawText: string, doc: AnyRecord): FormatSuggestions {
+  const record = isRecord(value) ? value : {};
+  const sourced = (text: string) => text.length > 0 && numbersAreSourced(text, rawText);
+
+  const headlines = Array.isArray(record.headlines)
+    ? record.headlines
+        .filter((h): h is string => typeof h === 'string')
+        .map((h) => clip(h.replace(/^["'“”]+|["'“”]+$/g, ''), 120))
+        .filter(sourced)
+        .filter((h, i, all) => all.indexOf(h) === i)
+        .slice(0, 3)
+    : [];
+
+  const summary = typeof record.summary === 'string' ? clip(record.summary, 300) : '';
+  const metaDescription = typeof record.metaDescription === 'string' ? clip(record.metaDescription, 160) : '';
+
+  const words = allText(doc).split(/\s+/).filter(Boolean).length;
+
+  return {
+    headlines,
+    summary: sourced(summary) ? summary : null,
+    metaDescription: sourced(metaDescription) ? metaDescription : null,
+    readTime: Math.max(1, Math.ceil(words / WORDS_PER_MINUTE)),
   };
 }
 
@@ -526,49 +587,65 @@ Thread (one tweet per line, numbered):`);
     .map(line => line.replace(/^\d+\.\s*/, '').trim());
 }
 // Format raw article text into structured TipTap JSON
-async function formatArticle(content: string, context?: any) {
+async function formatArticle(content: string, context?: any): Promise<{ doc: AnyRecord; suggestions: FormatSuggestions }> {
+  const currentHeadline = typeof context?.title === 'string' && context.title.trim() ? context.title.trim() : null;
   // The answer is the whole article as JSON, several times longer than the
   // prose, plus the model's thinking. A cut-off document can't be parsed, so
   // the limit is generous; tokens are only billed when used.
-  const text = await askClaude(`You are a professional sports editor formatting an article for The Daily Dribble, a Lakers/NBA publication.
+  const text = await askClaude(`You are a professional sports editor preparing an article for The Daily Dribble, a sports publication covering the Lakers, the NBA, football and the culture around the game.
 
-Transform this raw text into a properly structured TipTap JSON document with excellent visual formatting. Keep the writer's words: restructure and format, don't rewrite.
+Turn the writer's raw draft below into a structured TipTap JSON document, and suggest a headline, summary and search description.
 
-FORMATTING GUIDELINES:
-- Use H2 headings for major sections (player analysis, game recap sections, etc.)
-- Use H3 for subsections if needed
+EDITING - keep the writer's voice:
+- Fix spelling, grammar and punctuation mistakes.
+- Do not otherwise reword, shorten, reorder or add sentences.
+- Never change anything inside quotation marks: quotes are what someone said.
+- Never change names, nicknames, slang, or numbers.
+
+FORMATTING:
+- Use H2 headings for major sections (player analysis, game recap sections, etc.); H3 for subsections if needed
 - Bold player names, key stats, and important phrases
 - Create proper paragraph breaks for readability
 - Use bullet lists for lineups or lists of points
 - Use a blockquote for a quoted passage (a player's or coach's words that run a sentence or more)
-- Use at most one pullQuote: a single striking line copied word-for-word from the text, placed a few paragraphs after where it appears
+- Use at most one pullQuote: a single striking line copied word-for-word from the story, placed a few paragraphs after where it appears
 - Use calloutCard for one important aside or note
 - Use keyTakeaways (2-4 short bullets) near the top only for longer pieces with several distinct points
 - Use statBlock for 1-3 standout numbers, and a table for comparisons across players or games
 
 NUMBERS - STRICT:
-- Every number in a statBlock, table, or keyTakeaways bullet must appear in the raw text exactly. Never calculate, round, convert, or invent a number. If the text has no standout numbers, use no statBlock or table.
+- Every number in a statBlock, table, keyTakeaways bullet, headline, summary or search description must appear in the raw text exactly. Never calculate, round, convert, or invent a number. If the text has no standout numbers, use no statBlock or table.
+
+SUGGESTIONS:
+- headlines: 3 different headline options, under 90 characters each, in the publication's confident, conversational voice. ${currentHeadline ? `The writer's working headline is: "${currentHeadline}".` : 'The writer has no headline yet.'}
+- summary: 1-2 sentences (under 280 characters) shown under the headline. It should make someone want to read on, without repeating the headline.
+- metaDescription: under 155 characters, for search results and link previews.
 
 RAW TEXT:
 ${content}
 
-Return ONLY valid TipTap JSON in this exact structure (no markdown, no explanations):
+Return ONLY a JSON object in this exact structure (no markdown, no explanations):
 {
-  "type": "doc",
-  "content": [
-    {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Heading text"}]},
-    {"type": "paragraph", "content": [{"type": "text", "text": "Regular text"}, {"type": "text", "marks": [{"type": "bold"}], "text": "bold text"}]},
-    {"type": "blockquote", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A quoted passage."}]}]},
-    {"type": "pullQuote", "content": [{"type": "text", "text": "One line copied from the text"}]},
-    {"type": "calloutCard", "content": [{"type": "text", "text": "Important callout"}]},
-    {"type": "keyTakeaways", "attrs": {"title": "The short version"}, "content": [{"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A key point"}]}]}]}]},
-    {"type": "statBlock", "attrs": {"stats": [{"value": "31.4", "label": "Points per game"}], "source": "NBA.com"}},
-    {"type": "table", "content": [
-      {"type": "tableRow", "content": [{"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Player"}]}]}, {"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "PPG"}]}]}]},
-      {"type": "tableRow", "content": [{"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Name"}]}]}, {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "24.8"}]}]}]}
-    ]},
-    {"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "List item"}]}]}]}
-  ]
+  "doc": {
+    "type": "doc",
+    "content": [
+      {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Heading text"}]},
+      {"type": "paragraph", "content": [{"type": "text", "text": "Regular text"}, {"type": "text", "marks": [{"type": "bold"}], "text": "bold text"}]},
+      {"type": "blockquote", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A quoted passage."}]}]},
+      {"type": "pullQuote", "content": [{"type": "text", "text": "One line copied from the story"}]},
+      {"type": "calloutCard", "content": [{"type": "text", "text": "Important callout"}]},
+      {"type": "keyTakeaways", "attrs": {"title": "The short version"}, "content": [{"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A key point"}]}]}]}]},
+      {"type": "statBlock", "attrs": {"stats": [{"value": "31.4", "label": "Points per game"}], "source": "NBA.com"}},
+      {"type": "table", "content": [
+        {"type": "tableRow", "content": [{"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Player"}]}]}, {"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "PPG"}]}]}]},
+        {"type": "tableRow", "content": [{"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Name"}]}]}, {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "24.8"}]}]}]}
+      ]},
+      {"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "List item"}]}]}]}
+    ]
+  },
+  "headlines": ["Option one", "Option two", "Option three"],
+  "summary": "One or two sentences.",
+  "metaDescription": "Under 155 characters."
 }
 
 IMPORTANT: Return only the JSON object, no other text.`, { maxTokens: 64000 });
@@ -577,12 +654,15 @@ IMPORTANT: Return only the JSON object, no other text.`, { maxTokens: 64000 });
   }
 
   try {
-    const jsonText = extractJsonObject(text);
-    const formatted = JSON.parse(jsonText);
-    return sanitizeTipTapDoc(formatted, content);
+    const parsed = JSON.parse(extractJsonObject(text));
+    // Older-style answers are a bare document with no suggestions.
+    const rawDoc = isRecord(parsed) && parsed.type === 'doc' ? parsed : isRecord(parsed) ? parsed.doc : null;
+    const doc = sanitizeTipTapDoc(rawDoc, content);
+    return { doc, suggestions: sanitizeSuggestions(parsed, content, doc) };
   } catch (error) {
     console.error('Failed to parse AI-formatted article:', error);
-    return makeFallbackDoc(content);
+    const doc = makeFallbackDoc(content);
+    return { doc, suggestions: sanitizeSuggestions(null, content, doc) };
   }
 }
 // Generate podcast show notes from transcript

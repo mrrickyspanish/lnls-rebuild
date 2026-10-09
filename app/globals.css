@@ -1918,3 +1918,13 @@ body:has(.tdd-news--story) .tdd-footer-news { display: none; }
    signup, site links) isn't for editors. */
 body:has(.tdd-admin) .tdd-nav { position: static; }
 body:has(.tdd-admin) .tdd-footer { display: none; }
+
+/* AI Auto-Format preview (components/admin/editor/AiFormatSheet.tsx): the
+   published body styles, held to the sheet's width like the editor. */
+.tdd-ai-preview .tdd-prose img,
+.tdd-ai-preview .tdd-prose .tdd-figure img {
+  max-width: 100%;
+  max-height: 50vh;
+  margin: 0 auto;
+  transform: none;
+}

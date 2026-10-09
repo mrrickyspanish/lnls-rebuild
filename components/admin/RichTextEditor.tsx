@@ -52,6 +52,8 @@ interface RichTextEditorProps {
   onReady?: (helpers: { insertImage: (url: string, caption?: string) => void }) => void
   /** The article's topic, so stat numbers and rules preview in its color. */
   topic?: string
+  /** Opens AI Auto-Format; shows the ✨ AI button first in the toolbar. */
+  onAiFormat?: () => void
 }
 
 type DialogState =
@@ -111,7 +113,7 @@ function ToolButton({
 
 const Divider = () => <div className="w-px h-8 shrink-0 self-center bg-neutral-600 mx-1" aria-hidden="true" />
 
-export default function RichTextEditor({ value, onChange, onReady, topic }: RichTextEditorProps) {
+export default function RichTextEditor({ value, onChange, onReady, topic, onAiFormat }: RichTextEditorProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [dialog, setDialog] = useState<DialogState>(null)
@@ -443,6 +445,17 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
           sideways; it used to wrap to four rows of small buttons. */}
       <div className="sticky z-20 rounded-t-md" style={{ top: 'var(--save-bar-h, 0px)' }}>
       <div className="flex flex-nowrap md:flex-wrap gap-1 overflow-x-auto overscroll-x-contain p-2 border-b border-neutral-700 bg-neutral-800 rounded-t-md [scrollbar-width:thin]" role="toolbar" aria-label="Formatting">
+        {onAiFormat && (
+          <>
+            <ToolButton
+              label="✨ AI"
+              title="Format with AI"
+              onClick={onAiFormat}
+              className="!bg-orange-600 !text-white font-semibold hover:!bg-orange-700"
+            />
+            <Divider />
+          </>
+        )}
         {/* Block Types */}
         <ToolButton label="P" title="Paragraph" active={active.paragraph} onClick={() => chain().setParagraph().run()} />
         <ToolButton label="H2" title="Section heading" active={active.h2} className="font-bold" onClick={() => chain().toggleHeading({ level: 2 }).run()} />
