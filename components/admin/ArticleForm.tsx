@@ -2,7 +2,8 @@
 import { SOCIAL_HANDLE } from '@/lib/contact'
 import { ARTICLE_TOPICS } from '@/lib/topics'
 
-import { useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { JSONContent } from '@tiptap/react'
 
@@ -55,6 +56,24 @@ const EMPTY_DOC: JSONContent = {
   ],
 }
 
+// Shared field styles. 16px text keeps iOS Safari from zooming into a field
+// when it's tapped; 48px height is a comfortable thumb target.
+const FIELD = 'w-full min-h-[48px] bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-base text-white placeholder:text-neutral-500 focus:border-red-500 focus:outline-none'
+const LABEL = 'block text-sm font-semibold text-neutral-200 mb-1.5'
+const HINT = 'mt-1.5 text-sm text-neutral-400'
+const SECTION = 'space-y-5 border-t border-neutral-800 pt-8'
+const SECTION_TITLE = 'text-xl font-bold text-white'
+const DISCLOSURE = 'rounded-lg border border-neutral-800 bg-neutral-950 [&_summary::-webkit-details-marker]:hidden'
+const DISCLOSURE_SUMMARY = 'flex min-h-[52px] cursor-pointer items-center justify-between gap-3 px-4 py-3 text-base font-semibold text-neutral-100'
+
+/**
+ * Laid out in the order a story gets written, on a phone as much as a
+ * laptop: the story first (headline, summary, topic, body), then the cover
+ * image, the byline, and publishing settings, with rarely changed fields
+ * folded away. A pinned bar keeps Save one tap away at any scroll position;
+ * it used to sit at the very bottom, below the entire article, after about
+ * sixteen metadata fields that came before the body.
+ */
 export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -62,11 +81,23 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: boolean }>({})
-  const [imageUsage, setImageUsage] = useState<'hero' | 'article'>('hero')
-  const [articleImages, setArticleImages] = useState<string[]>([])
-  const [insertArticleImage, setInsertArticleImage] = useState<((url: string, caption?: string) => void) | null>(null)
   const MAX_MB = 4
+  const isDraft = mode === 'edit' && initialData?.published === false
+
+  // The editor's toolbar pins just below the Save bar, whose height changes
+  // when a message shows, so publish its height as --save-bar-h.
+  const formRef = useRef<HTMLFormElement | null>(null)
+  const saveBarRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const bar = saveBarRef.current
+    const form = formRef.current
+    if (!bar || !form) return
+    const update = () => form.style.setProperty('--save-bar-h', `${bar.offsetHeight}px`)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(bar)
+    return () => observer.disconnect()
+  }, [])
 
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
@@ -93,22 +124,9 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
 
   const handleBodyChange = (content: JSONContent) => setBodyContent(content)
 
-  const handleEditorReady = useCallback(
-    ({ insertImage }: { insertImage: (url: string, caption?: string) => void }) => {
-      setInsertArticleImage(() => insertImage)
-    },
-    []
-  )
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to copy')
-    }
-  }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, usage: 'hero' | 'article') => {
+  // Cover image only. Images inside the story go through the editor's own
+  // image button, which also asks for a caption and width.
+  const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -118,7 +136,6 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     }
 
     setUploading(true)
-    setUploadProgress({ ...uploadProgress, [usage]: true })
 
     try {
       const formDataToSend = new FormData()
@@ -141,24 +158,12 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         throw new Error(data.error || 'Upload failed')
       }
 
-      // Update form with the new image path
-      if (usage === 'hero') {
-        setFormData(prev => ({
-          ...prev,
-          heroImageUrl: data.path,
-        }))
-      } else {
-        setArticleImages(prev => [data.path, ...prev])
-        // Opens the editor's image dialog (caption, description, width).
-        insertArticleImage?.(data.path)
-      }
-
+      setFormData(prev => ({ ...prev, heroImageUrl: data.path }))
       setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload image')
     } finally {
       setUploading(false)
-      setUploadProgress({ ...uploadProgress, [usage]: false })
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -205,8 +210,10 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         throw new Error(data.error || 'Failed to save article')
       }
 
-  setSuccess(true)
-  setTimeout(() => router.push(`/news/${targetSlug}`), 2000)
+      setSuccess(true)
+      // A draft has no public page (it 404s), so a saved draft goes back to
+      // the article list instead.
+      setTimeout(() => router.push(isDraft ? '/admin' : `/news/${targetSlug}`), 2000)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save article'
       setError(message)
@@ -261,314 +268,83 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     }
   }
 
+  const saveLabel = loading
+    ? 'Saving…'
+    : mode === 'create'
+      ? 'Publish'
+      : isDraft
+        ? 'Save draft'
+        : 'Save'
+
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      <h1 className="text-4xl font-bold mb-8 font-netflix">
-        {mode === 'create' ? 'Submit Article' : 'Edit Article'}
-      </h1>
-
-      {success && (
-        <div className="mb-6 p-4 bg-green-900/20 border border-green-500 rounded-lg text-green-400">
-          ✅ Article {mode === 'create' ? 'submitted' : 'updated'} successfully! Redirecting...
+    <form ref={formRef} onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4 sm:px-6 pb-16">
+      {/* Pinned action bar: back, what you're editing, Save. Messages show
+          here so they're seen wherever the writer has scrolled to. */}
+      <div ref={saveBarRef} className="sticky top-0 z-30 -mx-4 sm:-mx-6 mb-6 border-b border-neutral-800 bg-black/95 px-4 sm:px-6 py-2 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <Link href="/admin" className="inline-flex min-h-[44px] items-center text-base text-neutral-300 hover:text-white" aria-label="Back to articles">
+            ← <span className="ml-1 hidden sm:inline">Articles</span>
+          </Link>
+          <p className="min-w-0 flex-1 truncate text-base font-semibold">
+            {mode === 'create' ? 'New article' : formData.title || 'Edit article'}
+            {isDraft && <span className="ml-2 rounded-full bg-yellow-900/40 px-2 py-0.5 text-sm font-medium text-yellow-300">Draft</span>}
+          </p>
+          <button
+            type="submit"
+            disabled={loading || success}
+            className="min-h-[44px] shrink-0 rounded bg-red-600 px-5 text-base font-bold text-white hover:bg-red-700 disabled:opacity-60"
+          >
+            {saveLabel}
+          </button>
         </div>
-      )}
+        {success && (
+          <p className="mt-2 rounded bg-green-900/30 px-3 py-2 text-sm text-green-300" role="status">
+            {mode === 'create' ? 'Published.' : 'Saved.'} {isDraft ? 'Taking you back to your articles…' : 'Opening the article…'}
+          </p>
+        )}
+        {error && (
+          <p className="mt-2 rounded bg-red-900/30 px-3 py-2 text-sm text-red-300" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded-lg text-red-400">
-          ❌ {error}
-        </div>
-      )}
+      {/* ---------- The story ---------- */}
+      <section className="space-y-5" aria-labelledby="story-heading">
+        <h1 id="story-heading" className="sr-only">{mode === 'create' ? 'New article' : 'Edit article'}</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <input
-                    id="featured-toggle"
-                    type="checkbox"
-                    checked={!!formData.featured}
-                    onChange={e => setFormData({ ...formData, featured: e.target.checked })}
-                    className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="featured-toggle" className="text-sm font-medium select-none cursor-pointer">
-                    Pin as featured (show in homepage hero)
-                  </label>
-                </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Title *</label>
-          <input
-            type="text"
+          <label htmlFor="article-title" className={LABEL}>Headline</label>
+          <textarea
+            id="article-title"
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
+            onChange={(e) => setFormData({ ...formData, title: e.target.value.replace(/\n/g, ' ') })}
+            className={`${FIELD} resize-none text-xl font-bold leading-snug`}
+            rows={2}
+            placeholder="What's the story?"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Excerpt *</label>
+          <label htmlFor="article-excerpt" className={LABEL}>Summary</label>
           <textarea
+            id="article-excerpt"
             value={formData.excerpt}
             onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-            className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none h-24"
+            className={`${FIELD} h-28`}
+            placeholder="One or two sentences. Shown under the headline and in link previews."
             required
           />
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-white">Images & Media</h2>
-          
-          <div className="space-y-3">
-            <div className="flex gap-4 items-center text-sm text-neutral-400">
-              <span className="font-semibold text-white">Upload intent:</span>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="image-usage"
-                  value="hero"
-                  checked={imageUsage === 'hero'}
-                  onChange={() => setImageUsage('hero')}
-                  className="h-4 w-4 text-red-600 border-neutral-700 bg-neutral-900"
-                />
-                <span>Hero image</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="image-usage"
-                  value="article"
-                  checked={imageUsage === 'article'}
-                  onChange={() => setImageUsage('article')}
-                  className="h-4 w-4 text-red-600 border-neutral-700 bg-neutral-900"
-                />
-                <span>Article imagery</span>
-              </label>
-            </div>
-
-            <label className="block text-sm font-medium text-neutral-400 mb-2">
-              Hero Image URL *
-            </label>
-            
-            {/* File Upload */}
-            <div className="flex gap-2">
-              <label className="flex-1 cursor-pointer">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, imageUsage)}
-                  disabled={uploading}
-                  className="hidden"
-                />
-                <div className="w-full px-4 py-2 bg-neutral-800 border border-dashed border-neutral-700 rounded text-white text-center hover:border-red-600 transition-colors disabled:opacity-50 cursor-pointer">
-                  {uploadProgress[imageUsage] ? 'Uploading...' : 'Click to upload'}
-                </div>
-              </label>
-            </div>
-
-            {/* Or paste URL */}
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-neutral-900 px-2 text-xs text-neutral-500">or paste URL</span>
-              </div>
-              <div className="border border-neutral-700 rounded"></div>
-            </div>
-
-            <input
-              type="text"
-              required
-              value={formData.heroImageUrl}
-              onChange={(e) => setFormData({ ...formData, heroImageUrl: e.target.value })}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
-              placeholder="https://cdn.example.com/image.jpg or /uploads/articles/local.jpg"
-            />
-            
-            {formData.heroImageUrl && (
-              <div className="mt-3 relative w-full h-40 bg-neutral-800 border border-neutral-700 rounded overflow-hidden">
-                <img
-                  src={formData.heroImageUrl}
-                  alt="Hero preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-neutral-400 mb-2">
-                Hero Video URL (optional)
-              </label>
-              <input
-                type="text"
-                value={formData.videoUrl}
-                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
-                placeholder="https://cdn.example.com/video.mp4"
-              />
-              <p className="text-xs text-neutral-500 mt-1">
-                Direct video files only (.mp4, .webm, .mov). Used on the article page hero only.
-              </p>
-              {formData.videoUrl && (
-                <div className="mt-3 relative w-full h-40 bg-neutral-800 border border-neutral-700 rounded overflow-hidden">
-                  <video
-                    src={formData.videoUrl}
-                    className="w-full h-full object-cover"
-                    muted
-                    playsInline
-                    controls
-                  />
-                </div>
-              )}
-            </div>
-
-            {articleImages.length > 0 && (
-              <div className="space-y-2 mt-4">
-                <div className="text-sm text-neutral-400 font-semibold">Article imagery (recent uploads)</div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {articleImages.map((img) => (
-                    <div key={img} className="p-3 bg-neutral-800 border border-neutral-700 rounded space-y-2">
-                      <div className="text-xs text-neutral-500 break-all">{img}</div>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(img)}
-                          className="px-3 py-1 bg-neutral-700 text-white text-sm rounded hover:bg-neutral-600 transition-colors"
-                        >
-                          Copy URL
-                        </button>
-                        <a
-                          href={img}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1 bg-red-600/20 text-red-400 text-sm rounded hover:bg-red-600/30 transition-colors"
-                        >
-                          Open
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-neutral-500">Paste these URLs into the article body where you need supporting images.</p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
-              Meta Description (SEO)
-            </label>
-            <textarea
-              value={formData.metaDescription}
-              onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
-              placeholder="Custom description for search engines and social media (optional, defaults to excerpt)"
-              rows={2}
-              maxLength={160}
-            />
-            <p className="text-xs text-neutral-500 mt-1">{formData.metaDescription.length}/160 characters</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
-              Image Credit / Source
-            </label>
-            <input
-              type="text"
-              value={formData.imageCredit}
-              onChange={(e) => setFormData({ ...formData, imageCredit: e.target.value })}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600"
-              placeholder="e.g. Getty Images / NBA Photos"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Author *</label>
-            <select
-              value={formData.authorName}
-              onChange={(e) => {
-                const selected = AUTHOR_PRESETS.find(a => a.name === e.target.value)
-                if (selected) {
-                  setFormData({
-                    ...formData,
-                    authorName: selected.name,
-                    authorTwitter: selected.twitter,
-                    authorBio: selected.bio,
-                  })
-                }
-              }}
-              className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
-              required
-            >
-              <option value="">Select an author...</option>
-              {AUTHOR_PRESETS.map((author) => (
-                <option key={author.name} value={author.name}>
-                  {author.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Twitter Handle</label>
-            <input
-              type="text"
-              value={formData.authorTwitter}
-              onChange={(e) => setFormData({ ...formData, authorTwitter: e.target.value })}
-              className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Read Time (mins)</label>
-            <input
-              type="number"
-              value={formData.readTime}
-              onChange={(e) => setFormData({ ...formData, readTime: parseInt(e.target.value) })}
-              className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
-              min="1"
-            />
-          </div>
-        </div>
-
-
-        <div className="flex items-center gap-3 mb-4">
-          <input
-            id="featured-toggle"
-            type="checkbox"
-            checked={!!formData.featured}
-            onChange={e => setFormData({ ...formData, featured: e.target.checked })}
-            className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-          />
-          <label htmlFor="featured-toggle" className="text-sm font-medium select-none cursor-pointer">
-            Pin as featured (show in homepage hero)
-          </label>
-        </div>
-
-            <div className="flex items-center gap-3 mb-4">
-              <input
-                id="featured-toggle"
-                type="checkbox"
-                checked={!!formData.featured}
-                onChange={e => setFormData({ ...formData, featured: e.target.checked })}
-                className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-              />
-              <label htmlFor="featured-toggle" className="text-sm font-medium select-none cursor-pointer">
-                Pin as featured (show in homepage hero)
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Author Bio</label>
-              <input
-                type="text"
-                value={formData.authorBio}
-                onChange={(e) => setFormData({ ...formData, authorBio: e.target.value })}
-                className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
-              />
-            </div>
-
         <div>
-          <label className="block text-sm font-medium mb-2">Topic</label>
+          <label htmlFor="article-topic" className={LABEL}>Topic</label>
           <select
+            id="article-topic"
             value={formData.topic}
             onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-            className="w-full bg-neutral-900 border border-neutral-800 rounded p-3 focus:border-red-600 focus:outline-none"
+            className={FIELD}
           >
             {ARTICLE_TOPICS.map((topic) => (
               <option key={topic} value={topic}>{topic}</option>
@@ -576,82 +352,272 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           </select>
         </div>
 
-        {/* AI Auto-Format Section */}
-        <div className="space-y-2 border border-neutral-700 rounded-lg p-4 bg-neutral-900/50">
+        {/* AI Auto-Format */}
+        <div className={DISCLOSURE}>
           <button
             type="button"
             onClick={() => setShowFormatter(!showFormatter)}
-            className="flex items-center justify-between w-full text-left"
+            aria-expanded={showFormatter}
+            className={`${DISCLOSURE_SUMMARY} w-full text-left`}
           >
-            <div>
-              <h3 className="text-sm font-semibold text-white">🤖 AI Auto-Format</h3>
-              <p className="text-xs text-neutral-400 mt-1">Paste raw text and let AI structure it with headings, emphasis, and callouts</p>
-            </div>
-            <span className="text-neutral-500">{showFormatter ? '▼' : '▶'}</span>
+            <span>
+              🤖 Paste a draft and format it with AI
+              <span className="mt-0.5 block text-sm font-normal text-neutral-400">Adds headings, quotes, stats and takeaways from your text.</span>
+            </span>
+            <span className="text-neutral-500" aria-hidden="true">{showFormatter ? '▲' : '▼'}</span>
           </button>
 
           {showFormatter && (
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3 px-4 pb-4">
+              <label htmlFor="ai-raw" className="sr-only">Draft text to format</label>
               <textarea
+                id="ai-raw"
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
-                placeholder="Paste your raw article text here... AI will add headings, bold key phrases, create callouts for important points, and structure it beautifully."
-                className="w-full bg-neutral-800 border border-neutral-700 rounded p-3 text-white focus:outline-none focus:border-orange-500 h-48 text-sm"
+                placeholder="Paste your draft here. It replaces what's in the editor below, so you can review it there before saving."
+                className={`${FIELD} h-48`}
               />
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={handleAutoFormat}
                   disabled={isFormatting || !rawText.trim()}
-                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="min-h-[44px] rounded bg-orange-600 px-4 font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isFormatting ? 'Formatting...' : '✨ Format with AI'}
+                  {isFormatting ? 'Formatting…' : '✨ Format with AI'}
                 </button>
                 {rawText && (
                   <button
                     type="button"
                     onClick={() => setRawText('')}
-                    className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded transition-colors text-sm"
+                    className="min-h-[44px] rounded bg-neutral-700 px-4 font-semibold text-white hover:bg-neutral-600"
                   >
                     Clear
                   </button>
                 )}
               </div>
-              <p className="text-xs text-neutral-500">
-                💡 Tip: Add a title first for better AI formatting. The formatted content will load into the editor below where you can review and edit.
-              </p>
+              <p className={HINT}>Add the headline first; the AI uses it for context.</p>
             </div>
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium mb-2">
-            Article Body *
-          </label>
-          <RichTextEditor 
-            value={bodyContent} 
+        <div>
+          <p className={LABEL} id="body-label">Story</p>
+          <RichTextEditor
+            value={bodyContent}
             onChange={handleBodyChange}
-            onReady={handleEditorReady}
             topic={formData.topic}
           />
-          <p className="text-sm text-neutral-400">
-            The editor previews the published page. Use the toolbar for headings, pull quotes, stats, a key-takeaways
-            box, stat tables, images (with caption and width), links, tweets and videos. Double-click an image or a
-            stat block to edit it.
+          <p className={HINT}>
+            The editor previews the published page. Tap an image, stat block or table to get its edit buttons.
           </p>
         </div>
+      </section>
 
+      {/* ---------- Cover image ---------- */}
+      <section className={`${SECTION} mt-10`} aria-labelledby="cover-heading">
+        <h2 id="cover-heading" className={SECTION_TITLE}>Cover image</h2>
 
+        <div>
+          <input
+            ref={fileInputRef}
+            id="hero-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleHeroUpload}
+            disabled={uploading}
+            className="sr-only"
+          />
+          <label
+            htmlFor="hero-upload"
+            className="flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded border border-dashed border-neutral-600 bg-neutral-900 px-4 text-base font-semibold text-white hover:border-red-500"
+          >
+            {uploading ? 'Uploading…' : formData.heroImageUrl ? 'Replace cover image' : 'Upload cover image'}
+          </label>
+          <p className={HINT}>JPG, PNG or WebP, under {MAX_MB}MB.</p>
+        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : (mode === 'create' ? 'Submit Article' : 'Update Article')}
-        </button>
-      </form>
-    </div>
+        {formData.heroImageUrl && (
+          <img
+            src={formData.heroImageUrl}
+            alt="Cover preview"
+            className="w-full max-h-72 rounded border border-neutral-800 object-contain bg-neutral-900"
+          />
+        )}
+
+        <div>
+          <label htmlFor="hero-url" className={LABEL}>Or paste an image address</label>
+          <input
+            id="hero-url"
+            type="text"
+            inputMode="url"
+            autoCapitalize="none"
+            autoCorrect="off"
+            required
+            value={formData.heroImageUrl}
+            onChange={(e) => setFormData({ ...formData, heroImageUrl: e.target.value })}
+            className={FIELD}
+            placeholder="https://… or /uploads/articles/…"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="hero-credit" className={LABEL}>Photo credit</label>
+          <input
+            id="hero-credit"
+            type="text"
+            value={formData.imageCredit}
+            onChange={(e) => setFormData({ ...formData, imageCredit: e.target.value })}
+            className={FIELD}
+            placeholder="e.g. Getty Images / NBA Photos"
+          />
+        </div>
+
+        <details className={DISCLOSURE}>
+          <summary className={DISCLOSURE_SUMMARY}>
+            <span>Cover video <span className="font-normal text-neutral-400">(optional)</span></span>
+            <span className="text-neutral-500" aria-hidden="true">▼</span>
+          </summary>
+          <div className="space-y-3 px-4 pb-4">
+            <label htmlFor="hero-video" className="sr-only">Cover video address</label>
+            <input
+              id="hero-video"
+              type="text"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              value={formData.videoUrl}
+              onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+              className={FIELD}
+              placeholder="https://cdn.example.com/video.mp4"
+            />
+            <p className={HINT}>Direct video files only (.mp4, .webm, .mov). Plays in place of the cover image.</p>
+            {formData.videoUrl && (
+              <video src={formData.videoUrl} className="w-full max-h-60 rounded bg-neutral-900" muted playsInline controls />
+            )}
+          </div>
+        </details>
+      </section>
+
+      {/* ---------- Byline ---------- */}
+      <section className={`${SECTION} mt-10`} aria-labelledby="byline-heading">
+        <h2 id="byline-heading" className={SECTION_TITLE}>Byline</h2>
+        <div>
+          <label htmlFor="article-author" className={LABEL}>Author</label>
+          <select
+            id="article-author"
+            value={formData.authorName}
+            onChange={(e) => {
+              const selected = AUTHOR_PRESETS.find(a => a.name === e.target.value)
+              if (selected) {
+                setFormData({
+                  ...formData,
+                  authorName: selected.name,
+                  authorTwitter: selected.twitter,
+                  authorBio: selected.bio,
+                })
+              }
+            }}
+            className={FIELD}
+            required
+          >
+            <option value="">Select an author...</option>
+            {AUTHOR_PRESETS.map((author) => (
+              <option key={author.name} value={author.name}>
+                {author.name}
+              </option>
+            ))}
+          </select>
+          <p className={HINT}>Fills in the handle and bio below.</p>
+        </div>
+
+        <details className={DISCLOSURE}>
+          <summary className={DISCLOSURE_SUMMARY}>
+            <span>Handle and bio</span>
+            <span className="text-neutral-500" aria-hidden="true">▼</span>
+          </summary>
+          <div className="space-y-4 px-4 pb-4">
+            <div>
+              <label htmlFor="author-twitter" className={LABEL}>X handle</label>
+              <input
+                id="author-twitter"
+                type="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                value={formData.authorTwitter}
+                onChange={(e) => setFormData({ ...formData, authorTwitter: e.target.value })}
+                className={FIELD}
+              />
+            </div>
+            <div>
+              <label htmlFor="author-bio" className={LABEL}>Bio</label>
+              <textarea
+                id="author-bio"
+                value={formData.authorBio}
+                onChange={(e) => setFormData({ ...formData, authorBio: e.target.value })}
+                className={`${FIELD} h-24`}
+              />
+            </div>
+          </div>
+        </details>
+      </section>
+
+      {/* ---------- Publishing ---------- */}
+      <section className={`${SECTION} mt-10`} aria-labelledby="publishing-heading">
+        <h2 id="publishing-heading" className={SECTION_TITLE}>Publishing</h2>
+
+        <label htmlFor="featured-toggle" className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded border border-neutral-800 bg-neutral-950 px-4">
+          <input
+            id="featured-toggle"
+            type="checkbox"
+            checked={!!formData.featured}
+            onChange={e => setFormData({ ...formData, featured: e.target.checked })}
+            className="h-5 w-5 shrink-0 accent-red-600"
+          />
+          <span className="text-base">Pin as featured <span className="text-neutral-400">(home page cover story)</span></span>
+        </label>
+
+        <div>
+          <label htmlFor="read-time" className={LABEL}>Read time (minutes)</label>
+          <input
+            id="read-time"
+            type="number"
+            inputMode="numeric"
+            value={formData.readTime}
+            onChange={(e) => setFormData({ ...formData, readTime: parseInt(e.target.value) })}
+            className={`${FIELD} max-w-[10rem]`}
+            min="1"
+          />
+        </div>
+
+        <details className={DISCLOSURE}>
+          <summary className={DISCLOSURE_SUMMARY}>
+            <span>Search and social description <span className="font-normal text-neutral-400">(optional)</span></span>
+            <span className="text-neutral-500" aria-hidden="true">▼</span>
+          </summary>
+          <div className="px-4 pb-4">
+            <label htmlFor="meta-description" className="sr-only">Search and social description</label>
+            <textarea
+              id="meta-description"
+              value={formData.metaDescription}
+              onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+              className={`${FIELD} h-24`}
+              placeholder="Leave blank to use the summary."
+              maxLength={160}
+            />
+            <p className={HINT}>{formData.metaDescription.length}/160 characters</p>
+          </div>
+        </details>
+      </section>
+
+      <button
+        type="submit"
+        disabled={loading || success}
+        className="mt-10 w-full min-h-[52px] rounded bg-red-600 text-base font-bold text-white hover:bg-red-700 disabled:opacity-60"
+      >
+        {saveLabel}
+      </button>
+    </form>
   )
 }
 

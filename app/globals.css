@@ -1911,3 +1911,10 @@ body:has(.tdd-news--story) .tdd-footer-news { display: none; }
   color: var(--tdd-muted);
   pointer-events: none;
 }
+
+/* ---------- Admin pages (app/admin/layout.tsx) -------------------------- */
+/* The site nav scrolls away instead of pinning, so the editor's pinned save
+   bar and toolbar get the top of the screen; the public footer (newsletter
+   signup, site links) isn't for editors. */
+body:has(.tdd-admin) .tdd-nav { position: static; }
+body:has(.tdd-admin) .tdd-footer { display: none; }
