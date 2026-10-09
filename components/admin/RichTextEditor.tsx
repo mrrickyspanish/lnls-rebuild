@@ -98,7 +98,7 @@ function ToolButton({
       title={title}
       aria-label={title}
       aria-pressed={active}
-      className={`min-h-[36px] px-3 py-1.5 rounded text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`min-h-[44px] md:min-h-[36px] shrink-0 whitespace-nowrap px-3 py-1.5 rounded text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
         active
           ? 'bg-[var(--neon-orange)] text-black font-semibold'
           : 'bg-neutral-700 text-neutral-200 hover:bg-neutral-600'
@@ -109,7 +109,7 @@ function ToolButton({
   )
 }
 
-const Divider = () => <div className="w-px h-8 bg-neutral-600 mx-1" aria-hidden="true" />
+const Divider = () => <div className="w-px h-8 shrink-0 self-center bg-neutral-600 mx-1" aria-hidden="true" />
 
 export default function RichTextEditor({ value, onChange, onReady, topic }: RichTextEditorProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -436,11 +436,13 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
 
   return (
     <div className="border border-neutral-700 rounded-md bg-neutral-900" data-family={topicFamily(topic)}>
-      {/* Toolbar */}
-      {/* From tablet width up, parks just under the site nav (64px, 72px from
-          1024px, plus its 1px rule). On phones it wraps to five rows, too
-          tall to pin over the text. */}
-      <div className="md:sticky md:top-[65px] lg:top-[73px] z-10 flex flex-wrap gap-1 p-2 border-b border-neutral-700 bg-neutral-800 rounded-t-md">
+      {/* Toolbar and the selected-block bar pin together just under the
+          article form's Save bar (its height is --save-bar-h, set by
+          ArticleForm), so formatting and a selected image's Edit button stay
+          in reach while writing. On phones the toolbar is one row you swipe
+          sideways; it used to wrap to four rows of small buttons. */}
+      <div className="sticky z-20 rounded-t-md" style={{ top: 'var(--save-bar-h, 0px)' }}>
+      <div className="flex flex-nowrap md:flex-wrap gap-1 overflow-x-auto overscroll-x-contain p-2 border-b border-neutral-700 bg-neutral-800 rounded-t-md [scrollbar-width:thin]" role="toolbar" aria-label="Formatting">
         {/* Block Types */}
         <ToolButton label="P" title="Paragraph" active={active.paragraph} onClick={() => chain().setParagraph().run()} />
         <ToolButton label="H2" title="Section heading" active={active.h2} className="font-bold" onClick={() => chain().toggleHeading({ level: 2 }).run()} />
@@ -530,24 +532,24 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
 
       {/* Context bar: actions for whatever block is selected */}
       {(active.image || active.stats || active.table) && (
-        <div className="flex flex-wrap items-center gap-1 px-2 py-2 border-b border-neutral-700 bg-neutral-900 text-sm">
+        <div className="flex flex-nowrap md:flex-wrap items-center gap-1 overflow-x-auto px-2 py-2 border-b border-neutral-700 bg-neutral-900 text-sm">
           {active.image && (
             <>
-              <span className="px-2 font-semibold text-neutral-300">Image</span>
-              <ToolButton label="Edit caption, description & width" title="Edit image" onClick={openEditForSelection} />
+              <span className="shrink-0 px-2 font-semibold text-neutral-300">Image</span>
+              <ToolButton label="Edit caption & width" title="Edit image" onClick={openEditForSelection} />
               <ToolButton label="Remove" title="Remove image" onClick={() => chain().deleteSelection().run()} />
             </>
           )}
           {active.stats && (
             <>
-              <span className="px-2 font-semibold text-neutral-300">Stats</span>
+              <span className="shrink-0 px-2 font-semibold text-neutral-300">Stats</span>
               <ToolButton label="Edit stats" title="Edit stats" onClick={openEditForSelection} />
               <ToolButton label="Remove" title="Remove stats" onClick={() => chain().deleteSelection().run()} />
             </>
           )}
           {active.table && (
             <>
-              <span className="px-2 font-semibold text-neutral-300">Table</span>
+              <span className="shrink-0 px-2 font-semibold text-neutral-300">Table</span>
               <ToolButton label="+ Row" title="Add row below" onClick={() => chain().addRowAfter().run()} />
               <ToolButton label="+ Column" title="Add column to the right" onClick={() => chain().addColumnAfter().run()} />
               <ToolButton label="− Row" title="Delete this row" onClick={() => chain().deleteRow().run()} />
@@ -558,6 +560,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic }: Rich
           )}
         </div>
       )}
+      </div>
 
       {/* Editor Content */}
       <EditorContent editor={editor} className="bg-[var(--bg-primary)] rounded-b-md" />

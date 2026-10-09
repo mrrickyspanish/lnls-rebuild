@@ -56,7 +56,7 @@ function DialogShell({ title, submitLabel, onCancel, onSubmit, canSubmit = true,
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-neutral-700 bg-neutral-900 p-6 shadow-2xl"
+        className="w-full max-w-lg max-h-[90vh] max-h-[90dvh] overflow-y-auto rounded-lg border border-neutral-700 bg-neutral-900 p-5 sm:p-6 shadow-2xl"
         onSubmit={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -145,7 +145,7 @@ export function ImageDialog({ initial, askForUrl, mode, onCancel, onSave }: Imag
 
       <fieldset>
         <legend className={labelClass}>Width on the page</legend>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {IMAGE_SIZES.map((option) => {
             const active = value.size === option.value
             return (
