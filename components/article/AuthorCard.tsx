@@ -10,9 +10,11 @@ type Author = {
 
 type AuthorCardProps = {
   author: Author;
+  /** Where the name links: the About page, for the site's own writer. */
+  href?: string;
 };
 
-export default function AuthorCard({ author }: AuthorCardProps) {
+export default function AuthorCard({ author, href }: AuthorCardProps) {
   if (!author.name) return null;
   // Some saved handles include the @ and some do not. Normalize so the card
   // never shows @@name or links to x.com/@name.
@@ -25,7 +27,9 @@ export default function AuthorCard({ author }: AuthorCardProps) {
       )}
       <div>
         <p className="tdd-author-label">Written by</p>
-        <p className="tdd-author-name">{author.name}</p>
+        <p className="tdd-author-name">
+          {href ? <Link href={href}>{author.name}</Link> : author.name}
+        </p>
         {handle && (
           <Link
             href={`https://x.com/${handle}`}
@@ -37,6 +41,7 @@ export default function AuthorCard({ author }: AuthorCardProps) {
           </Link>
         )}
         {author.bio && <p className="tdd-author-bio">{author.bio}</p>}
+        {href && <Link href={href} className="tdd-author-more">More about me</Link>}
       </div>
     </aside>
   );

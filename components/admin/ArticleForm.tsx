@@ -1,6 +1,7 @@
 'use client'
-import { SOCIAL_HANDLE } from '@/lib/contact'
-import { ARTICLE_TOPICS } from '@/lib/topics'
+import { SITE_OWNER, isSiteOwner } from '@/lib/author'
+import { NOTE_KINDS, PIECE_TYPES } from '@/lib/articles/piece-type'
+import { ARTICLE_TOPICS, isArticleTopic } from '@/lib/topics'
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
@@ -20,28 +21,23 @@ interface ArticleFormProps {
   mode: 'create' | 'edit'
 }
 
-const AUTHOR_PRESETS = [
-  {
-    name: 'TDD Sports Staff',
-    twitter: SOCIAL_HANDLE,
-    bio: 'Covering the Lakers with passion and insight since day one.',
-  },
-  {
-    name: 'Rick Barnes Jr.',
-    twitter: '@mrrickyspanish',
-    bio: 'Founder of The Daily Dribble & Creative Eye Studios. Digital creator and sports storyteller mixing hoops, culture, and life. Patiently persistent.',
-  },
-  {
-    name: 'Juice McDaniels',
-    twitter: '@LeKwamJames',
-    bio: 'Klutch Sports Operative Passionately Covering the Lakers since 2019.',
-  },
-  {
-    name: 'Brendan Willis',
-    twitter: '@BwaysTakes',
-    bio: 'Covering all things football with a bit of all other things sports related',
-  },
-]
+/**
+ * The site has one writer, so new stories are bylined to the owner
+ * (lib/author.ts). An older story keeps its original byline as a second
+ * choice, so opening it to fix a typo doesn't change who wrote it.
+ */
+function bylineChoices(initialData?: Article) {
+  const owner = { name: SITE_OWNER.name, twitter: SITE_OWNER.twitter as string, bio: SITE_OWNER.bio as string }
+  if (!initialData?.author_name || isSiteOwner(initialData.author_name)) return [owner]
+  return [
+    owner,
+    {
+      name: initialData.author_name,
+      twitter: initialData.author_twitter || '',
+      bio: initialData.author_bio || '',
+    },
+  ]
+}
 
 const EMPTY_DOC: JSONContent = {
   type: 'doc',
@@ -107,14 +103,20 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     metaDescription: initialData?.meta_description || '',
     heroImageUrl: initialData?.hero_image_url || '',
     imageCredit: initialData?.image_credit || '',
-    authorName: initialData?.author_name || 'TDD Sports Staff',
-    authorBio: initialData?.author_bio || 'Covering the Lakers with passion and insight since day one.',
-    authorTwitter: initialData?.author_twitter || SOCIAL_HANDLE,
+    authorName: initialData?.author_name || SITE_OWNER.name,
+    authorBio: initialData?.author_name ? initialData.author_bio || '' : SITE_OWNER.bio,
+    authorTwitter: initialData?.author_name ? initialData.author_twitter || '' : SITE_OWNER.twitter,
     readTime: initialData?.read_time || 5,
     topic: initialData?.topic || 'Lakers',
     videoUrl: initialData?.video_url || '',
-    featured: initialData?.featured || false
+    featured: initialData?.featured || false,
+    // Older stories have no label until one is picked; saving requires one.
+    pieceType: (initialData?.article_type as string | null | undefined) || '',
+    rumorSource: initialData?.rumor_source || '',
+    noteKind: (initialData?.note_kind as string | null | undefined) || 'update',
+    noteText: initialData?.note_text || '',
   })
+  const authorChoices = bylineChoices(initialData)
 
   const [aiOpen, setAiOpen] = useState(false)
 
@@ -176,6 +178,13 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     try {
       if (!hasEditorContent(bodyContent)) {
         setError('Article body is required')
+        setLoading(false)
+        return
+      }
+
+      if (!formData.pieceType) {
+        setError('Pick a label: Opinion, Analysis, Report or Rumor.')
+        document.getElementById('piece-type')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         setLoading(false)
         return
       }
@@ -336,8 +345,64 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             {ARTICLE_TOPICS.map((topic) => (
               <option key={topic} value={topic}>{topic}</option>
             ))}
+            {/* A retired topic (e.g. "Rumors") stays selectable on the story
+                that has it, so opening it doesn't silently change it. */}
+            {initialData?.topic && !isArticleTopic(initialData.topic) && (
+              <option value={initialData.topic}>{initialData.topic} (retired, pick a new topic)</option>
+            )}
           </select>
         </div>
+
+        {/* The label readers see on the story and its cards. /standards
+            explains each one. Required, but checked on save rather than with
+            the browser's own `required`, whose bubble would point at a
+            visually hidden radio. */}
+        <fieldset id="piece-type" className="scroll-mt-32">
+          <legend className={LABEL}>Label</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {PIECE_TYPES.map((type) => {
+              const checked = formData.pieceType === type.value
+              return (
+                <label
+                  key={type.value}
+                  className={`flex min-h-[64px] cursor-pointer flex-col justify-center rounded border px-3 py-2 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-red-500 ${
+                    checked ? 'border-red-500 bg-red-600/15' : 'border-neutral-700 bg-neutral-900 hover:border-neutral-500'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="piece-type"
+                    value={type.value}
+                    checked={checked}
+                    onChange={() => setFormData({ ...formData, pieceType: type.value })}
+                    className="sr-only"
+                  />
+                  <span className="text-base font-bold text-white">{type.label}</span>
+                  <span className="mt-0.5 text-sm leading-snug text-neutral-400">{type.editorHint}</span>
+                </label>
+              )
+            })}
+          </div>
+          {!formData.pieceType && mode === 'edit' && (
+            <p className={HINT}>This story doesn&apos;t have a label yet. Pick one to save it.</p>
+          )}
+        </fieldset>
+
+        {formData.pieceType === 'rumor' && (
+          <div>
+            <label htmlFor="rumor-source" className={LABEL}>Who&apos;s reporting it?</label>
+            <input
+              id="rumor-source"
+              type="text"
+              value={formData.rumorSource}
+              onChange={(e) => setFormData({ ...formData, rumorSource: e.target.value })}
+              className={FIELD}
+              placeholder="e.g. Shams Charania, ESPN"
+              required
+            />
+            <p className={HINT}>Shown at the top of the story: who reported it and that it isn&apos;t confirmed.</p>
+          </div>
+        )}
 
         <div>
           <p className={LABEL} id="body-label">Story</p>
@@ -447,7 +512,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             id="article-author"
             value={formData.authorName}
             onChange={(e) => {
-              const selected = AUTHOR_PRESETS.find(a => a.name === e.target.value)
+              const selected = authorChoices.find(a => a.name === e.target.value)
               if (selected) {
                 setFormData({
                   ...formData,
@@ -460,14 +525,15 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             className={FIELD}
             required
           >
-            <option value="">Select an author...</option>
-            {AUTHOR_PRESETS.map((author) => (
+            {authorChoices.map((author, i) => (
               <option key={author.name} value={author.name}>
-                {author.name}
+                {i === 0 ? author.name : `${author.name} (original byline)`}
               </option>
             ))}
           </select>
-          <p className={HINT}>Fills in the handle and bio below.</p>
+          {authorChoices.length > 1 && (
+            <p className={HINT}>Older story: it keeps its original byline unless you switch it to yours.</p>
+          )}
         </div>
 
         <details className={DISCLOSURE}>
@@ -500,6 +566,63 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           </div>
         </details>
       </section>
+
+      {/* ---------- Update or correction ---------- */}
+      {mode === 'edit' && (
+        <section className={`${SECTION} mt-10`} aria-labelledby="note-heading">
+          <div>
+            <h2 id="note-heading" className={SECTION_TITLE}>Update or correction</h2>
+            <p className={HINT}>
+              Shows at the top of the story, dated the day you save it. Use Update for new information and Correction when something in the story was wrong. Clear the text to remove it.
+            </p>
+          </div>
+
+          <fieldset>
+            <legend className="sr-only">Note type</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {NOTE_KINDS.map((kind) => {
+                const checked = formData.noteKind === kind.value
+                return (
+                  <label
+                    key={kind.value}
+                    className={`flex min-h-[48px] cursor-pointer items-center justify-center rounded border px-3 text-base font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-red-500 ${
+                      checked ? 'border-red-500 bg-red-600/15 text-white' : 'border-neutral-700 bg-neutral-900 text-neutral-200 hover:border-neutral-500'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="note-kind"
+                      value={kind.value}
+                      checked={checked}
+                      onChange={() => setFormData({ ...formData, noteKind: kind.value })}
+                      className="sr-only"
+                    />
+                    {kind.label}
+                  </label>
+                )
+              })}
+            </div>
+          </fieldset>
+
+          <div>
+            <label htmlFor="note-text" className="sr-only">Note</label>
+            <textarea
+              id="note-text"
+              value={formData.noteText}
+              onChange={(e) => setFormData({ ...formData, noteText: e.target.value })}
+              className={`${FIELD} h-28`}
+              placeholder={formData.noteKind === 'correction'
+                ? 'e.g. An earlier version said the deal was for three years. It’s four.'
+                : 'e.g. The Lakers confirmed the trade Tuesday night.'}
+            />
+            {initialData?.note_at && formData.noteText.trim() && (
+              <p className={HINT}>
+                Current note dated {new Date(initialData.note_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}. Changing it re-dates it.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ---------- Publishing ---------- */}
       <section className={`${SECTION} mt-10`} aria-labelledby="publishing-heading">

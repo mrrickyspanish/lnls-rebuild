@@ -17,11 +17,11 @@ type NewsletterSignupProps = {
 const COPY = {
   footer: {
     heading: 'Never miss a dribble',
-    lede: 'New stories from The Daily Dribble: sports, tech, and the culture around the game.',
+    lede: 'My latest on sports, tech, and the culture around the game, in your inbox.',
   },
   story: {
     heading: 'Get the next one',
-    lede: 'New stories from The Daily Dribble, in your inbox.',
+    lede: 'New pieces from me, in your inbox.',
   },
 }
 
@@ -88,7 +88,7 @@ export default function NewsletterSignup({ variant = 'footer' }: NewsletterSignu
           </button>
           {status === 'error' && <p className="tdd-form-error" role="alert">{message}</p>}
           <p className="tdd-news-fine">
-            We respect your privacy. Unsubscribe anytime. <Link href="/privacy">Privacy Policy</Link>
+            I respect your privacy. Unsubscribe anytime. <Link href="/privacy">Privacy Policy</Link>
           </p>
         </form>
       )}

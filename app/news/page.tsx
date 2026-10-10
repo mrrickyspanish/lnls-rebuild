@@ -4,6 +4,7 @@ import { BookOpen, ChevronRight } from 'lucide-react';
 import { fetchPublishedArticles } from '@/lib/supabase/articles';
 import type { Article } from '@/types/supabase';
 import { isArticleTopic, topicFamily } from '@/lib/topics';
+import { pieceTypeInfo } from '@/lib/articles/piece-type';
 
 async function getArticles(): Promise<Article[]> {
   return fetchPublishedArticles(12);
@@ -11,8 +12,8 @@ async function getArticles(): Promise<Article[]> {
 
 // Chip color follows the topic family used across the site (lib/topics.ts):
 // on-field coverage orange, analysis blue, culture purple. This used to be a
-// separate per-topic map that had no entry for Football, Analysis or Rumors, so
-// those chips fell back to grey.
+// separate per-topic map that had no entry for Football or Analysis, so those
+// chips fell back to grey.
 const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
   games: 'border-neon-orange text-neon-orange',
   analysis: 'border-neon-blue text-neon-blue',
@@ -112,9 +113,16 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
                           )}
                         </div>
                         <div className="p-6 space-y-3">
-                          <span className={`inline-flex px-3 py-1 rounded-full border text-xs font-semibold tracking-wide uppercase ${colorClass}`}>
-                            {(article.topic || 'NBA').toUpperCase()}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`inline-flex px-3 py-1 rounded-full border text-xs font-semibold tracking-wide uppercase ${colorClass}`}>
+                              {(article.topic || 'NBA').toUpperCase()}
+                            </span>
+                            {pieceTypeInfo(article.article_type) && (
+                              <span className="tdd-kind" data-kind={article.article_type ?? undefined}>
+                                {pieceTypeInfo(article.article_type)?.label}
+                              </span>
+                            )}
+                          </div>
                           <h2 className={`font-display font-bold text-white group-hover:text-primary transition line-clamp-3 ${isHero ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`}>
                             {article.title}
                           </h2>

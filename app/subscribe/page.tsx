@@ -48,12 +48,12 @@ export default function SubscribePage() {
       <div className="bg-white/5 border border-white/10 rounded-lg p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Newsletter</h2>
         <p className="text-white/60 mb-6">
-          Weekly drops on what's worth talking about... sports, culture, tech, curated and straight to the point.
+          New pieces from me on what's worth talking about... sports, culture, tech, straight to your inbox and to the point.
         </p>
 
         {status === 'success' ? (
           <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400">
-            <p className="text-center font-semibold">You're in... check your email, we'll be in touch soon.</p>
+            <p className="text-center font-semibold">You're in... my next piece lands in your inbox.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,7 +80,7 @@ export default function SubscribePage() {
             </button>
 
             <p className="text-xs text-white/50 text-center">
-              We respect your privacy. Unsubscribe anytime.
+              I respect your privacy. Unsubscribe anytime.
             </p>
           </form>
         )}

@@ -1,4 +1,5 @@
 import { BRAND_NAME, EMAIL_REPLY_TO, emailFrom, sendOrThrow } from "@/lib/email";
+import { SITE_OWNER } from "@/lib/author";
 // app/api/newsletter/subscribe/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import type { PostgrestError } from "@supabase/supabase-js";
@@ -61,8 +62,8 @@ export async function POST(request: NextRequest) {
           html: `
             <div style="font-family:Arial,sans-serif;line-height:1.6">
               <h1>Welcome to ${BRAND_NAME}</h1>
-              <p>Thanks for subscribing. You'll get new stories as we publish them: sports, tech, and the culture around the game.</p>
-              <p>${BRAND_NAME}</p>
+              <p>Thanks for subscribing. You'll get my new pieces as I publish them: sports, tech, and the culture around the game.</p>
+              <p>${SITE_OWNER.name}<br>${BRAND_NAME}</p>
             </div>
           `,
         });

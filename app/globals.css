@@ -425,6 +425,31 @@ a.tdd-nav-icon { display: none; }
   margin-bottom: 13px;
 }
 
+/* ---------- Piece labels (lib/articles/piece-type.ts) --------------------
+   Opinion / Analysis / Report / Rumor, on the story and on its cards. Opinion
+   gets the accent fill because it's most of what's here; Rumor gets a dashed
+   edge so it never reads as settled. */
+.tdd-kind {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  padding: 5px 8px 4px;
+  border: 2px solid var(--tdd-ink);
+  color: var(--tdd-ink);
+}
+
+.tdd-kind[data-kind='opinion'] {
+  background: var(--neon-orange);
+  border-color: var(--neon-orange);
+  color: #0D0D0D;
+}
+
+.tdd-kind[data-kind='rumor'] { border-style: dashed; }
+
 /* ---------- Shared bits -------------------------------------------------- */
 .tdd-credit {
   font-size: 13px;
@@ -814,6 +839,91 @@ a:active .tdd-cta { transform: translateY(1px); }
 
 .tdd-about-cta > p { margin-top: 14px; }
 
+.tdd-about-section > h2 + p { margin-top: 22px; }
+.tdd-about-section > p + p { margin-top: 14px; }
+
+.tdd-about-link {
+  font-weight: 700;
+  color: var(--tdd-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.tdd-about-link:hover { color: var(--neon-orange); }
+
+/* ---------- Standards (app/standards) ------------------------------------ */
+.tdd-standards { padding-top: 40px; }
+
+.tdd-standards-hero {
+  padding-bottom: 32px;
+  border-bottom: 2px solid var(--tdd-ink);
+}
+
+.tdd-standards-hero h1 {
+  font-size: clamp(56px, 12vw, 128px);
+  line-height: 0.9;
+}
+
+.tdd-standards-hero p {
+  margin-top: 22px;
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.5;
+  color: var(--tdd-muted);
+  max-width: 46ch;
+}
+
+.tdd-standards-section { margin-top: 56px; }
+
+.tdd-standards-section > h2 {
+  font-size: clamp(30px, 4.6vw, 52px);
+  line-height: 0.95;
+}
+
+.tdd-standards-section > p {
+  margin-top: 18px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--tdd-muted);
+  max-width: 60ch;
+}
+
+.tdd-standards-section > p a,
+.tdd-standards-type p a {
+  color: var(--tdd-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tdd-standards-types { margin-top: 22px; }
+
+.tdd-standards-type {
+  display: grid;
+  gap: 12px;
+  padding: 22px 0;
+  border-top: 1px solid var(--tdd-rule);
+  scroll-margin-top: 96px;
+}
+
+.tdd-standards-type:last-child { border-bottom: 1px solid var(--tdd-rule); }
+.tdd-standards-type .tdd-kind { justify-self: start; }
+
+.tdd-standards-type p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #C9CCD1;
+  max-width: 60ch;
+}
+
+.tdd-standards-section[id] { scroll-margin-top: 96px; }
+
+@media (min-width: 760px) {
+  .tdd-standards-type {
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 32px;
+    align-items: baseline;
+  }
+}
+
 /* ---------- Auth (login, admin sign-up) ---------------------------------- */
 /* Same locks as the rest of the site: radius 0, orange only as the
    interaction accent (focus ring, button), one muted text color. */
@@ -930,6 +1040,14 @@ button.tdd-cta:disabled {
   color: var(--tdd-muted);
   margin-top: 14px;
 }
+
+.tdd-contact-section > p a {
+  color: var(--tdd-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tdd-contact-section > p a:hover { color: var(--neon-orange); }
 
 .tdd-contact-email {
   display: inline-block;
@@ -1303,6 +1421,45 @@ button.tdd-cta:disabled {
 }
 
 .tdd-story-byline strong { color: var(--tdd-ink); font-weight: 700; }
+
+.tdd-story-crumbs a.tdd-kind { color: var(--tdd-ink); margin-left: 6px; }
+.tdd-story-crumbs a.tdd-kind[data-kind='opinion'] { color: #0D0D0D; }
+.tdd-story-crumbs a.tdd-kind:hover { border-color: var(--neon-orange); }
+
+.tdd-story-author { color: inherit; }
+.tdd-story-author:hover strong { color: var(--neon-orange); }
+
+/* Rumor line and update/correction note, above the story text. */
+.tdd-story-flag {
+  margin: 0 0 28px;
+  padding: 14px 16px;
+  border-left: 4px solid var(--tdd-ink);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 17px;
+  line-height: 1.55;
+  color: #C9CCD1;
+}
+
+.tdd-story-flag[data-kind='rumor'] { border-left-style: dashed; }
+.tdd-story-flag[data-kind='correction'] { border-left-color: var(--neon-orange); }
+.tdd-story-flag + .tdd-story-flag { margin-top: -16px; }
+
+.tdd-story-flag-label {
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tdd-ink);
+}
+
+.tdd-story-flag a {
+  color: var(--tdd-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tdd-story-flag a:hover { color: var(--neon-orange); }
 
 /* Shown whole: capped in height, never cropped. Phones run it edge to edge. */
 .tdd-story-hero { margin: 0 -20px; }
@@ -1777,6 +1934,16 @@ body:has(.tdd-news--story) .tdd-footer-news { display: none; }
 
 .tdd-related-story .tdd-credit { margin-top: 10px; font-size: 14px; }
 
+.tdd-related-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 13px;
+}
+
+.tdd-related-tags .tdd-tag { margin-bottom: 0; }
+
 @media (hover: hover) {
   .tdd-related-story:hover h3 { color: var(--neon-orange); }
   .tdd-related-story:hover .tdd-related-art img { transform: scale(1.03); }
@@ -1827,6 +1994,21 @@ body:has(.tdd-news--story) .tdd-footer-news { display: none; }
 }
 
 .tdd-author-handle:hover { color: var(--neon-orange); }
+
+.tdd-author-name a { color: inherit; transition: color 0.18s var(--tdd-ease); }
+.tdd-author-name a:hover { color: var(--neon-orange); }
+
+.tdd-author-more {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tdd-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tdd-author-more:hover { color: var(--neon-orange); }
 
 .tdd-author-bio {
   margin-top: 10px;

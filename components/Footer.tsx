@@ -11,9 +11,8 @@ const SECTIONS = [
   { href: '/about', label: 'About' },
 ]
 
-// Pitches go to the inbox. "Write for Us" used to link to /admin, which is the
-// staff login, so a prospective writer landed on a sign-in wall.
-const WRITE_FOR_US = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Write for The Daily Dribble')}`
+// One writer, so there's no "Write for us": readers send tips instead.
+const SEND_A_TIP = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Tip for The Daily Dribble')}`
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -57,7 +56,7 @@ export default function Footer() {
             <h2>Connect</h2>
             <ul className="tdd-footer-links">
               <li><Link href="/contact">Contact</Link></li>
-              <li><a href={WRITE_FOR_US}>Write for us</a></li>
+              <li><a href={SEND_A_TIP}>Send a tip</a></li>
               {SOCIALS.map(social => (
                 <li key={social.label}>
                   <a
@@ -79,7 +78,8 @@ export default function Footer() {
           <nav aria-label="Legal" className="tdd-footer-legal-links">
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>
-            <Link href="/login">Staff sign in</Link>
+            <Link href="/standards">How I work</Link>
+            <Link href="/login">Sign in</Link>
           </nav>
           <p className="tdd-footer-disclaimer">
             The Daily Dribble is an independent media outlet and is not affiliated with the NBA or any specific team.

@@ -2,30 +2,11 @@ import { normalizeArticleBody } from '@/lib/articles/body'
 import { createSupabaseAnonClient, createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { Article, Database } from '@/types/supabase'
 
-const ARTICLE_FIELDS = `
-  id,
-  title,
-  slug,
-  excerpt,
-  meta_description,
-  hero_image_url,
-  image_credit,
-  author_name,
-  author_bio,
-  author_twitter,
-  read_time,
-  topic,
-  body,
-  video_url,
-  published,
-  featured,
-  published_at,
-  last_newsletter_sent_at,
-  created_at,
-  updated_at,
-  views,
-  likes
-`
+// Every column. Kept as '*' rather than a list so that a column added by a
+// migration (e.g. supabase/add_piece_labels_and_notes.sql) is picked up once
+// it exists, and its absence before then can't break every page that reads
+// articles: a listed column that doesn't exist fails the whole query.
+const ARTICLE_FIELDS = '*'
 
 type ArticleRow = Database['public']['Tables']['articles']['Row']
 

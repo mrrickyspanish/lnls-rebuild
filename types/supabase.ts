@@ -1,3 +1,5 @@
+import type { NoteKind, PieceType } from '@/lib/articles/piece-type';
+
 // Featured Modal Config Table Types
 export type FeaturedModalConfigRow = {
   id: number;
@@ -85,6 +87,13 @@ export interface Database {
           updated_at: string;
           views: number;
           likes: number;
+          // Added by supabase/add_piece_labels_and_notes.sql. Optional because
+          // reads use select('*'), so they're absent until that SQL is run.
+          article_type?: PieceType | null;
+          rumor_source?: string | null;
+          note_kind?: NoteKind | null;
+          note_text?: string | null;
+          note_at?: string | null;
         };
         Insert: {
           id?: string;
@@ -107,6 +116,8 @@ export interface Database {
           last_newsletter_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          article_type?: PieceType | null;
+          rumor_source?: string | null;
         };
         Update: {
           id?: string;
@@ -130,6 +141,11 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           views?: number;
+          article_type?: PieceType | null;
+          rumor_source?: string | null;
+          note_kind?: NoteKind | null;
+          note_text?: string | null;
+          note_at?: string | null;
         };
         Relationships: [];
       };

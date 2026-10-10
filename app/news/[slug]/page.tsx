@@ -16,6 +16,12 @@ import ViewTracker from "@/components/article/ViewTracker";
 import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
 import { isArticleTopic, topicFamily } from "@/lib/topics";
+import { noteKindLabel, pieceTypeInfo } from "@/lib/articles/piece-type";
+import { SITE_OWNER, SITE_OWNER_X_URL, isSiteOwner } from "@/lib/author";
+
+function longDate(value: string) {
+  return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
 
 type ArticleSlide = {
   image_url: string;
@@ -111,15 +117,25 @@ export default async function ArticlePage({ params }: PageProps) {
   const siteUrl = getSiteUrl();
   const shareUrl = `${siteUrl}/news/${slug}`;
 
-  // JSON-LD structured data for this article
+  const pieceType = pieceTypeInfo(article.article_type);
+  const byOwner = isSiteOwner(article.author_name);
+  const note = article.note_text?.trim() ? article.note_text.trim() : null;
+
+  // JSON-LD structured data for this article. The labeled types
+  // (OpinionNewsArticle etc.) tell search engines a take from news.
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': pieceType?.schemaType ?? 'Article',
     headline: article.title,
     description: article.excerpt || '',
     image: article.hero_image_url ? [article.hero_image_url] : undefined,
-    author: article.author_name ? { '@type': 'Person', name: article.author_name } : undefined,
+    author: !article.author_name
+      ? undefined
+      : byOwner
+        ? { '@type': 'Person', name: SITE_OWNER.name, url: `${siteUrl}${SITE_OWNER.aboutPath}`, sameAs: [SITE_OWNER_X_URL] }
+        : { '@type': 'Person', name: article.author_name },
     datePublished: article.published_at || article.created_at,
+    dateModified: article.note_at || article.updated_at || undefined,
     url: shareUrl,
     publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
@@ -152,21 +168,34 @@ export default async function ArticlePage({ params }: PageProps) {
                   </Link>
                 </>
               )}
+              {pieceType && (
+                <Link
+                  href={`/standards#${pieceType.value}`}
+                  className="tdd-kind"
+                  data-kind={pieceType.value}
+                  title={`What "${pieceType.label}" means`}
+                >
+                  {pieceType.label}
+                </Link>
+              )}
             </nav>
             <h1 className="tdd-story-title" data-length={article.title.length > 70 ? "long" : undefined}>{article.title}</h1>
             {article.excerpt && <p className="tdd-story-dek">{article.excerpt}</p>}
             <p className="tdd-story-byline">
               {article.author_name && (
                 <>
-                  <span>By <strong>{article.author_name}</strong></span>
+                  <span>
+                    By{" "}
+                    {byOwner
+                      ? <Link href={SITE_OWNER.aboutPath} className="tdd-story-author"><strong>{article.author_name}</strong></Link>
+                      : <strong>{article.author_name}</strong>}
+                  </span>
                   <span aria-hidden="true">·</span>
                 </>
               )}
               {publishedAt && (
                 <>
-                  <time dateTime={publishedAt}>
-                    {new Date(publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
-                  </time>
+                  <time dateTime={publishedAt}>{longDate(publishedAt)}</time>
                   <span aria-hidden="true">·</span>
                 </>
               )}
@@ -179,6 +208,28 @@ export default async function ArticlePage({ params }: PageProps) {
         <div className="tdd-story-main">
           <ShareBar url={shareUrl} title={article.title} slug={slug} initialLikes={article.likes || 0} />
           <div className="tdd-story-text">
+            {/* Above the story, so nobody reads a rumor as fact or misses
+                that a story changed after it went up. */}
+            {pieceType?.value === 'rumor' && (
+              <aside className="tdd-story-flag" data-kind="rumor" aria-label="Rumor">
+                <p className="tdd-story-flag-label">Rumor · Not confirmed</p>
+                <p>
+                  {article.rumor_source
+                    ? <>Reported by {article.rumor_source}. </>
+                    : null}
+                  <Link href="/standards#rumors">How I handle rumors</Link>
+                </p>
+              </aside>
+            )}
+            {note && (
+              <aside className="tdd-story-flag" data-kind={article.note_kind === 'correction' ? 'correction' : 'update'} aria-label={noteKindLabel(article.note_kind)}>
+                <p className="tdd-story-flag-label">
+                  {noteKindLabel(article.note_kind)}
+                  {article.note_at && <> · <time dateTime={article.note_at}>{longDate(article.note_at)}</time></>}
+                </p>
+                <p>{note}</p>
+              </aside>
+            )}
             {article.body && <ArticleBody content={article.body} />}
             <AuthorCard
               author={{
@@ -186,6 +237,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 bio: article.author_bio || undefined,
                 twitter: article.author_twitter || undefined,
               }}
+              href={byOwner ? SITE_OWNER.aboutPath : undefined}
             />
             <NewsletterSignup variant="story" />
           </div>

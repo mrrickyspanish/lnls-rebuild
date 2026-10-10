@@ -3,10 +3,11 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
 import { isRichTextContent } from '@/lib/articles/body'
+import { missingColumnMessage, readTrustFields, type TrustFieldsPayload } from '@/lib/articles/trust-fields'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { ArticleBody, ArticleUpdate } from '@/types/supabase'
 
-interface UpdateArticlePayload {
+interface UpdateArticlePayload extends TrustFieldsPayload {
   title: string
   excerpt: string
   metaDescription?: string
@@ -69,14 +70,20 @@ export async function PATCH(
       return NextResponse.json({ error: errorMessage }, { status: 400 })
     }
 
+    const trust = readTrustFields(rawPayload)
+    if (!trust.fields) {
+      return NextResponse.json({ error: trust.error }, { status: 400 })
+    }
+
     const supabase = createSupabaseServiceClient()
 
-    // Check if article exists
+    // Check the article exists, and read its current note. '*' rather than
+    // naming note_text, so this lookup still works before the migration.
     const { data: existingArticle, error: fetchError } = await supabase
       .from('articles')
-      .select('id')
+      .select('*')
       .eq('slug', slug)
-      .maybeSingle<{ id: string }>()
+      .maybeSingle<{ id: string; note_text?: string | null; note_kind?: string | null }>()
 
     if (fetchError || !existingArticle) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
@@ -96,7 +103,17 @@ export async function PATCH(
       body: rawPayload.body,
       video_url: rawPayload.videoUrl?.trim() || null,
       featured: Boolean(rawPayload.featured),
-      // We don't update slug, published_at, or created_at on edit usually
+      // slug, published_at and created_at stay as they were.
+      ...trust.fields,
+    }
+
+    // The note's date is the date it was written or last changed, so a
+    // reader can see when the story changed. Re-saving leaves it alone.
+    const noteChanged =
+      (existingArticle.note_text ?? null) !== trust.fields.note_text ||
+      (existingArticle.note_kind ?? null) !== trust.fields.note_kind
+    if (noteChanged) {
+      updatePayload.note_at = trust.fields.note_text ? new Date().toISOString() : null
     }
 
     const { error: updateError } = await supabase
@@ -106,7 +123,10 @@ export async function PATCH(
 
     if (updateError) {
       console.error('Article update failed:', updateError)
-      return NextResponse.json({ error: 'Failed to update article' }, { status: 500 })
+      return NextResponse.json(
+        { error: missingColumnMessage(updateError) ?? 'Failed to update article' },
+        { status: 500 }
+      )
     }
 
     revalidatePath('/news')
