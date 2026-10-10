@@ -21,6 +21,7 @@ interface UpdateArticlePayload extends TrustFieldsPayload {
   body: ArticleBody
   videoUrl?: string
   featured?: boolean
+  coverHasText?: boolean
 }
 
 const REQUIRED_FIELDS: Array<keyof UpdateArticlePayload> = [
@@ -105,6 +106,7 @@ export async function PATCH(
       featured: Boolean(rawPayload.featured),
       // slug, published_at and created_at stay as they were.
       ...trust.fields,
+      cover_has_text: Boolean(rawPayload.coverHasText),
     }
 
     // The note's date is the date it was written or last changed, so a

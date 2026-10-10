@@ -17,6 +17,7 @@ export default async function HomePage() {
     source_url: `/news/${article.slug}`, content_type: 'article',
     published_at: article.published_at || article.created_at,
     topic: article.topic || undefined, author_name: article.author_name || undefined,
+    article_type: article.article_type ?? null, cover_has_text: Boolean(article.cover_has_text),
   })) : []
   const podcasts = podcastResult.status === 'fulfilled' ? podcastResult.value.map(episode => ({
     ...episode, excerpt: episode.description, source_url: episode.audio_url, content_type: 'podcast',

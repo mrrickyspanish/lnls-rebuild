@@ -36,7 +36,10 @@ export default function RelatedStories({ articles }: RelatedStoriesProps) {
         {articles.map((article) => (
           <li key={article.id}>
             <Link href={`/news/${article.slug}`} className="tdd-related-story">
-              <div className="tdd-related-art">
+              <div
+                className={`tdd-related-art ${article.cover_has_text && article.hero_image_url ? 'tdd-related-art--whole' : ''}`}
+                style={article.cover_has_text && article.hero_image_url ? ({ '--shot': `url(${JSON.stringify(article.hero_image_url)})` } as React.CSSProperties) : undefined}
+              >
                 {article.hero_image_url
                   ? <img src={article.hero_image_url} alt="" loading="lazy" decoding="async" />
                   : <span className="tdd-related-fallback" aria-hidden="true">TDD</span>}

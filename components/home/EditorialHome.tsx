@@ -5,11 +5,13 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Play } from 'lucide-react'
 import { useAudioPlayer } from '@/lib/audio/AudioPlayerContext'
 import { topicFamily, PODCAST_FAMILY, VIDEO_FAMILY } from '@/lib/topics'
+import { pieceTypeInfo } from '@/lib/articles/piece-type'
 
 export type EditorialItem = {
   id: string | number; title: string; excerpt?: string; description?: string;
   image_url?: string | null; source_url?: string | null; published_at?: string | null;
   content_type?: string | null; topic?: string; author_name?: string; audio_url?: string;
+  article_type?: string | null; cover_has_text?: boolean;
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const
@@ -31,14 +33,18 @@ function credit(item: EditorialItem) {
 }
 
 /**
- * Art. Every image is cast in its story's family color and returns to full
- * color on hover, which is the front page's one recurring visual device.
- * The cast is a static filter plus a blend overlay, never an animation, so it
- * costs nothing while scrolling.
+ * Art, in true color. Clean covers fill their frame. A cover with words
+ * designed into it (cover_has_text) is shown whole instead, over a blurred
+ * copy of itself, so its words are never cropped off.
  */
 function Shot({ item, family, className = '' }: { item: EditorialItem; family: string; className?: string }) {
+  const whole = Boolean(item.cover_has_text && item.image_url)
   return (
-    <div className={`tdd-shot ${className}`} data-family={family}>
+    <div
+      className={`tdd-shot ${whole ? 'tdd-shot--whole' : ''} ${className}`}
+      data-family={family}
+      style={whole ? ({ '--shot': `url(${JSON.stringify(item.image_url)})` } as React.CSSProperties) : undefined}
+    >
       {item.image_url
         ? <img src={item.image_url} alt="" loading="lazy" decoding="async" />
         : <span className="tdd-shot-fallback" aria-hidden="true">TDD</span>}
@@ -62,9 +68,17 @@ function Reveal({ children, delay = 0, className }: { children: React.ReactNode;
   )
 }
 
-function Tag({ topic }: { topic?: string }) {
-  if (!topic) return null
-  return <span className="tdd-tag" data-family={topicFamily(topic)}>{topic}</span>
+/** Topic tag plus the piece label (Opinion, Analysis, Report, Rumor). */
+function Tag({ topic, type }: { topic?: string; type?: string | null }) {
+  const label = pieceTypeInfo(type)
+  const showTopic = topic && topic !== 'FEATURED'
+  if (!showTopic && !label) return null
+  return (
+    <div className="tdd-tags">
+      {showTopic && <span className="tdd-tag" data-family={topicFamily(topic)}>{topic}</span>}
+      {label && <span className="tdd-kind" data-kind={label.value}>{label.label}</span>}
+    </div>
+  )
 }
 
 export default function EditorialHome({
@@ -118,8 +132,10 @@ export default function EditorialHome({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
             >
-              <Tag topic={cover.topic} />
-              <h1>{cover.title}</h1>
+              <Tag topic={cover.topic} type={cover.article_type} />
+              {/* Long headlines step down a size instead of running to seven
+                  lines (globals.css, .tdd-cover-copy h1[data-length]). */}
+              <h1 data-length={cover.title.length > 90 ? 'xlong' : cover.title.length > 60 ? 'long' : undefined}>{cover.title}</h1>
               {summary(cover, 210) && <p className="tdd-cover-summary">{summary(cover, 210)}</p>}
               {credit(cover) && <p className="tdd-credit">{credit(cover)}</p>}
               <span className="tdd-cta">Read the story</span>
@@ -141,7 +157,7 @@ export default function EditorialHome({
               <Link href={item.source_url || '/news'} className="tdd-deck-story">
                 <Shot item={item} family={topicFamily(item.topic)} className="tdd-deck-art" />
                 <div>
-                  <Tag topic={item.topic} />
+                  <Tag topic={item.topic} type={item.article_type} />
                   <h3>{item.title}</h3>
                   {credit(item) && <p className="tdd-credit">{credit(item)}</p>}
                 </div>
@@ -163,7 +179,7 @@ export default function EditorialHome({
             {index.map((item, position) => (
               <Reveal key={item.id} delay={Math.min(position, 5) * 0.05}>
                 <Link href={item.source_url || '/news'} className="tdd-index-story">
-                  <Tag topic={item.topic} />
+                  <Tag topic={item.topic} type={item.article_type} />
                   <h3>{item.title}</h3>
                   {credit(item) && <p className="tdd-credit">{credit(item)}</p>}
                 </Link>

@@ -85,13 +85,13 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
                                 src={article.hero_image_url}
                                 alt={article.title}
                                 fill
-                                className="object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                                className={article.cover_has_text ? "object-contain bg-black" : "object-cover group-hover:scale-105 transition-transform duration-500"}
                               />
                             ) : (
                               <img
                                 src={article.hero_image_url}
                                 alt={article.title}
-                                className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                                className={`absolute inset-0 w-full h-full ${article.cover_has_text ? "object-contain bg-black" : "object-cover group-hover:scale-105 transition-transform duration-500"}`}
                                 loading="lazy"
                               />
                             )

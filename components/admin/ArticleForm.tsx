@@ -39,6 +39,39 @@ function bylineChoices(initialData?: Article) {
   ]
 }
 
+/**
+ * House style for AI covers. Clean images only: the site sets the headline,
+ * label and logo itself, on the page and in the share graphics.
+ */
+const AI_COVER_PROMPT = 'Wide 16:9 editorial sports photograph of [DESCRIBE THE SCENE]. Dramatic arena or stadium lighting, shallow depth of field, shot like a real sports photographer, rich true color with warm orange highlights. No text, words, letters, numbers or logos anywhere, including jerseys, signs and scoreboards. No watermark. Main subject centered with room around it.'
+
+const SHARE_SIZES = [
+  { format: 'post', label: 'Post', ratio: '4:5', aspect: 'aspect-[4/5]' },
+  { format: 'story', label: 'Story', ratio: '9:16', aspect: 'aspect-[9/16]' },
+  { format: 'square', label: 'Square', ratio: '1:1', aspect: 'aspect-square' },
+] as const
+
+/**
+ * The share-graphic renderer reads JPEG and PNG only, so a WebP or GIF cover
+ * is redrawn as a JPEG before upload. Very large images are scaled down to
+ * 2400px wide on the way, which also keeps them under the upload limit.
+ */
+async function toUploadableImage(file: File): Promise<File> {
+  const drawable = file.type === 'image/jpeg' || file.type === 'image/png'
+  const bitmap = await createImageBitmap(file).catch(() => null)
+  if (!bitmap) return file
+  const scale = Math.min(1, 2400 / bitmap.width)
+  if (drawable && scale === 1) { bitmap.close(); return file }
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bitmap.width * scale)
+  canvas.height = Math.round(bitmap.height * scale)
+  canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+  bitmap.close()
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9))
+  if (!blob) return file
+  return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' })
+}
+
 const EMPTY_DOC: JSONContent = {
   type: 'doc',
   content: [
@@ -110,6 +143,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     topic: initialData?.topic || 'Lakers',
     videoUrl: initialData?.video_url || '',
     featured: initialData?.featured || false,
+    coverHasText: Boolean(initialData?.cover_has_text),
     // Older stories have no label until one is picked; saving requires one.
     pieceType: (initialData?.article_type as string | null | undefined) || '',
     rumorSource: initialData?.rumor_source || '',
@@ -119,6 +153,17 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const authorChoices = bylineChoices(initialData)
 
   const [aiOpen, setAiOpen] = useState(false)
+  const [promptCopied, setPromptCopied] = useState(false)
+
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(AI_COVER_PROMPT)
+      setPromptCopied(true)
+      setTimeout(() => setPromptCopied(false), 2500)
+    } catch {
+      setError('Couldn’t copy. Press and hold the prompt text to copy it instead.')
+    }
+  }
 
   const [bodyContent, setBodyContent] = useState<JSONContent>(
     toEditorContent(initialData?.body)
@@ -129,8 +174,9 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   // Cover image only. Images inside the story go through the editor's own
   // image button, which also asks for a caption and width.
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const picked = e.target.files?.[0]
+    if (!picked) return
+    const file = await toUploadableImage(picked)
 
     if (file.size > MAX_MB * 1024 * 1024) {
       setError(`File must be under ${MAX_MB}MB (current ${(file.size / 1024 / 1024).toFixed(1)}MB)`)
@@ -160,7 +206,8 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
         throw new Error(data.error || 'Upload failed')
       }
 
-      setFormData(prev => ({ ...prev, heroImageUrl: data.path }))
+      // A new upload is assumed to be a clean image (no words on it).
+      setFormData(prev => ({ ...prev, heroImageUrl: data.path, coverHasText: false }))
       setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload image')
@@ -420,7 +467,32 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
 
       {/* ---------- Cover image ---------- */}
       <section className={`${SECTION} mt-10`} aria-labelledby="cover-heading">
-        <h2 id="cover-heading" className={SECTION_TITLE}>Cover image</h2>
+        <div>
+          <h2 id="cover-heading" className={SECTION_TITLE}>Cover image</h2>
+          <p className={HINT}>
+            Wide 16:9 (e.g. 1920×1080) with no words on it. The site adds the headline, label and logo everywhere the cover shows.
+          </p>
+        </div>
+
+        <details className={DISCLOSURE}>
+          <summary className={DISCLOSURE_SUMMARY}>
+            <span>AI image prompt <span className="font-normal text-neutral-400">(house style)</span></span>
+            <span className="text-neutral-500" aria-hidden="true">▼</span>
+          </summary>
+          <div className="space-y-3 px-4 pb-4">
+            <p className="select-all rounded border border-neutral-800 bg-neutral-900 p-3 text-base leading-relaxed text-neutral-200">
+              {AI_COVER_PROMPT}
+            </p>
+            <button
+              type="button"
+              onClick={copyPrompt}
+              className="min-h-[48px] w-full rounded border border-neutral-600 px-4 text-base font-semibold text-white hover:border-red-500"
+            >
+              {promptCopied ? 'Copied ✓' : 'Copy prompt'}
+            </button>
+            <p className={HINT}>Replace [DESCRIBE THE SCENE], then paste it into your image tool.</p>
+          </div>
+        </details>
 
         <div>
           <input
@@ -464,6 +536,22 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             placeholder="https://… or /uploads/articles/…"
           />
         </div>
+
+        <label htmlFor="cover-has-text" className="flex min-h-[48px] cursor-pointer items-start gap-3 rounded border border-neutral-800 bg-neutral-950 px-4 py-3">
+          <input
+            id="cover-has-text"
+            type="checkbox"
+            checked={formData.coverHasText}
+            onChange={(e) => setFormData({ ...formData, coverHasText: e.target.checked })}
+            className="mt-0.5 h-5 w-5 shrink-0 accent-red-600"
+          />
+          <span>
+            <span className="block text-base">Cover has words on it</span>
+            <span className="mt-0.5 block text-sm text-neutral-400">
+              Shown whole so the words aren&apos;t cut off, and left out of share graphics so the headline doesn&apos;t appear twice.
+            </span>
+          </span>
+        </label>
 
         <div>
           <label htmlFor="hero-credit" className={LABEL}>Photo credit</label>
@@ -566,6 +654,39 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           </div>
         </details>
       </section>
+
+      {/* ---------- Share graphics ---------- */}
+      {mode === 'edit' && !isDraft && initialData?.slug && (
+        <section className={`${SECTION} mt-10`} aria-labelledby="share-heading">
+          <div>
+            <h2 id="share-heading" className={SECTION_TITLE}>Share graphics</h2>
+            <p className={HINT}>
+              Made from the saved story: cover, label and headline. Save first if you&apos;ve changed any of them. Link previews on X and in texts are made automatically.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {SHARE_SIZES.map((size) => {
+              const src = `/news/${initialData.slug}/share/${size.format}?v=${encodeURIComponent(initialData.updated_at || '')}`
+              return (
+                <div key={size.format} className="flex flex-col gap-2">
+                  <a href={src} target="_blank" rel="noopener noreferrer" className={`block ${size.aspect} overflow-hidden rounded border border-neutral-800 bg-neutral-900`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt={`${size.label} graphic preview`} loading="lazy" className="h-full w-full object-cover" />
+                  </a>
+                  <a
+                    href={`${src}&download=1`}
+                    download={`${initialData.slug}-${size.format}.png`}
+                    className="flex min-h-[48px] flex-col items-center justify-center rounded bg-neutral-800 px-2 text-center text-base font-semibold text-white hover:bg-neutral-700"
+                  >
+                    {size.label}
+                    <span className="text-sm font-normal text-neutral-400">{size.ratio}</span>
+                  </a>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ---------- Update or correction ---------- */}
       {mode === 'edit' && (

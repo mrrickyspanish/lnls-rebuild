@@ -368,9 +368,10 @@ a.tdd-nav-icon { display: none; }
   .tdd-dateline-line { text-align: right; }
 }
 
-/* ---------- Art: the recurring device ------------------------------------ */
-/* Every image is cast in its story's family color and returns to full color on
-   hover. Static filter plus one blend overlay, so scrolling costs nothing. */
+/* ---------- Art ---------------------------------------------------------- */
+/* True color. The topic-color cast that used to sit on every image flattened
+   photos and muddied AI art; the topic color now lives in the tag and label.
+   Covers are clean 16:9 images, so they fill the frame. */
 .tdd-shot {
   position: relative;
   isolation: isolate;
@@ -385,18 +386,20 @@ a.tdd-nav-icon { display: none; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.07) brightness(0.93);
 }
 
-.tdd-shot::after {
+/* A cover with words designed into it is shown whole, over a blurred,
+   darkened copy of itself, so its words are never cropped off. */
+.tdd-shot--whole::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: var(--family, var(--neon-orange));
-  mix-blend-mode: color;
-  opacity: 0.52;
-  pointer-events: none;
+  inset: -24px;
+  background: var(--shot) center / cover no-repeat;
+  filter: blur(22px) brightness(0.45);
+  z-index: -1;
 }
+
+.tdd-shot--whole img { object-fit: contain; }
 
 .tdd-shot-fallback {
   font-family: var(--tdd-display);
@@ -406,11 +409,21 @@ a.tdd-nav-icon { display: none; }
 }
 
 @media (hover: hover) {
-  .tdd-shot img,
-  .tdd-shot::after { transition: filter 0.45s var(--tdd-ease), opacity 0.45s var(--tdd-ease); }
-  a:hover .tdd-shot img { filter: none; }
-  a:hover .tdd-shot::after { opacity: 0; }
+  .tdd-shot img { transition: transform 0.45s var(--tdd-ease); }
+  a:hover .tdd-shot:not(.tdd-shot--whole) img { transform: scale(1.03); }
 }
+
+/* Topic tag and piece label, side by side. */
+.tdd-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 13px;
+}
+
+.tdd-tags .tdd-tag { margin-bottom: 0; }
+.tdd-index-story .tdd-tags { margin-bottom: 10px; }
 
 /* ---------- Topic tag ---------------------------------------------------- */
 .tdd-tag {
@@ -509,7 +522,7 @@ a:active .tdd-cta { transform: translateY(1px); }
 
 .tdd-cover-art {
   width: 100%;
-  height: clamp(210px, 34vh, 310px);
+  aspect-ratio: 16 / 9;
 }
 
 .tdd-cover-art .tdd-shot { width: 100%; height: 100%; }
@@ -526,6 +539,9 @@ a:active .tdd-cta { transform: translateY(1px); }
   letter-spacing: 0.002em;
 }
 
+.tdd-cover-copy h1[data-length='long'] { font-size: clamp(34px, 6vw, 64px); }
+.tdd-cover-copy h1[data-length='xlong'] { font-size: clamp(30px, 5vw, 54px); }
+
 .tdd-cover-summary {
   font-size: 17px;
   line-height: 1.6;
@@ -538,15 +554,19 @@ a:active .tdd-cta { transform: translateY(1px); }
   overflow: hidden;
 }
 
+/* Desktop: headline beside the art, the same arrangement as the story page,
+   so the lead story's words are on the first screen next to its cover. */
 @media (min-width: 900px) {
-  .tdd-cover-art { height: clamp(300px, 40vh, 392px); }
-  /* The copy block breaks the image's left edge. The overlap is the crop. */
-  .tdd-cover-copy {
-    margin: -84px 0 0 0;
-    width: 100%;
-    padding: 24px 8% 4px 0;
+  .tdd-cover-link {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 44px;
+    align-items: center;
   }
-  .tdd-cover-summary { -webkit-line-clamp: 2; }
+  .tdd-cover-copy { order: -1; padding-top: 0; }
+  .tdd-cover-copy h1 { font-size: clamp(44px, 4.6vw, 76px); }
+  .tdd-cover-copy h1[data-length='long'] { font-size: clamp(38px, 3.7vw, 60px); }
+  .tdd-cover-copy h1[data-length='xlong'] { font-size: clamp(34px, 3.1vw, 50px); }
 }
 
 /* ---------- Deck --------------------------------------------------------- */
@@ -561,7 +581,7 @@ a:active .tdd-cta { transform: translateY(1px); }
 .tdd-deck-story { display: block; }
 
 .tdd-deck-art {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   margin-bottom: 18px;
 }
 
@@ -597,7 +617,6 @@ a:active .tdd-cta { transform: translateY(1px); }
 .tdd-deck-story:hover h3,
 .tdd-video-story:hover h3 { color: var(--neon-orange); }
 
-.tdd-index-story .tdd-tag { margin-bottom: 10px; }
 
 @media (min-width: 700px) {
   .tdd-index { grid-template-columns: 1fr 1fr; gap: 40px 48px; }
@@ -721,7 +740,6 @@ a:active .tdd-cta { transform: translateY(1px); }
 /* ---------- Reduced motion ----------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .tdd-shot img,
-  .tdd-shot::after,
   .tdd-index-story h3,
   .tdd-deck-story h3,
   .tdd-video-story h3,
@@ -1912,6 +1930,20 @@ body:has(.tdd-news--story) .tdd-footer-news { display: none; }
   transition: transform 0.45s var(--tdd-ease);
 }
 
+.tdd-related-art--whole { isolation: isolate; }
+
+/* Same rule as the home page: a cover with words on it is shown whole. */
+.tdd-related-art--whole::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  background: var(--shot) center / cover no-repeat;
+  filter: blur(22px) brightness(0.45);
+  z-index: -1;
+}
+
+.tdd-related-art--whole img { object-fit: contain; }
+
 .tdd-related-fallback {
   position: absolute;
   inset: 0;
@@ -1946,7 +1978,7 @@ body:has(.tdd-news--story) .tdd-footer-news { display: none; }
 
 @media (hover: hover) {
   .tdd-related-story:hover h3 { color: var(--neon-orange); }
-  .tdd-related-story:hover .tdd-related-art img { transform: scale(1.03); }
+  .tdd-related-story:hover .tdd-related-art:not(.tdd-related-art--whole) img { transform: scale(1.03); }
 }
 
 @media (prefers-reduced-motion: reduce) {

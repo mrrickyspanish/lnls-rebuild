@@ -65,10 +65,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!article) return { title: "Article not found" };
   const siteUrl = getSiteUrl();
   const url = `${siteUrl.replace(/\/$/, "")}/news/${slug}`;
-  // No stored fallback: that asset does not exist. When an article has no
-  // hero, the generated site card (app/opengraph-image.tsx) is inherited.
-  const image = article.hero_image_url || null;
   const description = article.meta_description || article.excerpt || "TDD article";
+  // The preview image comes from ./opengraph-image.tsx (cover, label and
+  // headline, generated). X falls back to it when no twitter:image is set.
   return {
     title: article.title,
     description,
@@ -77,15 +76,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url,
       type: "article",
-      ...(image
-        ? { images: [{ url: image, width: 1200, height: 630, alt: article.title }] }
-        : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description,
-      ...(image ? { images: [image] } : {}),
     },
   };
 }

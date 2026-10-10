@@ -22,6 +22,7 @@ interface SubmitArticlePayload extends TrustFieldsPayload {
   body: ArticleBody
   videoUrl?: string
   featured?: boolean
+  coverHasText?: boolean
   slug?: string
 }
 
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
       // A new story has nothing to update or correct yet.
       article_type: trust.fields.article_type,
       rumor_source: trust.fields.rumor_source,
+      cover_has_text: Boolean(rawPayload.coverHasText),
     }
 
     const { error: insertError } = await (supabase.from('articles') as any).insert([insertPayload])
