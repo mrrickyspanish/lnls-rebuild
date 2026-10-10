@@ -211,7 +211,7 @@ function EmptyState({ query }: { query: string }) {
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
       <p className="text-slate-400 mb-6 max-w-md mx-auto">
-        We couldn't find anything matching "{query}". Try different keywords or check out our latest content.
+        Nothing here matches "{query}" yet. Try different keywords, or check out my latest.
       </p>
       <div className="flex gap-4 justify-center">
         <Link href="/news" className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors">

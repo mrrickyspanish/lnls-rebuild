@@ -3,11 +3,12 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
 import { isRichTextContent } from '@/lib/articles/body'
+import { missingColumnMessage, readTrustFields, type TrustFieldsPayload } from '@/lib/articles/trust-fields'
 import { generateSlug } from '@/lib/slug'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { ArticleBody, ArticleInsert } from '@/types/supabase'
 
-interface SubmitArticlePayload {
+interface SubmitArticlePayload extends TrustFieldsPayload {
   title: string
   excerpt: string
   metaDescription?: string
@@ -67,6 +68,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 })
     }
 
+    const trust = readTrustFields(rawPayload)
+    if (!trust.fields) {
+      return NextResponse.json({ error: trust.error }, { status: 400 })
+    }
+
     const supabase = createSupabaseServiceClient()
     const slug = generateSlug(rawPayload.slug || rawPayload.title)
 
@@ -104,14 +110,20 @@ export async function POST(request: Request) {
       video_url: rawPayload.videoUrl?.trim() || null,
       published: true,
       featured: Boolean(rawPayload.featured),
-      published_at: new Date().toISOString()
+      published_at: new Date().toISOString(),
+      // A new story has nothing to update or correct yet.
+      article_type: trust.fields.article_type,
+      rumor_source: trust.fields.rumor_source,
     }
 
     const { error: insertError } = await (supabase.from('articles') as any).insert([insertPayload])
 
     if (insertError) {
       console.error('Article insert failed:', insertError)
-      return NextResponse.json({ error: 'Failed to save article' }, { status: 500 })
+      return NextResponse.json(
+        { error: missingColumnMessage(insertError) ?? 'Failed to save article' },
+        { status: 500 }
+      )
     }
 
     revalidatePath('/news')
