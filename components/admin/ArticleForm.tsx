@@ -1,7 +1,7 @@
 'use client'
 import { SITE_OWNER, isSiteOwner } from '@/lib/author'
 import { NOTE_KINDS, PIECE_TYPES } from '@/lib/articles/piece-type'
-import { ARTICLE_TOPICS } from '@/lib/topics'
+import { ARTICLE_TOPICS, isArticleTopic } from '@/lib/topics'
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
@@ -345,6 +345,11 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             {ARTICLE_TOPICS.map((topic) => (
               <option key={topic} value={topic}>{topic}</option>
             ))}
+            {/* A retired topic (e.g. "Rumors") stays selectable on the story
+                that has it, so opening it doesn't silently change it. */}
+            {initialData?.topic && !isArticleTopic(initialData.topic) && (
+              <option value={initialData.topic}>{initialData.topic} (retired, pick a new topic)</option>
+            )}
           </select>
         </div>
 

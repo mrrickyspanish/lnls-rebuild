@@ -24,6 +24,11 @@
  *
  * FEATURED is an editorial flag kept as a topic by the editor, so it is valid
  * but is not offered as a public link.
+ *
+ * "Rumors" was retired as a topic: Rumor is now a label
+ * (lib/articles/piece-type.ts), so a rumor about the Lakers files under
+ * Lakers. Older stories may still carry it; the editor keeps it selectable
+ * for them until a new topic is picked.
  */
 export const ARTICLE_TOPICS = [
   'FEATURED',
@@ -31,7 +36,6 @@ export const ARTICLE_TOPICS = [
   'Lakers',
   'NBA',
   'Football',
-  'Rumors',
   'Analysis',
   'Lifestyle',
 ] as const
@@ -39,7 +43,7 @@ export const ARTICLE_TOPICS = [
 export type ArticleTopic = (typeof ARTICLE_TOPICS)[number]
 
 /** Topics offered as public links, in display order. */
-export const PUBLIC_TOPICS: readonly ArticleTopic[] = ['Lakers', 'NBA', 'Football', 'Recruit Ready', 'Analysis', 'Rumors', 'Lifestyle']
+export const PUBLIC_TOPICS: readonly ArticleTopic[] = ['Lakers', 'NBA', 'Football', 'Recruit Ready', 'Analysis', 'Lifestyle']
 
 export function isArticleTopic(value: string | null | undefined): value is ArticleTopic {
   return (ARTICLE_TOPICS as readonly string[]).includes(value ?? '')
@@ -55,7 +59,7 @@ const FAMILY_BY_TOPIC: Record<string, TopicFamily> = {
   'recruit ready': 'games',
   // The numbers and the reporting behind the result.
   analysis: 'analysis',
-  rumors: 'analysis',
+  rumors: 'analysis', // retired topic, still on older stories
   // Everything around the game.
   lifestyle: 'culture',
   featured: 'culture',

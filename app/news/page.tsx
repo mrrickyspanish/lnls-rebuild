@@ -12,8 +12,8 @@ async function getArticles(): Promise<Article[]> {
 
 // Chip color follows the topic family used across the site (lib/topics.ts):
 // on-field coverage orange, analysis blue, culture purple. This used to be a
-// separate per-topic map that had no entry for Football, Analysis or Rumors, so
-// those chips fell back to grey.
+// separate per-topic map that had no entry for Football or Analysis, so those
+// chips fell back to grey.
 const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
   games: 'border-neon-orange text-neon-orange',
   analysis: 'border-neon-blue text-neon-blue',
