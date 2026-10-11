@@ -749,7 +749,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
       <section className={`${SECTION} mt-10`} aria-labelledby="publishing-heading">
         <h2 id="publishing-heading" className={SECTION_TITLE}>Publishing</h2>
 
-        <label htmlFor="featured-toggle" className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded border border-neutral-800 bg-neutral-950 px-4">
+        <label htmlFor="featured-toggle" className="flex min-h-[48px] cursor-pointer items-start gap-3 rounded border border-neutral-800 bg-neutral-950 px-4 py-3">
           <input
             id="featured-toggle"
             type="checkbox"
@@ -757,7 +757,10 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             onChange={e => setFormData({ ...formData, featured: e.target.checked })}
             className="h-5 w-5 shrink-0 accent-red-600"
           />
-          <span className="text-base">Pin as featured <span className="text-neutral-400">(home page cover story)</span></span>
+          <span>
+            <span className="block text-base">Pin as the home page lead</span>
+            <span className="mt-0.5 block text-sm text-neutral-400">Stays at the top of the home page until you unpin it. Only one story can be pinned; pinning this one unpins the other.</span>
+          </span>
         </label>
 
         <div>

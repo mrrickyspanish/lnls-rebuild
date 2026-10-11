@@ -131,6 +131,17 @@ export async function PATCH(
       )
     }
 
+    // One pinned story at a time: pinning this one unpins any other, so an
+    // old pin can't keep the home page lead forever.
+    if (updatePayload.featured) {
+      const { error: unpinError } = await supabase
+        .from('articles')
+        .update({ featured: false } as any)
+        .eq('featured', true)
+        .neq('id', existingArticle.id)
+      if (unpinError) console.error('Unpinning other stories failed:', unpinError)
+    }
+
     revalidatePath('/news')
     revalidatePath(`/news/${slug}`)
     revalidatePath('/admin')

@@ -55,6 +55,7 @@ export async function fetchFeaturedArticles(
     .select(ARTICLE_FIELDS)
     .eq('published', true)
     .eq('featured', true)
+    .order('published_at', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(limit)
 

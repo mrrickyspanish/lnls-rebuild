@@ -128,9 +128,20 @@ export async function POST(request: Request) {
       )
     }
 
+    // One pinned story at a time: pinning this one unpins any other.
+    if (insertPayload.featured) {
+      const { error: unpinError } = await supabase
+        .from('articles')
+        .update({ featured: false } as any)
+        .eq('featured', true)
+        .neq('slug', slug)
+      if (unpinError) console.error('Unpinning other stories failed:', unpinError)
+    }
+
     revalidatePath('/news')
     revalidatePath(`/news/${slug}`)
     revalidatePath('/')
+    revalidatePath('/admin')
 
     return NextResponse.json({ ok: true, slug })
   } catch (error) {
