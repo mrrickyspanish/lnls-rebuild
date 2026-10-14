@@ -1,6 +1,6 @@
 import EditorialHome from '@/components/home/EditorialHome'
 import QueueSetter from '@/components/home/QueueSetter'
-import { getPublishedArticles } from '@/lib/articles'
+import { getFeaturedArticles, getPublishedArticles } from '@/lib/articles'
 import { fetchPodcastEpisodes } from '@/lib/podcast'
 import { getYouTubeRSS } from '@/lib/youtube-rss'
 
@@ -8,16 +8,23 @@ export const revalidate = 60
 
 export default async function HomePage() {
   // Fetch independent sources directly: a failed feed cannot hide published stories.
-  const [articleResult, podcastResult, videoResult] = await Promise.allSettled([
-    getPublishedArticles(24), fetchPodcastEpisodes(), getYouTubeRSS(),
+  const [articleResult, podcastResult, videoResult, pinnedResult] = await Promise.allSettled([
+    getPublishedArticles(24), fetchPodcastEpisodes(), getYouTubeRSS(), getFeaturedArticles(1),
   ])
-  const articles = articleResult.status === 'fulfilled' ? articleResult.value.map(article => ({
+  // The story pinned in the editor ("Pin as the home page lead") leads the
+  // page; with nothing pinned, the newest story does. The pinned story is
+  // moved to the front rather than added, so it never appears twice.
+  const latest = articleResult.status === 'fulfilled' ? articleResult.value : []
+  const pinned = pinnedResult.status === 'fulfilled' ? pinnedResult.value[0] : undefined
+  const ordered = pinned ? [pinned, ...latest.filter(article => article.id !== pinned.id)] : latest
+  const articles = ordered.map(article => ({
     id: article.id, title: article.title, excerpt: article.excerpt || undefined,
     image_url: article.hero_image_url && !article.hero_image_url.startsWith('http') && !article.hero_image_url.startsWith('/') ? `/${article.hero_image_url}` : article.hero_image_url,
     source_url: `/news/${article.slug}`, content_type: 'article',
     published_at: article.published_at || article.created_at,
     topic: article.topic || undefined, author_name: article.author_name || undefined,
-  })) : []
+    article_type: article.article_type ?? null, cover_has_text: Boolean(article.cover_has_text),
+  }))
   const podcasts = podcastResult.status === 'fulfilled' ? podcastResult.value.map(episode => ({
     ...episode, excerpt: episode.description, source_url: episode.audio_url, content_type: 'podcast',
   })).filter(episode=>episode.audio_url) : []

@@ -103,7 +103,7 @@ export default function ArticleRowActions({
 
   const handleSendNewsletter = async () => {
     if (!published || newsletterSent) return
-    const confirmSend = window.confirm('Send this article to all newsletter subscribers?')
+    const confirmSend = window.confirm('Email this story to your subscribers? Readers who only picked other lanes won\'t get it.')
     if (!confirmSend) return
 
     await runAction('newsletter', async () => {

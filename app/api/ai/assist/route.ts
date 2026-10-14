@@ -592,7 +592,7 @@ async function formatArticle(content: string, context?: any): Promise<{ doc: Any
   // The answer is the whole article as JSON, several times longer than the
   // prose, plus the model's thinking. A cut-off document can't be parsed, so
   // the limit is generous; tokens are only billed when used.
-  const text = await askClaude(`You are a professional sports editor preparing an article for The Daily Dribble, a sports publication covering the Lakers, the NBA, football and the culture around the game.
+  const text = await askClaude(`You are a professional editor preparing an article for The Daily Dribble, Rick Barnes Jr.'s one-writer publication covering sports (the Lakers, the NBA, football), tech, culture, and life at home as a husband and dad.
 
 Turn the writer's raw draft below into a structured TipTap JSON document, and suggest a headline, summary and search description.
 

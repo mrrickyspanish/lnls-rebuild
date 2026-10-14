@@ -50,13 +50,16 @@ export function readTrustFields(
 
 /**
  * PostgREST answers PGRST204 ("Could not find the '…' column") when a save
- * names a column the table doesn't have, i.e. the migration hasn't been run.
- * Say so plainly instead of a generic failure.
+ * names a column the table doesn't have, i.e. a migration hasn't been run.
+ * Say which one, instead of a generic failure.
  */
 export function missingColumnMessage(error: { code?: string; message?: string } | null) {
   if (!error) return null
-  const missing = error.code === 'PGRST204' || /column .* does not exist|could not find the .* column/i.test(error.message ?? '')
-  return missing
-    ? 'The database is missing the label and note columns. Run supabase/add_piece_labels_and_notes.sql in the Supabase SQL Editor, then save again.'
-    : null
+  const message = error.message ?? ''
+  const missing = error.code === 'PGRST204' || /column .* does not exist|could not find the .* column/i.test(message)
+  if (!missing) return null
+  const file = /cover_has_text/.test(message)
+    ? 'supabase/add_cover_has_text.sql'
+    : 'supabase/add_piece_labels_and_notes.sql'
+  return `The database is missing a column this save needs. Run ${file} in the Supabase SQL Editor, then save again.`
 }

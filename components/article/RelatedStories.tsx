@@ -30,13 +30,16 @@ export default function RelatedStories({ articles }: RelatedStoriesProps) {
     <section className="tdd-related" aria-labelledby="keep-digging">
       <div className="tdd-related-head">
         <h2 id="keep-digging">Keep Digging</h2>
-        <Link href="/news" className="tdd-more">All articles</Link>
+        <Link href="/news" className="tdd-more">All stories</Link>
       </div>
       <ul className="tdd-related-grid">
         {articles.map((article) => (
           <li key={article.id}>
             <Link href={`/news/${article.slug}`} className="tdd-related-story">
-              <div className="tdd-related-art">
+              <div
+                className={`tdd-related-art ${article.cover_has_text && article.hero_image_url ? 'tdd-related-art--whole' : ''}`}
+                style={article.cover_has_text && article.hero_image_url ? ({ '--shot': `url(${JSON.stringify(article.hero_image_url)})` } as React.CSSProperties) : undefined}
+              >
                 {article.hero_image_url
                   ? <img src={article.hero_image_url} alt="" loading="lazy" decoding="async" />
                   : <span className="tdd-related-fallback" aria-hidden="true">TDD</span>}

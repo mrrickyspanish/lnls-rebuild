@@ -21,6 +21,7 @@ interface UpdateArticlePayload extends TrustFieldsPayload {
   body: ArticleBody
   videoUrl?: string
   featured?: boolean
+  coverHasText?: boolean
 }
 
 const REQUIRED_FIELDS: Array<keyof UpdateArticlePayload> = [
@@ -105,6 +106,7 @@ export async function PATCH(
       featured: Boolean(rawPayload.featured),
       // slug, published_at and created_at stay as they were.
       ...trust.fields,
+      cover_has_text: Boolean(rawPayload.coverHasText),
     }
 
     // The note's date is the date it was written or last changed, so a
@@ -127,6 +129,17 @@ export async function PATCH(
         { error: missingColumnMessage(updateError) ?? 'Failed to update article' },
         { status: 500 }
       )
+    }
+
+    // One pinned story at a time: pinning this one unpins any other, so an
+    // old pin can't keep the home page lead forever.
+    if (updatePayload.featured) {
+      const { error: unpinError } = await supabase
+        .from('articles')
+        .update({ featured: false } as any)
+        .eq('featured', true)
+        .neq('id', existingArticle.id)
+      if (unpinError) console.error('Unpinning other stories failed:', unpinError)
     }
 
     revalidatePath('/news')

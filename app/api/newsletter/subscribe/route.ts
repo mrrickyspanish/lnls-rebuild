@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { subscribeToNewsletter } from "@/lib/supabase/client";
+import { LANES, isLaneKey } from "@/lib/topics";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 // Constructed on first use. `new Resend(undefined)` throws at import time, so
@@ -25,17 +26,23 @@ function isValidEmail(email: unknown): email is string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = (await request.json()) as { email?: string };
+    const { email, lanes: picked } = (await request.json()) as { email?: string; lanes?: unknown };
 
     if (!isValidEmail(email)) {
       return NextResponse.json({ error: "Valid email required" }, { status: 400 });
     }
 
-    // Insert subscriber (ensure your helper returns PostgrestError | null)
+    // Lane picks. None sent, or all four, means every lane (stored as NULL).
+    const lanes = Array.isArray(picked) ? [...new Set(picked.filter(isLaneKey))] : null;
+    if (Array.isArray(picked) && lanes && lanes.length === 0) {
+      return NextResponse.json({ error: "Pick at least one lane" }, { status: 400 });
+    }
+    const storedLanes = lanes && lanes.length < LANES.length ? lanes : null;
+
     const {
       data,
       error,
-    }: { data: unknown; error: PostgrestError | null } = await subscribeToNewsletter(email);
+    }: { data: unknown; error: PostgrestError | null } = await subscribeToNewsletter(email, "site", storedLanes);
 
     if (error) {
       // 23505 = unique_violation in Postgres
@@ -62,7 +69,7 @@ export async function POST(request: NextRequest) {
           html: `
             <div style="font-family:Arial,sans-serif;line-height:1.6">
               <h1>Welcome to ${BRAND_NAME}</h1>
-              <p>Thanks for subscribing. You'll get my new pieces as I publish them: sports, tech, and the culture around the game.</p>
+              <p>Thanks for subscribing. You'll get my new pieces as I publish them: sports, tech, culture, and life at home.</p>
               <p>${SITE_OWNER.name}<br>${BRAND_NAME}</p>
             </div>
           `,

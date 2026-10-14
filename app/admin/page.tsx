@@ -105,6 +105,7 @@ function ArticleList({ title, articles, emptyLabel }: ArticleListProps) {
               </Link>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-400">
                 <StatusPill published={article.published} />
+                {article.featured && <PinnedPill />}
                 <PieceLabel type={article.article_type} />
                 <span>{shortDate(article.published_at || article.created_at)}</span>
                 <span className="tabular-nums">{(article.views ?? 0).toLocaleString()} views</span>
@@ -164,7 +165,12 @@ function ArticleList({ title, articles, emptyLabel }: ArticleListProps) {
                     <div className="text-sm text-neutral-500 mt-1">/{article.slug}</div>
                     <div className="mt-1.5"><PieceLabel type={article.article_type} /></div>
                   </td>
-                  <td className="px-5 py-4"><StatusPill published={article.published} /></td>
+                  <td className="px-5 py-4">
+                    <div className="flex flex-col items-start gap-1.5">
+                      <StatusPill published={article.published} />
+                      {article.featured && <PinnedPill />}
+                    </div>
+                  </td>
                   <td className="px-5 py-4 text-neutral-400 whitespace-nowrap">{shortDate(article.published_at || article.created_at)}</td>
                   <td className="px-5 py-4 text-right tabular-nums">{(article.views ?? 0).toLocaleString()}</td>
                   <td className="px-5 py-4 text-right tabular-nums">{(article.likes ?? 0).toLocaleString()}</td>
@@ -203,6 +209,14 @@ function PieceLabel({ type }: { type?: string | null }) {
   return info
     ? <span className="text-sm font-semibold uppercase tracking-wide text-neutral-300">{info.label}</span>
     : <span className="text-sm text-amber-400">No label</span>
+}
+
+function PinnedPill() {
+  return (
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-orange-900/30 text-orange-300">
+      Pinned to home
+    </span>
+  )
 }
 
 function StatusPill({ published }: { published: boolean }) {

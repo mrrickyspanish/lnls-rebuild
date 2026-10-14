@@ -34,14 +34,22 @@ export function createSupabaseServiceClient(): SupabaseTypedClient {
  */
 export async function subscribeToNewsletter(
   email: string,
-  source: string = "site"
+  source: string = "site",
+  lanes: string[] | null = null
 ): Promise<{ data: unknown; error: PostgrestError | null }> {
-  console.log("subscribeToNewsletter called with", email, source);
   const supabase = createSupabaseServiceClient();
   const unsubscribeToken = randomUUID();
-  const { data, error } = await supabase
+  const row = { email, active: true, unsubscribe_token: unsubscribeToken };
+  // `lanes` is only sent when the reader narrowed it (NULL = every lane), so
+  // sign-ups keep working before supabase/add_subscriber_lanes.sql is run.
+  let { data, error } = await supabase
     .from("newsletter_subscribers")
-    .insert([{ email, active: true, unsubscribe_token: unsubscribeToken }]);
+    .insert([lanes ? { ...row, lanes } : row] as any);
+
+  if (error && lanes && (error.code === "PGRST204" || /lanes/.test(error.message))) {
+    console.warn("newsletter_subscribers.lanes missing; subscribing to every lane. Run supabase/add_subscriber_lanes.sql.");
+    ({ data, error } = await supabase.from("newsletter_subscribers").insert([row] as any));
+  }
 
   if (error) {
     console.error("Supabase insert error:", error);

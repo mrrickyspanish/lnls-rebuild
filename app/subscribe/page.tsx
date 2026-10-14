@@ -1,124 +1,39 @@
-'use client';
+import Link from 'next/link'
 
-import { useState } from 'react';
+import NewsletterSignup from '@/components/NewsletterSignup'
+import { SITE_OWNER } from '@/lib/author'
 
+export const metadata = {
+  title: 'Subscribe',
+  description: 'Sports, tech, culture, and life at home, by email. Pick the lanes you want.',
+}
+
+/**
+ * Same layout family as Contact and About. The sign-up box is the shared one
+ * (components/NewsletterSignup.tsx), with lane picks, so this page and the
+ * footer can't drift apart; the footer copy hides itself here.
+ *
+ * The podcast block used to be four placeholder buttons (Apple, Spotify,
+ * Google, YouTube) that all linked to "#", and Google Podcasts no longer
+ * exists. It now links to the podcast page, which has the real feed.
+ */
 export default function SubscribePage() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
-    setMessage('');
-
-    try {
-      const response = await fetch('/api/newsletter/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus('success');
-        setMessage('Thanks for subscribing! Check your email for a welcome message.');
-        setEmail('');
-      } else {
-        setStatus('error');
-        setMessage(data.error || 'Something went wrong. Please try again.');
-      }
-    } catch (error) {
-      setStatus('error');
-      setMessage('Network error. Please try again.');
-    }
-  };
-
   return (
-    <div className="max-w-2xl mx-auto px-6 pt-10 md:pt-20 pb-12">
-      <h1 className="text-4xl md:text-5xl font-bold mb-6 font-netflix">
-        Subscribe
-      </h1>
-      <p className="text-xl text-white/80 mb-8">
-        Never miss a dribble... sports, tech, culture, all unfiltered and to the point.
-      </p>
-
-      {/* Newsletter Form */}
-      <div className="bg-white/5 border border-white/10 rounded-lg p-8 mb-8">
-        <h2 className="text-2xl font-bold mb-4">Newsletter</h2>
-        <p className="text-white/60 mb-6">
-          New pieces from me on what's worth talking about... sports, culture, tech, straight to your inbox and to the point.
+    <div className="tdd-home tdd-contact">
+      <header className="tdd-contact-hero">
+        <h1>Subscribe</h1>
+        <p>
+          Never miss a dribble... new pieces from me, {SITE_OWNER.name}, straight to your inbox. Unfiltered and to the point.
         </p>
+      </header>
 
-        {status === 'success' ? (
-          <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400">
-            <p className="text-center font-semibold">You're in... my next piece lands in your inbox.</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-              disabled={status === 'loading'}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:border-[var(--neon-orange)] focus:outline-none disabled:opacity-50"
-            />
+      <NewsletterSignup variant="page" />
 
-            {status === 'error' && (
-              <p className="text-red-400 text-sm">{message}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={status === 'loading' || !email}
-              className="w-full py-3 bg-[var(--neon-orange)] hover:brightness-110 text-[#0D0D0D] font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
-            </button>
-
-            <p className="text-xs text-white/50 text-center">
-              I respect your privacy. Unsubscribe anytime.
-            </p>
-          </form>
-        )}
-      </div>
-
-      {/* Podcast Links */}
-      <div className="bg-white/5 border border-white/10 rounded-lg p-8">
-        <h2 className="text-2xl font-bold mb-4">Late Night Lake Show</h2>
-        <p className="text-white/60 mb-6">
-          Lakers talk, uncut... listen wherever you get your podcasts:
-        </p>
-        <div className="grid grid-cols-2 gap-4">
-          <a
-            href="#"
-            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-center rounded-lg transition-colors"
-          >
-            Apple Podcasts
-          </a>
-          <a
-            href="#"
-            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-center rounded-lg transition-colors"
-          >
-            Spotify
-          </a>
-          <a
-            href="#"
-            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-center rounded-lg transition-colors"
-          >
-            Google Podcasts
-          </a>
-          <a
-            href="#"
-            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-center rounded-lg transition-colors"
-          >
-            YouTube
-          </a>
-        </div>
-      </div>
+      <section className="tdd-contact-section" aria-labelledby="subscribe-podcast">
+        <h2 id="subscribe-podcast">Late Night Lake Show</h2>
+        <p>Lakers talk, uncut.</p>
+        <p><Link href="/podcast">Listen on the podcast page</Link></p>
+      </section>
     </div>
-  );
+  )
 }
