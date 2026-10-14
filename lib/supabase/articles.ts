@@ -21,7 +21,7 @@ const DEFAULT_LIMIT = 24
 
 export async function fetchPublishedArticles(
   limit = DEFAULT_LIMIT,
-  topic?: string
+  topic?: string | string[]
 ): Promise<Article[]> {
   const supabase = createSupabaseAnonClient()
   let query = supabase
@@ -29,7 +29,9 @@ export async function fetchPublishedArticles(
     .select(ARTICLE_FIELDS)
     .eq('published', true)
 
-  if (topic) {
+  if (Array.isArray(topic)) {
+    query = query.in('topic', topic)
+  } else if (topic) {
     query = query.eq('topic', topic)
   }
 
@@ -129,7 +131,7 @@ export async function fetchArticleForEdit(slug: string): Promise<Article | null>
 
 export async function fetchRelatedArticles(
   currentId: string,
-  topic?: string,
+  topic?: string | string[],
   limit = 6
 ): Promise<Article[]> {
   const supabase = createSupabaseAnonClient()
@@ -139,7 +141,9 @@ export async function fetchRelatedArticles(
     .neq('id', currentId)
     .eq('published', true)
 
-  if (topic) {
+  if (Array.isArray(topic)) {
+    query = query.in('topic', topic)
+  } else if (topic) {
     query = query.eq('topic', topic)
   }
 

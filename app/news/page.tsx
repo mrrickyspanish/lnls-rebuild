@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { fetchPublishedArticles } from '@/lib/supabase/articles';
 import type { Article } from '@/types/supabase';
-import { isArticleTopic, topicFamily } from '@/lib/topics';
+import { bucketFor, isArticleTopic, topicFamily, topicsInBucket } from '@/lib/topics';
 import { pieceTypeInfo } from '@/lib/articles/piece-type';
 
 async function getArticles(): Promise<Article[]> {
@@ -15,10 +15,10 @@ async function getArticles(): Promise<Article[]> {
 // separate per-topic map that had no entry for Football or Analysis, so those
 // chips fell back to grey.
 const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
-  games: 'border-neon-orange text-neon-orange',
-  analysis: 'border-neon-blue text-neon-blue',
+  court: 'border-neon-orange text-neon-orange',
+  code: 'border-neon-blue text-neon-blue',
   culture: 'border-neon-purple text-neon-purple',
-  home: 'border-[#3DDC97] text-[#3DDC97]',
+  life: 'border-[#3DDC97] text-[#3DDC97]',
 };
 
 function formatDate(dateString?: string | null): string {
@@ -39,7 +39,8 @@ export const metadata = {
 export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string}>}) {
   const {topic} = await searchParams;
   const selectedTopic = isArticleTopic(topic) ? topic : undefined;
-  const articles = await fetchPublishedArticles(24, selectedTopic);
+  // A bucket filter also matches stories still saved under an old topic.
+  const articles = await fetchPublishedArticles(24, selectedTopic ? topicsInBucket(selectedTopic) : undefined);
 
   // Helper for image rendering (matches ContentRowWithHero)
   const canUseNextImage = (url: string) => {
@@ -74,7 +75,7 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article, i) => {
                   const isHero = i === 0;
-                  const colorClass = article.topic ? FAMILY_CHIP[topicFamily(article.topic)] : 'border-white/30 text-white/70';
+                  const colorClass = FAMILY_CHIP[topicFamily(article.topic)];
 
                   return (
                     <Link href={`/news/${article.slug}`} key={article.id}>
@@ -114,9 +115,9 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
                           )}
                         </div>
                         <div className="p-6 space-y-3">
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2" data-family={topicFamily(article.topic)}>
                             <span className={`inline-flex px-3 py-1 rounded-full border text-xs font-semibold tracking-wide uppercase ${colorClass}`}>
-                              {(article.topic || 'NBA').toUpperCase()}
+                              {bucketFor(article.topic).toUpperCase()}
                             </span>
                             {pieceTypeInfo(article.article_type) && (
                               <span className="tdd-kind" data-kind={article.article_type ?? undefined}>

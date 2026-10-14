@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
-import { topicFamily } from '@/lib/topics'
+import { bucketFor, topicFamily } from '@/lib/topics'
 import type { Article } from '@/types/supabase'
 
 type RelatedStoriesProps = {
@@ -44,10 +44,8 @@ export default function RelatedStories({ articles }: RelatedStoriesProps) {
                   ? <img src={article.hero_image_url} alt="" loading="lazy" decoding="async" />
                   : <span className="tdd-related-fallback" aria-hidden="true">TDD</span>}
               </div>
-              <div className="tdd-related-tags">
-                {article.topic && article.topic !== 'FEATURED' && (
-                  <span className="tdd-tag" data-family={topicFamily(article.topic)}>{article.topic}</span>
-                )}
+              <div className="tdd-related-tags" data-family={topicFamily(article.topic)}>
+                <span className="tdd-tag">{bucketFor(article.topic)}</span>
                 {pieceTypeInfo(article.article_type) && (
                   <span className="tdd-kind" data-kind={article.article_type ?? undefined}>
                     {pieceTypeInfo(article.article_type)?.label}

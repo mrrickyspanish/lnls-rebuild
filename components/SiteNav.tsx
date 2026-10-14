@@ -46,8 +46,8 @@ export default function SiteNav() {
           <span className="tdd-wordmark-main">
             Dribble
             <span className="tdd-dots" aria-hidden="true">
-              <i data-family="games" />
-              <i data-family="analysis" />
+              <i data-family="court" />
+              <i data-family="code" />
               <i data-family="culture" />
             </span>
           </span>

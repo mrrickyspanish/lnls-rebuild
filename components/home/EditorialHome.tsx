@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Play } from 'lucide-react'
 import { useAudioPlayer } from '@/lib/audio/AudioPlayerContext'
-import { LANES, laneForTopic, topicFamily, PODCAST_FAMILY, VIDEO_FAMILY, type LaneKey } from '@/lib/topics'
+import { LANES, bucketFor, laneForTopic, topicFamily, PODCAST_FAMILY, VIDEO_FAMILY, type LaneKey } from '@/lib/topics'
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
 
 export type EditorialItem = {
@@ -69,14 +69,13 @@ function Reveal({ children, delay = 0, className }: { children: React.ReactNode;
   )
 }
 
-/** Topic tag plus the piece label (Opinion, Analysis, Report, Rumor). */
+/** Bucket tag plus the piece label (Opinion, Analysis, Report, Rumor), both
+ *  in the bucket's color. */
 function Tag({ topic, type }: { topic?: string; type?: string | null }) {
   const label = pieceTypeInfo(type)
-  const showTopic = topic && topic !== 'FEATURED'
-  if (!showTopic && !label) return null
   return (
-    <div className="tdd-tags">
-      {showTopic && <span className="tdd-tag" data-family={topicFamily(topic)}>{topic}</span>}
+    <div className="tdd-tags" data-family={topicFamily(topic)}>
+      <span className="tdd-tag">{bucketFor(topic)}</span>
       {label && <span className="tdd-kind" data-kind={label.value}>{label.label}</span>}
     </div>
   )

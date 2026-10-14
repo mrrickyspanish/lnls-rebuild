@@ -23,8 +23,7 @@
   --neon-orange: #FF6B35;
   --neon-blue: #00D4FF;
   --neon-purple: #B857FF;
-  /* Home lane (marriage, fatherhood, life at home). The fourth family color. */
-  --neon-green: #3DDC97;
+  --neon-green: #3DDC97; /* Life bucket */
 
   /* Subtle glows - hover only (kept: /news, /about and VideoGrid use these) */
   --glow-orange: 0 0 20px rgba(255, 107, 53, 0.4);
@@ -157,12 +156,27 @@ body {
   --tdd-text: var(--font-ibm-plex), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Topic families resolve to a single custom property that art, tags and rules
-   all read from, so a story can never be two colors at once. */
-[data-family='games']    { --family: var(--neon-orange); }
-[data-family='analysis'] { --family: var(--neon-blue); }
-[data-family='culture']  { --family: var(--neon-purple); }
-[data-family='home']     { --family: var(--neon-green); }
+/* Buckets (lib/topics.ts) resolve to a single custom property that art,
+   tags and rules all read from, so a story can never be two colors at once.
+   Literal hex, not var(--neon-orange): the accent scope below re-points
+   --neon-orange, and a bucket color defined through it would follow along. */
+[data-family='court']   { --family: #FF6B35; }
+[data-family='code']    { --family: #00D4FF; }
+[data-family='culture'] { --family: #B857FF; }
+[data-family='life']    { --family: #3DDC97; }
+
+/* Accent scope: inside a story's page, its editor preview and the AI
+   preview, every accent that reads --neon-orange (links, pull quotes, stat
+   blocks, the reading-progress bar, share and like buttons, the Opinion
+   label) takes the story's bucket color instead. The brand orange outside
+   (nav, Subscribe) is untouched. */
+[data-accent-scope] { --neon-orange: var(--family); }
+
+/* Editor bucket picker: the chosen bucket wears its color. */
+.tdd-bucket-on {
+  border-color: var(--family);
+  background: color-mix(in srgb, var(--family) 12%, transparent);
+}
 
 /* ---------- Masthead ------------------------------------------------------ */
 /* Sticky, not fixed, so it stays in flow and no page reserves space for it.
@@ -459,8 +473,8 @@ a.tdd-nav-icon { display: none; }
 }
 
 .tdd-kind[data-kind='opinion'] {
-  background: var(--neon-orange);
-  border-color: var(--neon-orange);
+  background: var(--family, var(--neon-orange));
+  border-color: var(--family, var(--neon-orange));
   color: #0D0D0D;
 }
 

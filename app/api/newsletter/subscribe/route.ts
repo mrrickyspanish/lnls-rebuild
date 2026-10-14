@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Lane picks. None sent, or all four, means every lane (stored as NULL).
-    const lanes = Array.isArray(picked) ? [...new Set(picked.filter(isLaneKey))] : null;
+    // "home" was the Life lane's first name; accept it from any old page.
+    const lanes = Array.isArray(picked)
+      ? [...new Set(picked.map((lane) => (lane === "home" ? "life" : lane)).filter(isLaneKey))]
+      : null;
     if (Array.isArray(picked) && lanes && lanes.length === 0) {
       return NextResponse.json({ error: "Pick at least one lane" }, { status: 400 });
     }

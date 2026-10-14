@@ -15,7 +15,7 @@ import BackToTop from "@/components/article/BackToTop";
 import ViewTracker from "@/components/article/ViewTracker";
 import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
-import { isArticleTopic, topicFamily } from "@/lib/topics";
+import { bucketFor, topicFamily, topicsInBucket } from "@/lib/topics";
 import { noteKindLabel, pieceTypeInfo } from "@/lib/articles/piece-type";
 import { SITE_OWNER, SITE_OWNER_X_URL, isSiteOwner } from "@/lib/author";
 
@@ -55,7 +55,7 @@ function buildHeroArticle(article: ArticleWithSlideshow, slug: string) {
     author: { name: article.author_name },
     publishedAt: article.published_at || article.created_at,
     readTime: article.read_time || 5,
-    topic: article.topic || "Lakers",
+    topic: bucketFor(article.topic),
   };
 }
 
@@ -90,9 +90,9 @@ export default async function ArticlePage({ params }: PageProps) {
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
 
-  // Three stories to read next: same topic first, topped up with the latest
-  // stories when the topic has fewer than three others.
-  let relatedArticles = (await fetchRelatedArticles(article.id, article.topic, 3)).slice(0, 3);
+  // Three stories to read next: same bucket first, topped up with the latest
+  // stories when the bucket has fewer than three others.
+  let relatedArticles = (await fetchRelatedArticles(article.id, topicsInBucket(bucketFor(article.topic)), 3)).slice(0, 3);
 
   if (relatedArticles.length < 3) {
     const fallbackArticles = await fetchPublishedArticles(6);
@@ -136,21 +136,23 @@ export default async function ArticlePage({ params }: PageProps) {
   };
   const family = topicFamily(article.topic);
   const publishedAt = currentArticle.publishedAt;
-  // FEATURED is an editorial flag, not a section a reader can browse.
-  const topicLink = article.topic && article.topic !== 'FEATURED' && isArticleTopic(article.topic)
-    ? article.topic
-    : null;
+  // The story's bucket (Court, Code, Culture, Life), also for older stories
+  // still saved under a pre-bucket topic.
+  const topicLink = bucketFor(article.topic);
 
   return (
     <>
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ViewTracker slug={slug} />
-      <ReadProgress />
-      <BackToTop />
       {/* View counts are tracked (ViewTracker) but only shown in admin: a
           public count invites comparison, and a small one reads as "nobody
           is here". Likes stay public, on the like button. */}
-      <article className="tdd-story" data-family={family}>
+      {/* data-accent-scope: every accent on this page (progress bar, links,
+          pull quotes, stat blocks, share buttons, the Opinion label) takes
+          the story's bucket color. See globals.css. */}
+      <article className="tdd-story" data-family={family} data-accent-scope>
+        <ReadProgress />
+        <BackToTop />
         <header className="tdd-story-head">
           <div className="tdd-story-intro">
             <nav className="tdd-story-crumbs" aria-label="Breadcrumb">

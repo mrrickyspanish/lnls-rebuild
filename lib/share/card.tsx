@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { ImageResponse } from 'next/og'
 
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
+import { BUCKET_COLORS, bucketFor, topicFamily } from '@/lib/topics'
 import type { Article } from '@/types/supabase'
 
 /**
@@ -38,7 +39,7 @@ const ORANGE = '#FF6B35'
 const BLUE = '#00D4FF'
 const PURPLE = '#B857FF'
 
-type CardArticle = Pick<Article, 'title' | 'hero_image_url' | 'article_type' | 'cover_has_text'>
+type CardArticle = Pick<Article, 'title' | 'hero_image_url' | 'article_type' | 'cover_has_text' | 'topic'>
 
 /** Fetches the cover as a data URL, or null if it can't be drawn. */
 async function loadCover(src: string | null | undefined, origin: string): Promise<string | null> {
@@ -95,25 +96,39 @@ function Wordmark({ size }: { size: number }) {
   )
 }
 
-function Label({ type, size }: { type: CardArticle['article_type']; size: number }) {
+/** Bucket name (in its color, underlined, like the site's tags) and the
+ *  piece label. The accent is the story's bucket color. */
+function Label({ type, topic, accent, size }: { type: CardArticle['article_type']; topic: string; accent: string; size: number }) {
   const info = pieceTypeInfo(type)
-  if (!info) return null
-  const opinion = info.value === 'opinion'
+  const opinion = info?.value === 'opinion'
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <div
+        style={{
+          display: 'flex',
+          fontSize: size,
+          letterSpacing: Math.round(size * 0.14),
+          color: accent,
+          borderBottom: `${Math.max(3, Math.round(size * 0.12))}px solid ${accent}`,
+          paddingBottom: Math.round(size * 0.12),
+          marginRight: info ? Math.round(size * 0.8) : 0,
+        }}
+      >
+        {bucketFor(topic).toUpperCase()}
+      </div>
+      {info && <div
         style={{
           display: 'flex',
           fontSize: size,
           letterSpacing: Math.round(size * 0.14),
           padding: `${Math.round(size * 0.32)}px ${Math.round(size * 0.55)}px ${Math.round(size * 0.22)}px`,
           color: opinion ? BLACK : INK,
-          background: opinion ? ORANGE : 'transparent',
-          border: `${Math.max(3, Math.round(size * 0.1))}px ${info.value === 'rumor' ? 'dashed' : 'solid'} ${opinion ? ORANGE : INK}`,
+          background: opinion ? accent : 'transparent',
+          border: `${Math.max(3, Math.round(size * 0.1))}px ${info.value === 'rumor' ? 'dashed' : 'solid'} ${opinion ? accent : INK}`,
         }}
       >
         {info.label.toUpperCase()}
-      </div>
+      </div>}
     </div>
   )
 }
@@ -123,6 +138,7 @@ export async function renderShareCard(article: CardArticle, format: ShareFormat,
   const anton = await readFile(join(process.cwd(), 'app/_fonts/Anton-Regular.ttf'))
   const cover = article.cover_has_text ? null : await loadCover(article.hero_image_url, origin)
   const title = article.title.toUpperCase()
+  const accent = BUCKET_COLORS[topicFamily(article.topic)]
 
   let body: JSX.Element
 
@@ -133,9 +149,9 @@ export async function renderShareCard(article: CardArticle, format: ShareFormat,
     const headlineBox = { w: panel - pad * 2, h: height - pad * 2 - 64 - 92 }
     const size = fitHeadline(title, headlineBox.w, headlineBox.h, cover ? 76 : 96, 34)
     body = (
-      <div style={{ display: 'flex', width, height, background: BLACK, borderTop: `12px solid ${ORANGE}` }}>
+      <div style={{ display: 'flex', width, height, background: BLACK, borderTop: `12px solid ${accent}` }}>
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: panel, padding: pad }}>
-          <Label type={article.article_type} size={26} />
+          <Label type={article.article_type} topic={article.topic} accent={accent} size={26} />
           <div style={{ display: 'flex', fontSize: size, lineHeight: 0.98, color: INK }}>{title}</div>
           <Wordmark size={52} />
         </div>
@@ -164,13 +180,14 @@ export async function renderShareCard(article: CardArticle, format: ShareFormat,
         {cover
           // eslint-disable-next-line @next/next/no-img-element
           ? <img src={cover} alt="" width={width} height={imageH} style={{ objectFit: 'cover' }} />
-          : <div style={{ display: 'flex', height: 14, background: ORANGE }} />}
+          : null}
+        <div style={{ display: 'flex', height: 14, background: accent }} />
         <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, padding: pad }}>
           {/* Type only: the headline sits centered rather than under an
               empty band. */}
           {!cover && <div style={{ display: 'flex', flexGrow: 1 }} />}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Label type={article.article_type} size={labelSize} />
+            <Label type={article.article_type} topic={article.topic} accent={accent} size={labelSize} />
             <div style={{ display: 'flex', marginTop: 30, fontSize: size, lineHeight: 0.98, color: INK }}>{title}</div>
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />

@@ -437,7 +437,7 @@ export default function RichTextEditor({ value, onChange, onReady, topic, onAiFo
   const chain = () => editor.chain().focus()
 
   return (
-    <div className="border border-neutral-700 rounded-md bg-neutral-900" data-family={topicFamily(topic)}>
+    <div className="border border-neutral-700 rounded-md bg-neutral-900" data-family={topicFamily(topic)} data-accent-scope>
       {/* Toolbar and the selected-block bar pin together just under the
           article form's Save bar (its height is --save-bar-h, set by
           ArticleForm), so formatting and a selected image's Edit button stay

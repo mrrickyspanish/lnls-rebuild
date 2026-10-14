@@ -1,7 +1,7 @@
 'use client'
 import { SITE_OWNER, isSiteOwner } from '@/lib/author'
 import { NOTE_KINDS, PIECE_TYPES } from '@/lib/articles/piece-type'
-import { ARTICLE_TOPICS, isArticleTopic } from '@/lib/topics'
+import { bucketFor, isArticleTopic, topicFamily } from '@/lib/topics'
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
@@ -44,6 +44,13 @@ function bylineChoices(initialData?: Article) {
  * label and logo itself, on the page and in the share graphics.
  */
 const AI_COVER_PROMPT = 'Wide 16:9 editorial sports photograph of [DESCRIBE THE SCENE]. Dramatic arena or stadium lighting, shallow depth of field, shot like a real sports photographer, rich true color with warm orange highlights. No text, words, letters, numbers or logos anywhere, including jerseys, signs and scoreboards. No watermark. Main subject centered with room around it.'
+
+const BUCKETS = [
+  { name: 'Court', hint: 'Lakers, NBA, football, recruiting.' },
+  { name: 'Code', hint: 'Tech, sneakers, gaming.' },
+  { name: 'Culture', hint: 'Fashion, music, film, art.' },
+  { name: 'Life', hint: 'Marriage, fatherhood, home.' },
+] as const
 
 const SHARE_SIZES = [
   { format: 'post', label: 'Post', ratio: '4:5', aspect: 'aspect-[4/5]' },
@@ -140,7 +147,8 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     authorBio: initialData?.author_name ? initialData.author_bio || '' : SITE_OWNER.bio,
     authorTwitter: initialData?.author_name ? initialData.author_twitter || '' : SITE_OWNER.twitter,
     readTime: initialData?.read_time || 5,
-    topic: initialData?.topic || 'Lakers',
+    // Older stories open on the bucket their old topic belongs to.
+    topic: bucketFor(initialData?.topic),
     videoUrl: initialData?.video_url || '',
     featured: initialData?.featured || false,
     coverHasText: Boolean(initialData?.cover_has_text),
@@ -381,24 +389,41 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           />
         </div>
 
-        <div>
-          <label htmlFor="article-topic" className={LABEL}>Topic</label>
-          <select
-            id="article-topic"
-            value={formData.topic}
-            onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-            className={FIELD}
-          >
-            {ARTICLE_TOPICS.map((topic) => (
-              <option key={topic} value={topic}>{topic}</option>
-            ))}
-            {/* A retired topic (e.g. "Rumors") stays selectable on the story
-                that has it, so opening it doesn't silently change it. */}
-            {initialData?.topic && !isArticleTopic(initialData.topic) && (
-              <option value={initialData.topic}>{initialData.topic} (retired, pick a new topic)</option>
-            )}
-          </select>
-        </div>
+        {/* The bucket is the story's one tag: its color everywhere, its home
+            page filter and who gets its email (lib/topics.ts). */}
+        <fieldset id="article-topic">
+          <legend className={LABEL}>Bucket</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {BUCKETS.map((bucket) => {
+              const checked = formData.topic === bucket.name
+              return (
+                <label
+                  key={bucket.name}
+                  data-family={topicFamily(bucket.name)}
+                  className={`flex min-h-[64px] cursor-pointer flex-col justify-center rounded border-2 px-3 py-2 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-white ${
+                    checked ? 'tdd-bucket-on' : 'border-neutral-700 bg-neutral-900 hover:border-neutral-500'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="article-topic"
+                    value={bucket.name}
+                    checked={checked}
+                    onChange={() => setFormData({ ...formData, topic: bucket.name })}
+                    className="sr-only"
+                  />
+                  <span className="text-base font-bold text-[var(--family)]">{bucket.name}</span>
+                  <span className="mt-0.5 text-sm leading-snug text-neutral-400">{bucket.hint}</span>
+                </label>
+              )
+            })}
+          </div>
+          {initialData?.topic && !isArticleTopic(initialData.topic) && (
+            <p className={HINT}>
+              Was tagged &ldquo;{initialData.topic}&rdquo;, which now goes under {bucketFor(initialData.topic)}. Saving keeps it there unless you pick another.
+            </p>
+          )}
+        </fieldset>
 
         {/* The label readers see on the story and its cards. /standards
             explains each one. Required, but checked on save rather than with
