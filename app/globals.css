@@ -2058,6 +2058,26 @@ body:has(.tdd-news--page) .tdd-footer-news { display: none; }
 
 .tdd-related-story .tdd-credit { margin-top: 10px; font-size: 14px; }
 
+/* #Hashtags at the end of a story, in its bucket color (accent scope). */
+.tdd-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 36px;
+}
+
+.tdd-hashtags a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--neon-orange);
+  transition: color 0.18s var(--tdd-ease);
+}
+
+.tdd-hashtags a:hover { color: var(--tdd-ink); }
+
 .tdd-related-tags {
   display: flex;
   flex-wrap: wrap;

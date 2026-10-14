@@ -60,6 +60,8 @@ export function missingColumnMessage(error: { code?: string; message?: string } 
   if (!missing) return null
   const file = /cover_has_text/.test(message)
     ? 'supabase/add_cover_has_text.sql'
-    : 'supabase/add_piece_labels_and_notes.sql'
+    : /'tags'|\btags\b/.test(message)
+      ? 'supabase/add_article_tags.sql'
+      : 'supabase/add_piece_labels_and_notes.sql'
   return `The database is missing a column this save needs. Run ${file} in the Supabase SQL Editor, then save again.`
 }

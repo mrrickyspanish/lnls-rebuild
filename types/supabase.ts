@@ -96,6 +96,8 @@ export interface Database {
           note_at?: string | null;
           // supabase/add_cover_has_text.sql
           cover_has_text?: boolean | null;
+          // supabase/add_article_tags.sql
+          tags?: string[] | null;
         };
         Insert: {
           id?: string;
@@ -121,6 +123,7 @@ export interface Database {
           article_type?: PieceType | null;
           rumor_source?: string | null;
           cover_has_text?: boolean;
+          tags?: string[];
         };
         Update: {
           id?: string;
@@ -150,6 +153,7 @@ export interface Database {
           note_text?: string | null;
           note_at?: string | null;
           cover_has_text?: boolean;
+          tags?: string[];
         };
         Relationships: [];
       };

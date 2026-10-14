@@ -21,7 +21,8 @@ const DEFAULT_LIMIT = 24
 
 export async function fetchPublishedArticles(
   limit = DEFAULT_LIMIT,
-  topic?: string | string[]
+  topic?: string | string[],
+  tag?: string
 ): Promise<Article[]> {
   const supabase = createSupabaseAnonClient()
   let query = supabase
@@ -33,6 +34,10 @@ export async function fetchPublishedArticles(
     query = query.in('topic', topic)
   } else if (topic) {
     query = query.eq('topic', topic)
+  }
+
+  if (tag) {
+    query = query.contains('tags', [tag])
   }
 
   const { data, error } = await query

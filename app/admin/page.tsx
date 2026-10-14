@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { fetchAllArticles } from '@/lib/supabase/articles'
 import ArticleRowActions from '@/components/admin/ArticleRowActions'
+import TagBackfillButton from '@/components/admin/TagBackfillButton'
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
 
 export const revalidate = 0 // Always fresh for admin
@@ -55,6 +56,9 @@ export default async function AdminDashboard() {
         </div>
       </section>
       <p className="mt-2 text-sm text-neutral-500">Totals cover published articles.</p>
+
+      {/* Only counted once the tags column exists (supabase/add_article_tags.sql). */}
+      <TagBackfillButton untagged={articles.filter((a) => Array.isArray(a.tags) && a.tags.length === 0).length} />
 
       <ArticleList title="Published" articles={publishedArticles} emptyLabel="No published articles yet." />
       <ArticleList title="Drafts" articles={draftArticles} emptyLabel="No drafts. Send to Draft keeps a story off the site while you work on it." />

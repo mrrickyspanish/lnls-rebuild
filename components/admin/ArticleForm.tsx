@@ -1,6 +1,7 @@
 'use client'
 import { SITE_OWNER, isSiteOwner } from '@/lib/author'
 import { NOTE_KINDS, PIECE_TYPES } from '@/lib/articles/piece-type'
+import { MAX_TAGS, hashtag, normalizeTags } from '@/lib/articles/tags'
 import { bucketFor, isArticleTopic, topicFamily } from '@/lib/topics'
 
 import { useEffect, useState, useRef } from 'react'
@@ -152,6 +153,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     videoUrl: initialData?.video_url || '',
     featured: initialData?.featured || false,
     coverHasText: Boolean(initialData?.cover_has_text),
+    tags: normalizeTags(initialData?.tags),
     // Older stories have no label until one is picked; saving requires one.
     pieceType: (initialData?.article_type as string | null | undefined) || '',
     rumorSource: initialData?.rumor_source || '',
@@ -161,6 +163,14 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const authorChoices = bylineChoices(initialData)
 
   const [aiOpen, setAiOpen] = useState(false)
+  const [tagDraft, setTagDraft] = useState('')
+  const addTags = (text: string) => {
+    const next = normalizeTags([...formData.tags, ...text.split(',')])
+    setFormData((prev) => ({ ...prev, tags: next }))
+    setTagDraft('')
+  }
+  const removeTag = (tag: string) =>
+    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }))
   const [promptCopied, setPromptCopied] = useState(false)
 
   const copyPrompt = async () => {
@@ -488,6 +498,57 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             The editor previews the published page. Tap an image, stat block or table to get its edit buttons.
           </p>
         </div>
+      </section>
+
+      {/* ---------- Tags ---------- */}
+      <section className={`${SECTION} mt-10`} aria-labelledby="tags-heading">
+        <div>
+          <h2 id="tags-heading" className={SECTION_TITLE}>Tags</h2>
+          <p className={HINT}>
+            Who and what the story is about, shown as #hashtags at the end of it and used by search. Leave this empty and they&apos;re written for you when you save.
+          </p>
+        </div>
+        {formData.tags.length > 0 && (
+          <ul className="flex flex-wrap gap-2" aria-label="Tags">
+            {formData.tags.map((tag) => (
+              <li key={tag}>
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-neutral-600 bg-neutral-900 pl-4 pr-3 text-base text-white hover:border-red-500"
+                  aria-label={`Remove tag ${tag}`}
+                >
+                  {hashtag(tag)} <span aria-hidden="true" className="text-neutral-400">×</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {formData.tags.length < MAX_TAGS && (
+          <div>
+            <label htmlFor="tag-input" className="sr-only">Add a tag</label>
+            <input
+              id="tag-input"
+              type="text"
+              value={tagDraft}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value.includes(',')) addTags(value)
+                else setTagDraft(value)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (tagDraft.trim()) addTags(tagDraft)
+                }
+              }}
+              onBlur={() => { if (tagDraft.trim()) addTags(tagDraft) }}
+              className={FIELD}
+              placeholder="Add a tag, e.g. LeBron James"
+              enterKeyHint="done"
+            />
+          </div>
+        )}
       </section>
 
       {/* ---------- Cover image ---------- */}

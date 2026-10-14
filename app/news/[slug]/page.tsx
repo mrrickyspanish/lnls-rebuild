@@ -17,6 +17,7 @@ import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from
 import type { Article } from "@/types/supabase";
 import { bucketFor, topicFamily, topicsInBucket } from "@/lib/topics";
 import { noteKindLabel, pieceTypeInfo } from "@/lib/articles/piece-type";
+import { hashtag, normalizeTags } from "@/lib/articles/tags";
 import { SITE_OWNER, SITE_OWNER_X_URL, isSiteOwner } from "@/lib/author";
 
 function longDate(value: string) {
@@ -131,6 +132,7 @@ export default async function ArticlePage({ params }: PageProps) {
         : { '@type': 'Person', name: article.author_name },
     datePublished: article.published_at || article.created_at,
     dateModified: article.note_at || article.updated_at || undefined,
+    keywords: normalizeTags(article.tags).join(', ') || undefined,
     url: shareUrl,
     publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
@@ -228,6 +230,13 @@ export default async function ArticlePage({ params }: PageProps) {
               </aside>
             )}
             {article.body && <ArticleBody content={article.body} />}
+            {normalizeTags(article.tags).length > 0 && (
+              <nav className="tdd-hashtags" aria-label="Tags">
+                {normalizeTags(article.tags).map((tag) => (
+                  <Link key={tag} href={`/news?tag=${encodeURIComponent(tag)}`}>{hashtag(tag)}</Link>
+                ))}
+              </nav>
+            )}
             <AuthorCard
               author={{
                 name: article.author_name,

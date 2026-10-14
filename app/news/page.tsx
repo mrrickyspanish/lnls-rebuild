@@ -5,6 +5,7 @@ import { fetchPublishedArticles } from '@/lib/supabase/articles';
 import type { Article } from '@/types/supabase';
 import { bucketFor, isArticleTopic, topicFamily, topicsInBucket } from '@/lib/topics';
 import { pieceTypeInfo } from '@/lib/articles/piece-type';
+import { hashtag, normalizeTags } from '@/lib/articles/tags';
 
 async function getArticles(): Promise<Article[]> {
   return fetchPublishedArticles(12);
@@ -36,11 +37,13 @@ export const metadata = {
   description: 'Everything I write, newest first: sports, tech, culture, and life at home.',
 };
 
-export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string}>}) {
-  const {topic} = await searchParams;
+export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string; tag?: string}>}) {
+  const {topic, tag: rawTag} = await searchParams;
+  // ?tag=LeBron%20James: every story with that tag (the #hashtags on stories link here).
+  const tag = normalizeTags([rawTag ?? ''])[0];
   const selectedTopic = isArticleTopic(topic) ? topic : undefined;
   // A bucket filter also matches stories still saved under an old topic.
-  const articles = await fetchPublishedArticles(24, selectedTopic ? topicsInBucket(selectedTopic) : undefined);
+  const articles = await fetchPublishedArticles(24, selectedTopic ? topicsInBucket(selectedTopic) : undefined, tag);
 
   // Helper for image rendering (matches ContentRowWithHero)
   const canUseNextImage = (url: string) => {
@@ -55,10 +58,10 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
         <div className="relative z-10 max-w-7xl mx-auto px-6 pt-10 md:pt-20">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
-            {selectedTopic || "Stories"}
+            {tag ? hashtag(tag) : selectedTopic || "Stories"}
           </h1>
           <p className="mt-4 text-lg md:text-2xl text-[var(--text-secondary)] max-w-xl">
-            Everything I write, newest first.
+            {tag ? `Every story tagged ${tag}, newest first.` : "Everything I write, newest first."}
           </p>
         </div>
       </div>
