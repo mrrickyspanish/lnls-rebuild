@@ -18,6 +18,7 @@ const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
   games: 'border-neon-orange text-neon-orange',
   analysis: 'border-neon-blue text-neon-blue',
   culture: 'border-neon-purple text-neon-purple',
+  home: 'border-[#3DDC97] text-[#3DDC97]',
 };
 
 function formatDate(dateString?: string | null): string {
@@ -31,8 +32,8 @@ function formatDate(dateString?: string | null): string {
 }
 
 export const metadata = {
-  title: 'News',
-  description: 'The pulse of the game. Every angle. Every day.',
+  title: 'Stories',
+  description: 'Everything I write, newest first: sports, tech, culture, and life at home.',
 };
 
 export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string}>}) {
@@ -53,10 +54,10 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
         <div className="relative z-10 max-w-7xl mx-auto px-6 pt-10 md:pt-20">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
-            {selectedTopic || "Articles"}
+            {selectedTopic || "Stories"}
           </h1>
           <p className="mt-4 text-lg md:text-2xl text-[var(--text-secondary)] max-w-xl">
-            Every angle. Every day.
+            Everything I write, newest first.
           </p>
         </div>
       </div>
@@ -123,7 +124,7 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
                               </span>
                             )}
                           </div>
-                          <h2 className={`font-display font-bold text-white group-hover:text-primary transition line-clamp-3 ${isHero ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`}>
+                          <h2 className={`font-display font-bold text-white text-balance group-hover:text-primary transition line-clamp-3 ${isHero ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`}>
                             {article.title}
                           </h2>
                           {article.excerpt && <p className="text-[var(--text-secondary)] line-clamp-3 text-sm">{article.excerpt}</p>}

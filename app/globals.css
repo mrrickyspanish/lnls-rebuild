@@ -23,6 +23,8 @@
   --neon-orange: #FF6B35;
   --neon-blue: #00D4FF;
   --neon-purple: #B857FF;
+  /* Home lane (marriage, fatherhood, life at home). The fourth family color. */
+  --neon-green: #3DDC97;
 
   /* Subtle glows - hover only (kept: /news, /about and VideoGrid use these) */
   --glow-orange: 0 0 20px rgba(255, 107, 53, 0.4);
@@ -160,6 +162,7 @@ body {
 [data-family='games']    { --family: var(--neon-orange); }
 [data-family='analysis'] { --family: var(--neon-blue); }
 [data-family='culture']  { --family: var(--neon-purple); }
+[data-family='home']     { --family: var(--neon-green); }
 
 /* ---------- Masthead ------------------------------------------------------ */
 /* Sticky, not fixed, so it stays in flow and no page reserves space for it.
@@ -516,6 +519,38 @@ a:active .tdd-cta { transform: translateY(1px); }
   line-height: 0.95;
   letter-spacing: 0.005em;
 }
+
+/* ---------- Lane filter -------------------------------------------------- */
+.tdd-lane-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 26px;
+}
+
+.tdd-lane-filter button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 2px solid var(--tdd-rule);
+  background: transparent;
+  color: var(--tdd-muted);
+  font-family: var(--tdd-text);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: border-color 0.18s var(--tdd-ease), color 0.18s var(--tdd-ease), background 0.18s var(--tdd-ease);
+}
+
+.tdd-lane-filter button:hover { color: var(--tdd-ink); border-color: var(--family, var(--tdd-ink)); }
+
+.tdd-lane-filter button[aria-pressed='true'] {
+  color: #0D0D0D;
+  background: var(--family, var(--tdd-ink));
+  border-color: var(--family, var(--tdd-ink));
+}
+
+.tdd-lane-filter button:focus-visible { outline: 2px solid var(--neon-orange); outline-offset: 2px; }
 
 /* ---------- Cover -------------------------------------------------------- */
 .tdd-cover-link { display: block; }
@@ -1876,7 +1911,50 @@ button.tdd-cta:disabled {
 /* ---------- End of story: newsletter, then Keep Digging ------------------ */
 /* The compact signup sits where readers finish. When it's on the page, the
    footer's full-size signup is hidden so nobody is asked twice. */
-body:has(.tdd-news--story) .tdd-footer-news { display: none; }
+body:has(.tdd-news--story) .tdd-footer-news,
+body:has(.tdd-news--page) .tdd-footer-news { display: none; }
+
+/* Lane picks in the sign-up form. Every lane starts checked; each chip
+   wears its lane's color when on. */
+.tdd-lanes { grid-column: 1 / -1; border: 0; padding: 0; margin: 0; min-width: 0; }
+
+.tdd-lanes legend {
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tdd-muted);
+}
+
+.tdd-lanes > div { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.tdd-lane-pick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--tdd-rule);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tdd-muted);
+  cursor: pointer;
+  transition: border-color 0.18s var(--tdd-ease), color 0.18s var(--tdd-ease);
+}
+
+.tdd-lane-pick input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--family);
+}
+
+.tdd-lane-pick:has(input:checked) { border-color: var(--family); color: var(--tdd-ink); }
+.tdd-lane-pick:has(input:focus-visible) { outline: 2px solid var(--neon-orange); outline-offset: 2px; }
 
 .tdd-news--story {
   max-width: none;

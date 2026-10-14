@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { Receiver } from '@upstash/qstash'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
+import { wantsStory } from '@/lib/topics'
 import { randomUUID } from 'crypto'
 
 const resendApiKey = process.env.RESEND_API_KEY
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseServiceClient()
     const { data: article, error: articleError } = await supabase
       .from('articles')
-      .select('id, title, excerpt, slug, hero_image_url, published, last_newsletter_sent_at')
+      .select('id, title, excerpt, slug, hero_image_url, topic, published, last_newsletter_sent_at')
       .eq('slug', slug)
       .maybeSingle()
 
@@ -91,9 +92,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Newsletter already sent' }, { status: 409 })
     }
 
+    // '*' rather than naming `lanes`, so this still works before
+    // supabase/add_subscriber_lanes.sql is run (everyone gets everything).
     const { data: subscribers, error: subsError } = await supabase
       .from('newsletter_subscribers')
-      .select('id, email, unsubscribe_token')
+      .select('*')
       .eq('active', true)
 
     if (subsError) {
@@ -101,7 +104,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to load subscribers' }, { status: 500 })
     }
 
-    const list = subscribers ?? []
+    // Only readers who picked this story's lane, plus everyone who gets every
+    // lane (lanes NULL or empty).
+    const list = ((subscribers ?? []) as Array<{ id: string; email: string; unsubscribe_token: string | null; lanes?: string[] | null }>)
+      .filter((subscriber) => wantsStory(subscriber.lanes, article.topic))
     const articleUrl = buildArticleUrl(article.slug)
     const subject = `New article: ${article.title}`
     const from = emailFrom()

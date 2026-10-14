@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Play } from 'lucide-react'
 import { useAudioPlayer } from '@/lib/audio/AudioPlayerContext'
-import { topicFamily, PODCAST_FAMILY, VIDEO_FAMILY } from '@/lib/topics'
+import { LANES, laneForTopic, topicFamily, PODCAST_FAMILY, VIDEO_FAMILY, type LaneKey } from '@/lib/topics'
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
 
 export type EditorialItem = {
@@ -89,9 +90,15 @@ export default function EditorialHome({
   const { playEpisode, currentEpisode, isPlaying } = useAudioPlayer()
   const reduce = useReducedMotion()
 
-  const cover = articles[0]
-  const deck = articles.slice(1, 3)
-  const index = articles.slice(3, 11)
+  // Lane filter: All, or one of Court / Code / Culture / Home. Filters the
+  // stories only; the podcast and video shelves stay put.
+  const [lane, setLane] = useState<LaneKey | null>(null)
+  const shown = lane ? articles.filter((item) => laneForTopic(item.topic).key === lane) : articles
+  const laneLabel = LANES.find((l) => l.key === lane)?.label
+
+  const cover = shown[0]
+  const deck = shown.slice(1, 3)
+  const index = shown.slice(3, 11)
   const queue = podcasts.map(episode => ({
     id: String(episode.id),
     title: episode.title,
@@ -106,10 +113,33 @@ export default function EditorialHome({
           was missing. */}
       <div className="tdd-dateline">
         <p className="tdd-dateline-date">{dateline}</p>
-        <p className="tdd-dateline-line">Sports, tech, and the culture around the game.</p>
+        <p className="tdd-dateline-line">Sports, tech, culture, and life at home, from one writer.</p>
       </div>
 
-      {cover ? (
+      {articles.length > 0 && (
+        <nav className="tdd-lane-filter" aria-label="Filter stories by lane">
+          <button type="button" aria-pressed={lane === null} onClick={() => setLane(null)}>All</button>
+          {LANES.map((l) => (
+            <button
+              key={l.key}
+              type="button"
+              data-family={l.family}
+              aria-pressed={lane === l.key}
+              onClick={() => setLane(lane === l.key ? null : l.key)}
+            >
+              {l.label}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {lane && !cover ? (
+        <section className="tdd-empty">
+          <h1>Nothing in {laneLabel} yet.</h1>
+          <p>It&apos;s coming. In the meantime, here&apos;s everything else.</p>
+          <button type="button" className="tdd-cta" onClick={() => setLane(null)}>Show all stories</button>
+        </section>
+      ) : cover ? (
         <motion.article
           className="tdd-cover"
           initial={reduce ? false : { opacity: 0 }}
@@ -171,7 +201,7 @@ export default function EditorialHome({
         <section className="tdd-section tdd-index-section">
           <div className="tdd-section-head">
             <h2>Latest stories</h2>
-            <Link href="/news" className="tdd-more">All articles</Link>
+            <Link href="/news" className="tdd-more">All stories</Link>
           </div>
           {/* Type only, no art. The density drop against the cover above is the
               point: a front page that never changes gear reads as a template. */}

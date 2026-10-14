@@ -66,7 +66,7 @@ borderTop: '18px solid #FF6B35',
         </div>
 
         <div style={{ fontSize: 38, color: '#A8ACB2', display: 'flex' }}>
-          Sports, tech, and the culture around the game.
+          Sports, tech, culture, and life at home, from one writer.
         </div>
       </div>
     ),

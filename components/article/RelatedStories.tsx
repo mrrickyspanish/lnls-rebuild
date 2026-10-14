@@ -30,7 +30,7 @@ export default function RelatedStories({ articles }: RelatedStoriesProps) {
     <section className="tdd-related" aria-labelledby="keep-digging">
       <div className="tdd-related-head">
         <h2 id="keep-digging">Keep Digging</h2>
-        <Link href="/news" className="tdd-more">All articles</Link>
+        <Link href="/news" className="tdd-more">All stories</Link>
       </div>
       <ul className="tdd-related-grid">
         {articles.map((article) => (

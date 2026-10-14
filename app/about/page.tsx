@@ -4,7 +4,8 @@ import { SITE_OWNER, SITE_OWNER_X_URL } from '@/lib/author'
 
 /**
  * Lane colors follow the site-wide topic-family rule (lib/topics.ts):
- * Court is on-field coverage, Code is analysis, Culture is lifestyle. The same
+ * Court is on-field coverage, Code is analysis and tech, Culture is
+ * lifestyle, Home is marriage and fatherhood. The same
  * three families color story tags and art on the front page, so a color here
  * means the same thing it means there.
  *
@@ -28,11 +29,16 @@ const lanes = [
     family: 'culture',
     desc: 'Fashion, music, film, and art. The lifestyle that grew up around the game.',
   },
+  {
+    title: 'Home',
+    family: 'home',
+    desc: 'Marriage, fatherhood, and life at my own front door. It’s where a lot of my takes start.',
+  },
 ]
 
 export const metadata = {
   title: 'About',
-  description: `The Daily Dribble is ${SITE_OWNER.name}'s home for sports, tech, and the culture around the game.`,
+  description: `The Daily Dribble is ${SITE_OWNER.name}'s home for sports, tech, culture, and life at home.`,
 }
 
 const handle = SITE_OWNER.twitter.replace(/^@/, '')
@@ -45,8 +51,9 @@ export default function AboutPage() {
           <span data-family="games">Court.</span>
           <span data-family="analysis">Code.</span>
           <span data-family="culture">Culture.</span>
+          <span data-family="home">Home.</span>
         </h1>
-        <p>Sports, tech, and the culture around the game.</p>
+        <p>Sports, tech, culture, and life at home, from one writer.</p>
       </header>
 
       {/* One writer, and the site says so: the byline on every story links
@@ -70,7 +77,7 @@ export default function AboutPage() {
       </section>
 
       <section className="tdd-about-section" aria-labelledby="about-lanes">
-        <h2 id="about-lanes">Three lanes. One feed.</h2>
+        <h2 id="about-lanes">Four lanes. One feed.</h2>
         <div>
           {lanes.map(lane => (
             <div className="tdd-about-lane" data-family={lane.family} key={lane.title}>

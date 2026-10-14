@@ -14,7 +14,7 @@ import { Menu, X, Search } from 'lucide-react'
  */
 
 const LINKS = [
-  { href: '/news', label: 'News' },
+  { href: '/news', label: 'Stories' },
   { href: '/podcast', label: 'Podcast' },
   { href: '/videos', label: 'Videos' },
   { href: '/about', label: 'About' },

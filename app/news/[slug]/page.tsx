@@ -154,7 +154,7 @@ export default async function ArticlePage({ params }: PageProps) {
         <header className="tdd-story-head">
           <div className="tdd-story-intro">
             <nav className="tdd-story-crumbs" aria-label="Breadcrumb">
-              <Link href="/news">News</Link>
+              <Link href="/news">Stories</Link>
               {topicLink && (
                 <>
                   <span aria-hidden="true">/</span>

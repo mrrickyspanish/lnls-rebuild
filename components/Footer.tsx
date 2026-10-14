@@ -5,7 +5,7 @@ import { CONTACT_EMAIL, SOCIAL_HANDLE, SOCIALS } from '@/lib/contact'
 import { PUBLIC_TOPICS } from '@/lib/topics'
 
 const SECTIONS = [
-  { href: '/news', label: 'News' },
+  { href: '/news', label: 'Stories' },
   { href: '/podcast', label: 'Podcast' },
   { href: '/videos', label: 'Videos' },
   { href: '/about', label: 'About' },
@@ -29,7 +29,7 @@ export default function Footer() {
         <div className="tdd-footer-main">
           <div className="tdd-footer-brand">
             <p className="tdd-footer-wordmark">The Daily Dribble</p>
-            <p>Sports, tech, and the culture around the game.</p>
+            <p>Sports, tech, culture, and life at home, from one writer.</p>
           </div>
 
           <nav aria-label="Sections">
