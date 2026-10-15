@@ -89,10 +89,13 @@ export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
+  // Presentation-only editorial classification until the CMS topic is updated.
+  // The saved article and its body remain unchanged.
+  const displayTopic = slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home' ? 'Home' : article.topic;
 
   // Three stories to read next: same topic first, topped up with the latest
   // stories when the topic has fewer than three others.
-  let relatedArticles = (await fetchRelatedArticles(article.id, article.topic, 3)).slice(0, 3);
+  let relatedArticles = (await fetchRelatedArticles(article.id, displayTopic, 3)).slice(0, 3);
 
   if (relatedArticles.length < 3) {
     const fallbackArticles = await fetchPublishedArticles(6);
@@ -105,7 +108,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
     relatedArticles = [...relatedArticles, ...fillers];
   }
-  const currentArticle = buildHeroArticle(article, slug);
+  const currentArticle = buildHeroArticle({ ...article, topic: displayTopic }, slug);
 
   // Always absolute: the share buttons copy and post this URL, so a relative
   // path (the old behavior when the env var was unset) shared nothing useful.
@@ -134,11 +137,11 @@ export default async function ArticlePage({ params }: PageProps) {
     url: shareUrl,
     publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
-  const family = topicFamily(article.topic);
+  const family = topicFamily(displayTopic);
   const publishedAt = currentArticle.publishedAt;
   // FEATURED is an editorial flag, not a section a reader can browse.
-  const topicLink = article.topic && article.topic !== 'FEATURED' && isArticleTopic(article.topic)
-    ? article.topic
+  const topicLink = displayTopic && displayTopic !== 'FEATURED' && isArticleTopic(displayTopic)
+    ? displayTopic
     : null;
 
   return (
@@ -225,7 +228,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 <p>{note}</p>
               </aside>
             )}
-            {article.body && <ArticleBody content={article.body} />}
+            {article.body && <ArticleBody content={article.body} hideTakeaways={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} />}
             <AuthorCard
               author={{
                 name: article.author_name,
