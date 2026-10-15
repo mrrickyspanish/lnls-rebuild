@@ -27,6 +27,8 @@ type ArticleBodyProps = {
   content: ArticleBody;
   /** Hide the AI-added opening roundup on selected personal essays. */
   hideTakeaways?: boolean;
+  /** Hide only the extra HomePods heading inserted by AI in the Apple opinion piece. */
+  hideGeneratedHomePodsHeading?: boolean;
 };
 
 function containsNodeType(node: TipTapDocNode | null | undefined, type: string): boolean {
@@ -45,7 +47,7 @@ function renderSupabaseBlock(block: ArticleBodyBlock, index: number) {
   return <p key={`paragraph-${index}`}>{block.text}</p>;
 }
 
-export default function ArticleBody({ content, hideTakeaways = false }: ArticleBodyProps) {
+export default function ArticleBody({ content, hideTakeaways = false, hideGeneratedHomePodsHeading = false }: ArticleBodyProps) {
   const hasTwitterEmbed = useMemo(() => {
     if (!content || !isTipTapDoc(content)) return false;
     return containsNodeType(content, 'twitterEmbed');
@@ -85,8 +87,15 @@ export default function ArticleBody({ content, hideTakeaways = false }: ArticleB
 
   if (isTipTapDoc(content)) {
     const doc = attachLegacyCaptions(content as JSONContent);
-    const visibleDoc = hideTakeaways
-      ? { ...doc, content: doc.content?.filter((node) => node.type !== 'keyTakeaways') }
+    const visibleDoc = hideTakeaways || hideGeneratedHomePodsHeading
+      ? { ...doc, content: doc.content?.filter((node) => {
+          if (hideTakeaways && node.type === 'keyTakeaways') return false;
+          if (hideGeneratedHomePodsHeading && node.type === 'heading') {
+            const headingText = (node.content ?? []).map((part) => part.text ?? '').join('').trim().toLowerCase();
+            if (headingText === 'it started with the homepods') return false;
+          }
+          return true;
+        }) }
       : doc;
     const html = retargetLinks(generateTipTapHTML(visibleDoc));
     return <div className="tdd-prose" dangerouslySetInnerHTML={{ __html: html }} />;
