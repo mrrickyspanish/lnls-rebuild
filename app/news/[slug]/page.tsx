@@ -228,7 +228,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 <p>{note}</p>
               </aside>
             )}
-            {article.body && <ArticleBody content={article.body} hideTakeaways={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} />}
+            {article.body && <ArticleBody content={article.body} hideTakeaways={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} hideGeneratedHomePodsHeading={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} />}
             <AuthorCard
               author={{
                 name: article.author_name,
