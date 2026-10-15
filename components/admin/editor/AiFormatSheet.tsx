@@ -27,7 +27,7 @@ type AiFormatSheetProps = {
   editorText: string
   /** Images, videos and posts in the current story; Apply replaces them. */
   editorMediaCount: number
-  current: { title: string; summary: string; metaDescription: string; topic: string }
+  current: { title: string; summary: string; metaDescription: string; topic: string; pieceType: string }
   onClose: () => void
   onApply: (result: AiFormatResult) => void
 }
@@ -108,7 +108,7 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
       const response = await fetch('/api/ai/assist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'format-article', content: text, context: { title: current.title, category: current.topic } }),
+        body: JSON.stringify({ action: 'format-article', content: text, context: { title: current.title, category: current.topic, articleType: current.pieceType } }),
         signal: controller.signal,
       })
       const result = await response.json()
