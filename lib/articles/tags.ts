@@ -37,3 +37,13 @@ export function tagAppearsIn(tag: string, text: string) {
   const needle = squash(tag)
   return needle.length > 0 && ` ${squash(text)} `.includes(` ${needle} `)
 }
+
+/**
+ * Snap tags to the spelling already used on the site, case-insensitively:
+ * "lakers" becomes "Lakers" if "Lakers" exists, so one subject never ends
+ * up split across two tag pages.
+ */
+export function canonicalizeTags(tags: string[], vocabulary: string[]): string[] {
+  const known = new Map(vocabulary.map((tag) => [tag.toLowerCase(), tag]))
+  return normalizeTags(tags.map((tag) => known.get(tag.toLowerCase()) ?? tag))
+}

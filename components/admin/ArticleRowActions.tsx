@@ -25,6 +25,11 @@ export default function ArticleRowActions({
   const router = useRouter()
   const [pendingAction, setPendingAction] = useState<ActionState>(null)
   const [error, setError] = useState('')
+  // "Send Newsletter" opens a sheet for an optional line to readers, shown
+  // above the story in the email (lib/newsletter/email.ts).
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [note, setNote] = useState('')
+  const [queued, setQueued] = useState(false)
 
   const newsletterSent = Boolean(lastNewsletterSentAt)
   const sentLabel = lastNewsletterSentAt
@@ -103,14 +108,12 @@ export default function ArticleRowActions({
 
   const handleSendNewsletter = async () => {
     if (!published || newsletterSent) return
-    const confirmSend = window.confirm('Email this story to your subscribers? Readers who only picked other lanes won\'t get it.')
-    if (!confirmSend) return
-
+    setSheetOpen(false)
     await runAction('newsletter', async () => {
       const response = await fetch('/api/newsletter/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug })
+        body: JSON.stringify({ slug, note })
       })
 
       const data = await response.json().catch(() => ({}))
@@ -119,9 +122,9 @@ export default function ArticleRowActions({
         throw new Error(data.error || 'Failed to send newsletter')
       }
 
-      const sent = typeof data.sent === 'number' ? data.sent : 0
-      const total = typeof data.total === 'number' ? data.total : 0
-      window.alert(`Newsletter sent: ${sent}/${total}`)
+      // The send is queued (QStash) and goes out in the background. This used
+      // to alert "Newsletter sent: 0/0" because the queue reply has no counts.
+      setQueued(true)
     })
   }
 
@@ -141,13 +144,13 @@ export default function ArticleRowActions({
         {published && (
           <button
             type="button"
-            onClick={handleSendNewsletter}
-            disabled={pendingAction !== null || newsletterSent}
+            onClick={() => setSheetOpen(true)}
+            disabled={pendingAction !== null || newsletterSent || queued}
             className={`${BUTTON} bg-emerald-900/40 text-emerald-300 hover:bg-emerald-900/60`}
           >
             {pendingAction === 'newsletter'
               ? 'Sending…'
-              : newsletterSent
+              : newsletterSent || queued
                 ? 'Newsletter Sent'
                 : 'Send Newsletter'}
           </button>
@@ -173,6 +176,38 @@ export default function ArticleRowActions({
       </div>
       {newsletterSent && (
         <p className="text-sm text-emerald-300">Newsletter sent {sentLabel}</p>
+      )}
+      {queued && !newsletterSent && (
+        <p className="text-sm text-emerald-300" role="status">On its way. It goes out over the next minute or two.</p>
+      )}
+      {sheetOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center" role="dialog" aria-modal="true" aria-labelledby={`send-${slug}`}>
+          <div className="w-full max-w-lg rounded-t-xl bg-neutral-900 p-5 text-left sm:rounded-xl">
+            <h2 id={`send-${slug}`} className="text-xl font-bold text-white">Email this story</h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Goes to subscribers who picked this story&apos;s lane, from your name, with the headline as the subject.
+            </p>
+            <label htmlFor={`note-${slug}`} className="mt-4 block text-sm font-semibold text-neutral-200">
+              A line from you <span className="font-normal text-neutral-400">(optional)</span>
+            </label>
+            <textarea
+              id={`note-${slug}`}
+              value={note}
+              onChange={(e) => setNote(e.target.value.slice(0, 600))}
+              className="mt-1.5 h-28 w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-base text-white placeholder:text-neutral-500 focus:border-red-500 focus:outline-none"
+              placeholder="Shows above the story. e.g. Wrote this one at 2am after the game. Tell me I'm wrong."
+            />
+            <p className="mt-1 text-sm text-neutral-500">{note.length}/600</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setSheetOpen(false)} className="min-h-[48px] rounded border border-neutral-700 font-semibold text-neutral-200">
+                Cancel
+              </button>
+              <button type="button" onClick={handleSendNewsletter} className="min-h-[48px] rounded bg-emerald-700 font-bold text-white hover:bg-emerald-600">
+                Send it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
     </div>

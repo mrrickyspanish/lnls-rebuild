@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   if (denied) return denied
 
   try {
-    const { slug } = (await request.json()) as { slug?: string }
+    const { slug, note } = (await request.json()) as { slug?: string; note?: string }
 
     if (!slug) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     await client.publishJSON({
       url: jobUrl,
-      body: { slug },
+      body: { slug, note: typeof note === 'string' ? note.trim().slice(0, 600) : '' },
     })
 
     return NextResponse.json({ ok: true, queued: true })

@@ -40,6 +40,12 @@ export function topicFamily(topic?: string | null): TopicFamily {
   return FAMILY_BY_TOPIC[topic.trim().toLowerCase()] ?? 'court'
 }
 
+/** True for a pre-bucket topic name (Lakers, NBA, Tech...). */
+export function isLegacyTopic(value: string | null | undefined) {
+  const v = (value ?? '').trim().toLowerCase()
+  return Object.values(LEGACY_TOPICS).some((names) => names.some((name) => name.toLowerCase() === v))
+}
+
 /** The bucket name for any topic, old or new: 'Lakers' -> 'Court'. */
 export function bucketFor(topic?: string | null): ArticleTopic {
   const family = topicFamily(topic)

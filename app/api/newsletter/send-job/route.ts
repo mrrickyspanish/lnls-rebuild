@@ -1,5 +1,5 @@
-import { BRAND_NAME, EMAIL_REPLY_TO, emailFrom, escapeHtml, sendOrThrow } from '@/lib/email'
-import { getSiteUrl } from '@/lib/site'
+import { EMAIL_REPLY_TO, personalFrom, sendOrThrow } from '@/lib/email'
+import { renderStoryEmail, unsubscribeUrl } from '@/lib/newsletter/email'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { Receiver } from '@upstash/qstash'
@@ -15,16 +15,6 @@ let resendClient: Resend | null = null
 function resend(): Resend {
   if (!resendClient) resendClient = new Resend(resendApiKey)
   return resendClient
-}
-
-function buildArticleUrl(slug: string): string {
-  const base = getSiteUrl()
-  return `${base.replace(/\/$/, '')}/news/${slug}`
-}
-
-function buildUnsubscribeUrl(token: string): string {
-  const base = getSiteUrl()
-  return `${base.replace(/\/$/, '')}/api/newsletter/unsubscribe?token=${token}`
 }
 
 async function verifyQstash(request: NextRequest, body: string): Promise<boolean> {
@@ -61,8 +51,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
-    const payload = JSON.parse(body) as { slug?: string }
+    const payload = JSON.parse(body) as { slug?: string; note?: string }
     const slug = payload.slug
+    // Optional line from the writer, shown above the story in the email.
+    const note = typeof payload.note === 'string' ? payload.note.trim().slice(0, 600) : ''
 
     if (!slug) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
@@ -75,7 +67,7 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseServiceClient()
     const { data: article, error: articleError } = await supabase
       .from('articles')
-      .select('id, title, excerpt, slug, hero_image_url, topic, published, last_newsletter_sent_at')
+      .select('*')
       .eq('slug', slug)
       .maybeSingle()
 
@@ -108,9 +100,7 @@ export async function POST(request: NextRequest) {
     // lane (lanes NULL or empty).
     const list = ((subscribers ?? []) as Array<{ id: string; email: string; unsubscribe_token: string | null; lanes?: string[] | null }>)
       .filter((subscriber) => wantsStory(subscriber.lanes, article.topic))
-    const articleUrl = buildArticleUrl(article.slug)
-    const subject = `New article: ${article.title}`
-    const from = emailFrom()
+    const from = personalFrom()
 
     let sent = 0
     let failed = 0
@@ -129,27 +119,21 @@ export async function POST(request: NextRequest) {
               .eq('id', subscriber.id)
           }
 
-          const unsubscribeUrl = buildUnsubscribeUrl(token)
+          const email = renderStoryEmail({ article, note, lanes: subscriber.lanes, token })
 
           await sendOrThrow(resend(), {
             from,
             replyTo: EMAIL_REPLY_TO,
             to: subscriber.email,
-            subject,
+            subject: email.subject,
             headers: {
-              'List-Unsubscribe': `<${unsubscribeUrl}>`,
+              // One-click unsubscribe (RFC 8058), which Gmail and Yahoo
+              // expect from bulk senders.
+              'List-Unsubscribe': `<${unsubscribeUrl(token)}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
             },
-            html: `
-              <div style="font-family:Arial,sans-serif;line-height:1.6">
-                <p>Hi there,</p>
-                <h1>${escapeHtml(article.title)}</h1>
-                ${article.hero_image_url ? `<img src="${escapeHtml(article.hero_image_url)}" alt="${escapeHtml(article.title)}" style="max-width:100%" />` : ''}
-                <p>${escapeHtml(article.excerpt)}</p>
-                <p><a href="${articleUrl}">Read the full article</a></p>
-                <p style="font-size:12px;color:#777">If you want to stop receiving these emails, <a href="${unsubscribeUrl}">unsubscribe here</a>.</p>
-                <p>${BRAND_NAME}</p>
-              </div>
-            `,
+            html: email.html,
+            text: email.text,
           })
           sent += 1
         } catch (mailErr) {

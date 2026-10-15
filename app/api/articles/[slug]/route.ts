@@ -5,7 +5,8 @@ import { revalidatePath } from 'next/cache'
 import { isRichTextContent } from '@/lib/articles/body'
 import { generateTags } from '@/lib/ai/tags'
 import { docToPlainText } from '@/lib/articles/plain-text'
-import { normalizeTags } from '@/lib/articles/tags'
+import { canonicalizeTags, normalizeTags } from '@/lib/articles/tags'
+import { fetchTagVocabulary } from '@/lib/supabase/articles'
 import { missingColumnMessage, readTrustFields, type TrustFieldsPayload } from '@/lib/articles/trust-fields'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { ArticleBody, ArticleUpdate } from '@/types/supabase'
@@ -85,12 +86,15 @@ export async function PATCH(
 
     // Tags: the writer's, or generated from the story when there are none.
     // Tagging failures never block a save (generateTags returns []).
-    let tags = normalizeTags(rawPayload.tags)
+    // Both snap to the site's existing tag spellings so one subject keeps one tag.
+    const vocabulary = await fetchTagVocabulary()
+    let tags = canonicalizeTags(normalizeTags(rawPayload.tags), vocabulary)
     if (tags.length === 0) {
       tags = await generateTags({
         title: rawPayload.title,
         excerpt: rawPayload.excerpt,
         text: docToPlainText(rawPayload.body as any),
+        vocabulary,
       })
     }
 

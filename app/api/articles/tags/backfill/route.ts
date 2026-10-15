@@ -7,6 +7,7 @@ import { docToPlainText } from '@/lib/articles/plain-text'
 import { normalizeArticleBody } from '@/lib/articles/body'
 import { missingColumnMessage } from '@/lib/articles/trust-fields'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
+import { fetchTagVocabulary } from '@/lib/supabase/articles'
 
 /**
  * One-time backfill: tags a few untagged stories per call (each needs an AI
@@ -40,12 +41,16 @@ export async function POST(request: Request) {
   let tagged = 0
   let skipped = 0
 
+  // Grows as the backfill runs, so later stories reuse earlier stories' tags.
+  const vocabulary = await fetchTagVocabulary()
   for (const article of batch) {
     const tags = await generateTags({
       title: article.title,
       excerpt: article.excerpt,
       text: docToPlainText(normalizeArticleBody(article.body as any) as any),
+      vocabulary,
     })
+    for (const tag of tags) if (!vocabulary.some((t) => t.toLowerCase() === tag.toLowerCase())) vocabulary.push(tag)
     if (tags.length === 0) { skipped += 1; continue }
     const { error: updateError } = await supabase.from('articles').update({ tags } as any).eq('id', article.id)
     if (updateError) { console.error('Tag backfill update failed:', updateError); skipped += 1 } else tagged += 1

@@ -7,6 +7,7 @@ import { Play } from 'lucide-react'
 import { useAudioPlayer } from '@/lib/audio/AudioPlayerContext'
 import { LANES, bucketFor, laneForTopic, topicFamily, PODCAST_FAMILY, VIDEO_FAMILY, type LaneKey } from '@/lib/topics'
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
+import { optimizedSrc, responsiveImage } from '@/lib/images'
 
 export type EditorialItem = {
   id: string | number; title: string; excerpt?: string; description?: string;
@@ -38,16 +39,27 @@ function credit(item: EditorialItem) {
  * designed into it (cover_has_text) is shown whole instead, over a blurred
  * copy of itself, so its words are never cropped off.
  */
-function Shot({ item, family, className = '' }: { item: EditorialItem; family: string; className?: string }) {
+function Shot({ item, family, className = '', sizes = '(min-width: 700px) 50vw, 100vw', priority = false }: {
+  item: EditorialItem; family: string; className?: string; sizes?: string
+  /** The lead story's cover: loaded first, since it's the first thing seen. */
+  priority?: boolean
+}) {
   const whole = Boolean(item.cover_has_text && item.image_url)
   return (
     <div
       className={`tdd-shot ${whole ? 'tdd-shot--whole' : ''} ${className}`}
       data-family={family}
-      style={whole ? ({ '--shot': `url(${JSON.stringify(item.image_url)})` } as React.CSSProperties) : undefined}
+      // The blurred backdrop behind a whole cover only needs a small copy.
+      style={whole ? ({ '--shot': `url(${JSON.stringify(optimizedSrc(item.image_url!, 640))})` } as React.CSSProperties) : undefined}
     >
       {item.image_url
-        ? <img src={item.image_url} alt="" loading="lazy" decoding="async" />
+        ? <img
+            {...responsiveImage(item.image_url, sizes)}
+            alt=""
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+          />
         : <span className="tdd-shot-fallback" aria-hidden="true">TDD</span>}
     </div>
   )
@@ -152,7 +164,7 @@ export default function EditorialHome({
               animate={{ clipPath: 'inset(0 0 0% 0)' }}
               transition={{ duration: 0.85, ease: EASE }}
             >
-              <Shot item={cover} family={topicFamily(cover.topic)} />
+              <Shot item={cover} family={topicFamily(cover.topic)} sizes="(min-width: 900px) 55vw, 100vw" priority />
             </motion.div>
 
             <motion.div

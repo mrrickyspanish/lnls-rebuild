@@ -1,10 +1,12 @@
 import { askClaude } from '@/lib/ai/claude'
-import { normalizeTags, tagAppearsIn } from '@/lib/articles/tags'
+import { canonicalizeTags, normalizeTags, tagAppearsIn } from '@/lib/articles/tags'
 
 interface TagSource {
   title: string
   excerpt?: string | null
   text: string
+  /** Tags already used on the site, so the same subject keeps one tag. */
+  vocabulary?: string[]
 }
 
 /**
@@ -13,7 +15,7 @@ interface TagSource {
  * never invented; anything else is dropped. Returns [] if the AI call fails,
  * so a save never fails because tagging did.
  */
-export async function generateTags({ title, excerpt, text }: TagSource): Promise<string[]> {
+export async function generateTags({ title, excerpt, text, vocabulary = [] }: TagSource): Promise<string[]> {
   const source = [title, excerpt ?? '', text].join('\n\n')
   if (!source.trim()) return []
   try {
@@ -25,7 +27,9 @@ Rules:
 - Use each name exactly as it is spelled in the story, in normal capitalization. Full names for people.
 - Only use names and phrases that actually appear in the story. Never add one that isn't in the text.
 - No generic words (sports, news, opinion, article, basketball fans).
-- Reply with only a JSON array of strings, nothing else. Example: ["Lakers", "LeBron James", "Trade Deadline"]
+${vocabulary.length ? `- Tags already used on the site are listed below. When the story is about one of them, use that exact tag (same spelling and capitalization) instead of a variation. Only reuse one if the story is actually about it.
+Existing tags: ${vocabulary.slice(0, 200).join(', ')}
+` : ''}- Reply with only a JSON array of strings, nothing else. Example: ["Lakers", "LeBron James", "Trade Deadline"]
 
 Story:
 """
@@ -35,8 +39,8 @@ ${source.slice(0, 12000)}
     )
     const match = reply.match(/\[[\s\S]*\]/)
     if (!match) return []
-    const tags = normalizeTags(JSON.parse(match[0]))
-    return tags.filter((tag) => tagAppearsIn(tag, source)).slice(0, 6)
+    const tags = normalizeTags(JSON.parse(match[0])).filter((tag) => tagAppearsIn(tag, source))
+    return canonicalizeTags(tags, vocabulary).slice(0, 6)
   } catch (error) {
     console.error('Tag generation failed; saving without tags.', error)
     return []

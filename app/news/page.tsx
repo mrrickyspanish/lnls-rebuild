@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { fetchPublishedArticles } from '@/lib/supabase/articles';
 import type { Article } from '@/types/supabase';
-import { bucketFor, isArticleTopic, topicFamily, topicsInBucket } from '@/lib/topics';
+import { bucketFor, isArticleTopic, isLegacyTopic, topicFamily, topicsInBucket } from '@/lib/topics';
+import { redirect } from 'next/navigation';
+import { fetchTagVocabulary } from '@/lib/supabase/articles';
+import { canonicalizeTags } from '@/lib/articles/tags';
 import { pieceTypeInfo } from '@/lib/articles/piece-type';
 import { hashtag, normalizeTags } from '@/lib/articles/tags';
 
@@ -39,8 +42,15 @@ export const metadata = {
 
 export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string; tag?: string}>}) {
   const {topic, tag: rawTag} = await searchParams;
-  // ?tag=LeBron%20James: every story with that tag (the #hashtags on stories link here).
-  const tag = normalizeTags([rawTag ?? ''])[0];
+  // Old links (/news?topic=Lakers, from the old footer and search results)
+  // go to the bucket that topic now lives in.
+  if (topic && !isArticleTopic(topic) && isLegacyTopic(topic)) {
+    redirect(`/news?topic=${encodeURIComponent(bucketFor(topic))}`);
+  }
+  // ?tag=LeBron%20James: every story with that tag (the #hashtags on stories
+  // link here). Snapped to the site's spelling, so ?tag=lakers finds Lakers.
+  const typedTag = normalizeTags([rawTag ?? ''])[0];
+  const tag = typedTag ? canonicalizeTags([typedTag], await fetchTagVocabulary())[0] : undefined;
   const selectedTopic = isArticleTopic(topic) ? topic : undefined;
   // A bucket filter also matches stories still saved under an old topic.
   const articles = await fetchPublishedArticles(24, selectedTopic ? topicsInBucket(selectedTopic) : undefined, tag);

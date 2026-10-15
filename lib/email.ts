@@ -1,5 +1,6 @@
 import type { Resend } from 'resend'
 
+import { SITE_OWNER } from '@/lib/author'
 import { CONTACT_EMAIL } from '@/lib/contact'
 
 /**
@@ -20,6 +21,17 @@ export const EMAIL_REPLY_TO = CONTACT_EMAIL
  */
 export function emailFrom(): string {
   return process.env.RESEND_FROM_EMAIL || `${BRAND_NAME} <newsletter@thedailydribble.com>`
+}
+
+/**
+ * Story and welcome emails come from the writer, not the brand: same
+ * verified address as emailFrom(), with his name as the sender. The name
+ * has a period, so it's quoted (RFC 5322 display-name).
+ */
+export function personalFrom(): string {
+  const configured = emailFrom()
+  const address = configured.match(/<([^>]+)>/)?.[1] ?? configured.trim()
+  return `"${SITE_OWNER.name}" <${address}>`
 }
 
 /** Escape text before it is placed inside an HTML email. */

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
+import { optimizedSrc, responsiveImage } from '@/lib/images'
 import { bucketFor, topicFamily } from '@/lib/topics'
 import type { Article } from '@/types/supabase'
 
@@ -38,10 +39,10 @@ export default function RelatedStories({ articles }: RelatedStoriesProps) {
             <Link href={`/news/${article.slug}`} className="tdd-related-story">
               <div
                 className={`tdd-related-art ${article.cover_has_text && article.hero_image_url ? 'tdd-related-art--whole' : ''}`}
-                style={article.cover_has_text && article.hero_image_url ? ({ '--shot': `url(${JSON.stringify(article.hero_image_url)})` } as React.CSSProperties) : undefined}
+                style={article.cover_has_text && article.hero_image_url ? ({ '--shot': `url(${JSON.stringify(optimizedSrc(article.hero_image_url, 640))})` } as React.CSSProperties) : undefined}
               >
                 {article.hero_image_url
-                  ? <img src={article.hero_image_url} alt="" loading="lazy" decoding="async" />
+                  ? <img {...responsiveImage(article.hero_image_url, '(min-width: 768px) 33vw, 100vw')} alt="" loading="lazy" decoding="async" />
                   : <span className="tdd-related-fallback" aria-hidden="true">TDD</span>}
               </div>
               <div className="tdd-related-tags" data-family={topicFamily(article.topic)}>

@@ -1,10 +1,9 @@
-import { BRAND_NAME, EMAIL_REPLY_TO, emailFrom, sendOrThrow } from "@/lib/email";
-import { SITE_OWNER } from "@/lib/author";
+import { EMAIL_REPLY_TO, personalFrom, sendOrThrow } from "@/lib/email";
+import { renderWelcomeEmail, unsubscribeUrl } from "@/lib/newsletter/email";
 // app/api/newsletter/subscribe/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import type { PostgrestError } from "@supabase/supabase-js";
 import { Resend } from "resend";
-import { subscribeToNewsletter } from "@/lib/supabase/client";
+import { createSupabaseServiceClient, subscribeToNewsletter } from "@/lib/supabase/client";
 import { LANES, isLaneKey } from "@/lib/topics";
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -42,44 +41,67 @@ export async function POST(request: NextRequest) {
     }
     const storedLanes = lanes && lanes.length < LANES.length ? lanes : null;
 
-    const {
-      data,
-      error,
-    }: { data: unknown; error: PostgrestError | null } = await subscribeToNewsletter(email, "site", storedLanes);
+    const { data, error, token: newToken } = await subscribeToNewsletter(email, "site", storedLanes);
+    let token = newToken;
 
     if (error) {
-      // 23505 = unique_violation in Postgres
+      // 23505 = unique_violation in Postgres: the address is already on file.
       if (error.code === "23505" || /duplicate/i.test(error.message)) {
-        return NextResponse.json({ error: "Email already subscribed" }, { status: 409 });
+        const supabase = createSupabaseServiceClient();
+        const { data: existing } = await supabase
+          .from("newsletter_subscribers")
+          .select("*")
+          .eq("email", email)
+          .maybeSingle();
+        const row = existing as { id: string; active?: boolean; unsubscribe_token?: string | null } | null;
+        // Someone who unsubscribed and signs up again is welcomed back with
+        // their new picks. It used to say "already subscribed" and leave them
+        // unsubscribed.
+        if (row && row.active === false) {
+          token = row.unsubscribe_token || newToken;
+          const { error: backError } = await supabase
+            .from("newsletter_subscribers")
+            .update({ active: true, unsubscribed_at: null, lanes: storedLanes, unsubscribe_token: token } as any)
+            .eq("id", row.id);
+          if (backError) {
+            console.error("newsletter resubscribe error:", backError);
+            return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
+          }
+        } else {
+          return NextResponse.json(
+            { error: "You're already on the list. To change what you get, use the link at the bottom of any email." },
+            { status: 409 }
+          );
+        }
+      } else {
+        console.error("newsletter insert error:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
       }
-      console.error("newsletter insert error:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
-      return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
     }
 
-    // Send welcome email (best-effort; do not fail subscription if email send errors)
+    // Welcome email (best-effort; a failed send never fails the sign-up).
     if (resendApiKey) {
       try {
+        const welcome = renderWelcomeEmail({ lanes: storedLanes, token });
         await sendOrThrow(resend(), {
-          from: emailFrom(),
+          from: personalFrom(),
           replyTo: EMAIL_REPLY_TO,
           to: email,
-          subject: `Welcome to ${BRAND_NAME}`,
-          html: `
-            <div style="font-family:Arial,sans-serif;line-height:1.6">
-              <h1>Welcome to ${BRAND_NAME}</h1>
-              <p>Thanks for subscribing. You'll get my new pieces as I publish them: sports, tech, culture, and life at home.</p>
-              <p>${SITE_OWNER.name}<br>${BRAND_NAME}</p>
-            </div>
-          `,
+          subject: welcome.subject,
+          headers: {
+            "List-Unsubscribe": `<${unsubscribeUrl(token)}>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+          html: welcome.html,
+          text: welcome.text,
         });
       } catch (mailErr) {
         console.warn("Resend send error (non-fatal):", mailErr);
-        // continue; don't block successful subscription
       }
     } else {
       console.warn("RESEND_API_KEY missing; skipping welcome email.");

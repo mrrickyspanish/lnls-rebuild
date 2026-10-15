@@ -1,40 +1,36 @@
-const TRUSTED_IMAGE_HOSTS = new Set([
-  'i.ytimg.com',
-  'i1.ytimg.com',
-  'i2.ytimg.com',
-  'i3.ytimg.com',
-  'i4.ytimg.com',
-  'lakersnation.com',
-  'cdn.vox-cdn.com',
-  'platform.silverscreenandroll.com',
-  'img.youtube.com',
-  'a.espncdn.com',
-  'a1.espncdn.com',
-  'a2.espncdn.com',
-  'a3.espncdn.com',
-  'espncdn.com',
-  'www.thesportingtribune.com',
-  'images.gmanews.tv',
-  'cdn.nba.com',
-  'ak-static.cms.nba.com',
-  'images.unsplash.com',
-  'pbs.twimg.com',
-  'media.gettyimages.com',
-  'd2p3bygnnzw9w3.cloudfront.net',
-  'spreaker-app.com',
-  'images.spreaker.com',
-  'd3wo5wojvuv7l.cloudfront.net',
-  'd1234567890123.cloudfront.net',
-  'www.basketballforever.com',
-]);
+/**
+ * Responsive covers through Next's image optimizer (/_next/image), which
+ * resizes and re-encodes (WebP/AVIF) per screen. Covers are uploaded at up
+ * to 2400px, and the home page used to load every one at full size.
+ *
+ * Only for hosts the optimizer is allowed to fetch (next.config.js
+ * remotePatterns): our own /uploads and Supabase storage. Anything else is
+ * returned as-is, so an image from an unlisted host still shows.
+ * Widths must be in Next's default deviceSizes (640, 1080, 1920 are).
+ */
+const OPTIMIZABLE_HOSTS = new Set(['rqbrshlalcscpvdtmxvc.supabase.co'])
+const WIDTHS = [640, 1080, 1920] as const
 
-export function canUseNextImage(src?: string | null) {
-  if (!src) return false;
-  // Only allow next/image for local images, unsplash, or sanity CDN
-  // For external images, fall back to plain <img> to avoid Next.js domain whitelist issues
-  return src.startsWith('/') || src.startsWith('https://images.unsplash.com') || src.startsWith('https://cdn.sanity.io');
+function canOptimize(src: string) {
+  if (src.startsWith('/') && !src.startsWith('//')) return true
+  try {
+    const url = new URL(src)
+    return url.protocol === 'https:' && OPTIMIZABLE_HOSTS.has(url.hostname)
+  } catch {
+    return false
+  }
 }
 
-export function isLocalImage(src?: string | null) {
-  return Boolean(src && src.startsWith('/'));
+export function optimizedSrc(src: string, width: (typeof WIDTHS)[number] = 1080) {
+  return canOptimize(src) ? `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75` : src
+}
+
+/** src, srcSet and sizes for an <img>; `sizes` describes the rendered width. */
+export function responsiveImage(src: string, sizes: string) {
+  if (!canOptimize(src)) return { src }
+  return {
+    src: optimizedSrc(src, 1080),
+    srcSet: WIDTHS.map((w) => `${optimizedSrc(src, w)} ${w}w`).join(', '),
+    sizes,
+  }
 }
