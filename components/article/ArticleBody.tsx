@@ -25,6 +25,8 @@ import type { ArticleBodyBlock, TipTapDocNode } from '@/types/supabase';
 import type { ArticleBody } from '@/types/supabase';
 type ArticleBodyProps = {
   content: ArticleBody;
+  /** Hide the AI-added opening roundup on selected personal essays. */
+  hideTakeaways?: boolean;
 };
 
 function containsNodeType(node: TipTapDocNode | null | undefined, type: string): boolean {
@@ -43,7 +45,7 @@ function renderSupabaseBlock(block: ArticleBodyBlock, index: number) {
   return <p key={`paragraph-${index}`}>{block.text}</p>;
 }
 
-export default function ArticleBody({ content }: ArticleBodyProps) {
+export default function ArticleBody({ content, hideTakeaways = false }: ArticleBodyProps) {
   const hasTwitterEmbed = useMemo(() => {
     if (!content || !isTipTapDoc(content)) return false;
     return containsNodeType(content, 'twitterEmbed');
@@ -82,7 +84,11 @@ export default function ArticleBody({ content }: ArticleBodyProps) {
   }
 
   if (isTipTapDoc(content)) {
-    const html = retargetLinks(generateTipTapHTML(attachLegacyCaptions(content as JSONContent)));
+    const doc = attachLegacyCaptions(content as JSONContent);
+    const visibleDoc = hideTakeaways
+      ? { ...doc, content: doc.content?.filter((node) => node.type !== 'keyTakeaways') }
+      : doc;
+    const html = retargetLinks(generateTipTapHTML(visibleDoc));
     return <div className="tdd-prose" dangerouslySetInnerHTML={{ __html: html }} />;
   }
 
