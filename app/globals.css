@@ -24,7 +24,7 @@
   --neon-blue: #00D4FF;
   --neon-purple: #B857FF;
   /* Home lane (marriage, fatherhood, life at home). The fourth family color. */
-  --neon-green: #3DDC97;
+  --neon-green: #2FE6C8;
 
   /* Subtle glows - hover only (kept: /news, /about and VideoGrid use these) */
   --glow-orange: 0 0 20px rgba(255, 107, 53, 0.4);
@@ -459,8 +459,8 @@ a.tdd-nav-icon { display: none; }
 }
 
 .tdd-kind[data-kind='opinion'] {
-  background: var(--neon-orange);
-  border-color: var(--neon-orange);
+  background: var(--family, var(--neon-orange));
+  border-color: var(--family, var(--neon-orange));
   color: #0D0D0D;
 }
 
@@ -1407,7 +1407,7 @@ button.tdd-cta:disabled {
 
 .tdd-story a:focus-visible,
 .tdd-story button:focus-visible {
-  outline: 2px solid var(--neon-orange);
+  outline: 2px solid var(--family);
   outline-offset: 3px;
 }
 
@@ -1477,10 +1477,10 @@ button.tdd-cta:disabled {
 
 .tdd-story-crumbs a.tdd-kind { color: var(--tdd-ink); margin-left: 6px; }
 .tdd-story-crumbs a.tdd-kind[data-kind='opinion'] { color: #0D0D0D; }
-.tdd-story-crumbs a.tdd-kind:hover { border-color: var(--neon-orange); }
+.tdd-story-crumbs a.tdd-kind:hover { border-color: var(--family); }
 
 .tdd-story-author { color: inherit; }
-.tdd-story-author:hover strong { color: var(--neon-orange); }
+.tdd-story-author:hover strong { color: var(--family); }
 
 /* Rumor line and update/correction note, above the story text. */
 .tdd-story-flag {
@@ -1597,7 +1597,7 @@ button.tdd-cta:disabled {
   transition: border-color 0.18s var(--tdd-ease), color 0.18s var(--tdd-ease);
 }
 
-.tdd-share-btn:hover { border-color: var(--neon-orange); color: var(--neon-orange); }
+.tdd-share-btn:hover { border-color: var(--family); color: var(--family); }
 
 .tdd-share-copied:empty { display: none; }
 
@@ -1654,13 +1654,13 @@ button.tdd-cta:disabled {
 .tdd-prose a {
   color: var(--tdd-ink);
   text-decoration: underline;
-  text-decoration-color: var(--neon-orange);
+  text-decoration-color: var(--family);
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
   transition: color 0.18s var(--tdd-ease);
 }
 
-.tdd-prose a:hover { color: var(--neon-orange); }
+.tdd-prose a:hover { color: var(--family); }
 
 /* Subheads: the display face, with a short rule in the story's family color. */
 .tdd-prose h1,
@@ -1719,11 +1719,11 @@ button.tdd-cta:disabled {
 .tdd-prose blockquote:not(.twitter-tweet) p { margin: 0; }
 .tdd-prose blockquote:not(.twitter-tweet) p + p { margin-top: 0.8em; }
 
-/* Pull quote: one standout line, big, with an orange rule. */
+/* Pull quote: one standout line, big, with the topic family's rule. */
 .tdd-prose blockquote.tdd-pullquote {
   margin: 1.8em 0;
   padding: 4px 0 4px 22px;
-  border-left: 4px solid var(--neon-orange);
+  border-left: 4px solid var(--family);
   font-family: var(--tdd-display);
   font-size: clamp(26px, 3vw, 34px);
   line-height: 1.12;
@@ -1961,7 +1961,7 @@ body:has(.tdd-news--page) .tdd-footer-news { display: none; }
   margin: 8px 0 0;
   padding: 24px 22px 22px;
   background: var(--bg-surface);
-  border-top: 4px solid var(--neon-orange);
+  border-top: 4px solid var(--family);
 }
 
 .tdd-news--story h2 { font-size: clamp(32px, 4vw, 40px); line-height: 0.95; }
