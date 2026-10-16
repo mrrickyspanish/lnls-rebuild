@@ -63,7 +63,7 @@ export const BUCKET_COLORS: Record<TopicFamily, string> = {
   court: '#FF6B35',
   code: '#00D4FF',
   culture: '#B857FF',
-  life: '#3DDC97',
+  life: '#2FE6C8',
 }
 
 /** Podcast and video shelves are not topic-tagged, so they get fixed families. */

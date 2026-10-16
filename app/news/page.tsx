@@ -22,7 +22,7 @@ const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
   court: 'border-neon-orange text-neon-orange',
   code: 'border-neon-blue text-neon-blue',
   culture: 'border-neon-purple text-neon-purple',
-  life: 'border-[#3DDC97] text-[#3DDC97]',
+  life: 'border-[#2FE6C8] text-[#2FE6C8]',
 };
 
 function formatDate(dateString?: string | null): string {

@@ -90,10 +90,13 @@ export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
+  // Presentation-only editorial classification until the CMS topic is updated.
+  // The saved article and its body remain unchanged.
+  const displayTopic = slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home' ? 'Home' : article.topic;
 
   // Three stories to read next: same bucket first, topped up with the latest
   // stories when the bucket has fewer than three others.
-  let relatedArticles = (await fetchRelatedArticles(article.id, topicsInBucket(bucketFor(article.topic)), 3)).slice(0, 3);
+  let relatedArticles = (await fetchRelatedArticles(article.id, topicsInBucket(bucketFor(displayTopic)), 3)).slice(0, 3);
 
   if (relatedArticles.length < 3) {
     const fallbackArticles = await fetchPublishedArticles(6);
@@ -106,7 +109,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
     relatedArticles = [...relatedArticles, ...fillers];
   }
-  const currentArticle = buildHeroArticle(article, slug);
+  const currentArticle = buildHeroArticle({ ...article, topic: displayTopic }, slug);
 
   // Always absolute: the share buttons copy and post this URL, so a relative
   // path (the old behavior when the env var was unset) shared nothing useful.
@@ -136,11 +139,11 @@ export default async function ArticlePage({ params }: PageProps) {
     url: shareUrl,
     publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
-  const family = topicFamily(article.topic);
+  const family = topicFamily(displayTopic);
   const publishedAt = currentArticle.publishedAt;
   // The story's bucket (Court, Code, Culture, Life), also for older stories
   // still saved under a pre-bucket topic.
-  const topicLink = bucketFor(article.topic);
+  const topicLink = bucketFor(displayTopic);
 
   return (
     <>
@@ -229,7 +232,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 <p>{note}</p>
               </aside>
             )}
-            {article.body && <ArticleBody content={article.body} />}
+            {article.body && <ArticleBody content={article.body} hideTakeaways={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} hideGeneratedHomePodsHeading={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} />}
             {normalizeTags(article.tags).length > 0 && (
               <nav className="tdd-hashtags" aria-label="Tags">
                 {normalizeTags(article.tags).map((tag) => (

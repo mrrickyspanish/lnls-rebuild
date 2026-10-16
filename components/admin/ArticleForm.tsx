@@ -891,6 +891,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             summary: formData.excerpt,
             metaDescription: formData.metaDescription,
             topic: formData.topic,
+            pieceType: formData.pieceType,
           }}
           onClose={() => setAiOpen(false)}
           onApply={applyAiFormat}

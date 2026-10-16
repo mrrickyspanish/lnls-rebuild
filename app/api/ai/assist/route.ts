@@ -27,6 +27,7 @@ interface AIAssistRequest {
     title?: string;
     author?: string;
     category?: string;
+    articleType?: string;
     platform?: 'twitter' | 'instagram' | 'linkedin' | 'threads';
   };
 }
@@ -589,6 +590,7 @@ Thread (one tweet per line, numbered):`);
 // Format raw article text into structured TipTap JSON
 async function formatArticle(content: string, context?: any): Promise<{ doc: AnyRecord; suggestions: FormatSuggestions }> {
   const currentHeadline = typeof context?.title === 'string' && context.title.trim() ? context.title.trim() : null;
+  const isOpinion = context?.articleType === 'opinion';
   // The answer is the whole article as JSON, several times longer than the
   // prose, plus the model's thinking. A cut-off document can't be parsed, so
   // the limit is generous; tokens are only billed when used.
@@ -610,7 +612,7 @@ FORMATTING:
 - Use a blockquote for a quoted passage (a player's or coach's words that run a sentence or more)
 - Use at most one pullQuote: a single striking line copied word-for-word from the story, placed a few paragraphs after where it appears
 - Use calloutCard for one important aside or note
-- Use keyTakeaways (2-4 short bullets) near the top only for longer pieces with several distinct points
+- ${isOpinion ? 'Do NOT add keyTakeaways or a short-version roundup. This is a personal opinion essay: lead with the writer’s opening and preserve the reveal.' : 'Use keyTakeaways (2-4 short bullets) near the top only for longer news stories or explainers with several distinct points.'}
 - Use statBlock for 1-3 standout numbers, and a table for comparisons across players or games
 
 NUMBERS - STRICT:
@@ -658,6 +660,9 @@ IMPORTANT: Return only the JSON object, no other text.`, { maxTokens: 64000 });
     // Older-style answers are a bare document with no suggestions.
     const rawDoc = isRecord(parsed) && parsed.type === 'doc' ? parsed : isRecord(parsed) ? parsed.doc : null;
     const doc = sanitizeTipTapDoc(rawDoc, content);
+    if (isOpinion && Array.isArray(doc.content)) {
+      doc.content = doc.content.filter((node) => !isRecord(node) || node.type !== 'keyTakeaways');
+    }
     return { doc, suggestions: sanitizeSuggestions(parsed, content, doc) };
   } catch (error) {
     console.error('Failed to parse AI-formatted article:', error);
