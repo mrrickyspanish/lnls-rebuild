@@ -3,10 +3,17 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
 import { isRichTextContent } from '@/lib/articles/body'
+import { generateTags } from '@/lib/ai/tags'
+import { docToPlainText } from '@/lib/articles/plain-text'
+import { canonicalizeTags, normalizeTags } from '@/lib/articles/tags'
+import { fetchTagVocabulary } from '@/lib/supabase/articles'
 import { missingColumnMessage, readTrustFields, type TrustFieldsPayload } from '@/lib/articles/trust-fields'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { ArticleBody, ArticleUpdate } from '@/types/supabase'
 
+
+// Room for the AI tagging call on a save with no tags.
+export const maxDuration = 60
 interface UpdateArticlePayload extends TrustFieldsPayload {
   title: string
   excerpt: string
@@ -22,6 +29,7 @@ interface UpdateArticlePayload extends TrustFieldsPayload {
   videoUrl?: string
   featured?: boolean
   coverHasText?: boolean
+  tags?: string[]
 }
 
 const REQUIRED_FIELDS: Array<keyof UpdateArticlePayload> = [
@@ -76,6 +84,20 @@ export async function PATCH(
       return NextResponse.json({ error: trust.error }, { status: 400 })
     }
 
+    // Tags: the writer's, or generated from the story when there are none.
+    // Tagging failures never block a save (generateTags returns []).
+    // Both snap to the site's existing tag spellings so one subject keeps one tag.
+    const vocabulary = await fetchTagVocabulary()
+    let tags = canonicalizeTags(normalizeTags(rawPayload.tags), vocabulary)
+    if (tags.length === 0) {
+      tags = await generateTags({
+        title: rawPayload.title,
+        excerpt: rawPayload.excerpt,
+        text: docToPlainText(rawPayload.body as any),
+        vocabulary,
+      })
+    }
+
     const supabase = createSupabaseServiceClient()
 
     // Check the article exists, and read its current note. '*' rather than
@@ -107,6 +129,7 @@ export async function PATCH(
       // slug, published_at and created_at stay as they were.
       ...trust.fields,
       cover_has_text: Boolean(rawPayload.coverHasText),
+      tags,
     }
 
     // The note's date is the date it was written or last changed, so a

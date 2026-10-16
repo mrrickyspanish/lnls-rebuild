@@ -28,8 +28,9 @@ export function SearchClient() {
     }
     setLoading(true);
     try {
-      // TODO: wire real search API
-      setResults([]);
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const data = await response.json();
+      setResults(Array.isArray(data.results) ? data.results : []);
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
@@ -59,7 +60,7 @@ export function SearchClient() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search articles, episodes, topics..."
+            placeholder="Search stories: Lakers, LeBron, Apple..."
             className="w-full px-6 py-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
             autoFocus
           />
@@ -84,30 +85,9 @@ export function SearchClient() {
         </div>
       )}
 
-      {/* Tabs */}
-      {query && results.length > 0 && (
-        <div className="flex gap-2 mb-8 border-b border-slate-800">
-          {(["all", "articles", "episodes"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-semibold transition-colors relative ${
-                activeTab === tab ? "text-purple-400" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              {tab === "all" ? "All Results" : tab[0].toUpperCase() + tab.slice(1)}
-              {tab !== "all" && (
-                <span className="ml-2 text-xs text-slate-500">
-                  ({results.filter((r) => r.type === tab.slice(0, -1)).length})
-                </span>
-              )}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-400" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Search covers stories only (headline, tags, bucket, summary, text),
+          so the old All / Articles / Episodes tabs are gone: Episodes was
+          always empty. */}
 
       {/* Results */}
       {loading ? (
@@ -155,6 +135,11 @@ function SearchResultCard({ result }: { result: any }) {
               {isArticle ? "Article" : "Episode"}
             </span>
             {result.category && <span className="text-slate-500 text-sm">in {result.category}</span>}
+            {Array.isArray(result.tags) && result.tags.length > 0 && (
+              <span className="text-slate-500 text-sm truncate">
+                {result.tags.slice(0, 3).map((t: string) => '#' + t.replace(/[^\p{L}\p{N}]+/gu, '')).join(' ')}
+              </span>
+            )}
           </div>
           <h2 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors line-clamp-2">
             {result.title}

@@ -4,7 +4,7 @@ import { SearchClient } from './search-client'
 
 export const metadata: Metadata = {
   title: 'Search',
-  description: 'Search TDD articles, videos, and podcasts.',
+  description: 'Search every story on The Daily Dribble.',
 }
 
 // this page depends on client router state
@@ -16,10 +16,9 @@ export default function SearchPage() {
       <section className="sticky top-0 z-10 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur">
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-4">
           <p className="text-sm uppercase tracking-[0.3em] text-white/50">Search</p>
-          <h1 className="text-4xl font-bold tracking-tight">Find articles, pods, and clips fast.</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Find a story.</h1>
           <p className="text-white/60">
-            The live search below pulls from every feed. Start typing to surface highlights from Court, Code,
-            and Culture without losing your place.
+            Search every story by name, team, topic or tag, across Court, Code, Culture and Life.
           </p>
         </div>
       </section>

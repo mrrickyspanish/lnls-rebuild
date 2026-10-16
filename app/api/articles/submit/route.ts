@@ -3,11 +3,18 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
 import { isRichTextContent } from '@/lib/articles/body'
+import { generateTags } from '@/lib/ai/tags'
+import { docToPlainText } from '@/lib/articles/plain-text'
+import { canonicalizeTags, normalizeTags } from '@/lib/articles/tags'
+import { fetchTagVocabulary } from '@/lib/supabase/articles'
 import { missingColumnMessage, readTrustFields, type TrustFieldsPayload } from '@/lib/articles/trust-fields'
 import { generateSlug } from '@/lib/slug'
 import { createSupabaseServiceClient } from '@/lib/supabase/client'
 import type { ArticleBody, ArticleInsert } from '@/types/supabase'
 
+
+// Room for the AI tagging call on a save with no tags.
+export const maxDuration = 60
 interface SubmitArticlePayload extends TrustFieldsPayload {
   title: string
   excerpt: string
@@ -23,6 +30,7 @@ interface SubmitArticlePayload extends TrustFieldsPayload {
   videoUrl?: string
   featured?: boolean
   coverHasText?: boolean
+  tags?: string[]
   slug?: string
 }
 
@@ -74,6 +82,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: trust.error }, { status: 400 })
     }
 
+    // Tags: the writer's, or generated from the story when there are none.
+    // Tagging failures never block a save (generateTags returns []).
+    // Both snap to the site's existing tag spellings so one subject keeps one tag.
+    const vocabulary = await fetchTagVocabulary()
+    let tags = canonicalizeTags(normalizeTags(rawPayload.tags), vocabulary)
+    if (tags.length === 0) {
+      tags = await generateTags({
+        title: rawPayload.title,
+        excerpt: rawPayload.excerpt,
+        text: docToPlainText(rawPayload.body as any),
+        vocabulary,
+      })
+    }
+
     const supabase = createSupabaseServiceClient()
     const slug = generateSlug(rawPayload.slug || rawPayload.title)
 
@@ -116,6 +138,7 @@ export async function POST(request: Request) {
       article_type: trust.fields.article_type,
       rumor_source: trust.fields.rumor_source,
       cover_has_text: Boolean(rawPayload.coverHasText),
+      tags,
     }
 
     const { error: insertError } = await (supabase.from('articles') as any).insert([insertPayload])

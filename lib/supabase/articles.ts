@@ -21,7 +21,8 @@ const DEFAULT_LIMIT = 24
 
 export async function fetchPublishedArticles(
   limit = DEFAULT_LIMIT,
-  topic?: string
+  topic?: string | string[],
+  tag?: string
 ): Promise<Article[]> {
   const supabase = createSupabaseAnonClient()
   let query = supabase
@@ -29,8 +30,14 @@ export async function fetchPublishedArticles(
     .select(ARTICLE_FIELDS)
     .eq('published', true)
 
-  if (topic) {
+  if (Array.isArray(topic)) {
+    query = query.in('topic', topic)
+  } else if (topic) {
     query = query.eq('topic', topic)
+  }
+
+  if (tag) {
+    query = query.contains('tags', [tag])
   }
 
   const { data, error } = await query
@@ -129,7 +136,7 @@ export async function fetchArticleForEdit(slug: string): Promise<Article | null>
 
 export async function fetchRelatedArticles(
   currentId: string,
-  topic?: string,
+  topic?: string | string[],
   limit = 6
 ): Promise<Article[]> {
   const supabase = createSupabaseAnonClient()
@@ -139,7 +146,9 @@ export async function fetchRelatedArticles(
     .neq('id', currentId)
     .eq('published', true)
 
-  if (topic) {
+  if (Array.isArray(topic)) {
+    query = query.in('topic', topic)
+  } else if (topic) {
     query = query.eq('topic', topic)
   }
 
@@ -174,4 +183,25 @@ export async function fetchAllArticles(): Promise<Article[]> {
   }
 
   return (data ?? []).map(mapArticle)
+}
+
+/**
+ * Every tag in use, most-used first: what the AI tagger is told to reuse and
+ * what typed tags are snapped to (lib/articles/tags.ts canonicalizeTags).
+ * Empty if the tags column doesn't exist yet.
+ */
+export async function fetchTagVocabulary(limit = 200): Promise<string[]> {
+  const supabase = createSupabaseServiceClient()
+  const { data, error } = await supabase.from('articles').select('tags')
+  if (error || !data) return []
+  const counts = new Map<string, { tag: string; n: number }>()
+  for (const row of data as Array<{ tags?: string[] | null }>) {
+    for (const tag of row.tags ?? []) {
+      const key = tag.toLowerCase()
+      const entry = counts.get(key)
+      if (entry) entry.n += 1
+      else counts.set(key, { tag, n: 1 })
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.n - a.n).slice(0, limit).map((entry) => entry.tag)
 }

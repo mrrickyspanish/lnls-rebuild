@@ -15,8 +15,9 @@ import BackToTop from "@/components/article/BackToTop";
 import ViewTracker from "@/components/article/ViewTracker";
 import { fetchArticleBySlug, fetchRelatedArticles, fetchPublishedArticles } from "@/lib/supabase/articles";
 import type { Article } from "@/types/supabase";
-import { isArticleTopic, topicFamily } from "@/lib/topics";
+import { bucketFor, topicFamily, topicsInBucket } from "@/lib/topics";
 import { noteKindLabel, pieceTypeInfo } from "@/lib/articles/piece-type";
+import { hashtag, normalizeTags } from "@/lib/articles/tags";
 import { SITE_OWNER, SITE_OWNER_X_URL, isSiteOwner } from "@/lib/author";
 
 function longDate(value: string) {
@@ -55,7 +56,7 @@ function buildHeroArticle(article: ArticleWithSlideshow, slug: string) {
     author: { name: article.author_name },
     publishedAt: article.published_at || article.created_at,
     readTime: article.read_time || 5,
-    topic: article.topic || "Lakers",
+    topic: bucketFor(article.topic),
   };
 }
 
@@ -93,9 +94,9 @@ export default async function ArticlePage({ params }: PageProps) {
   // The saved article and its body remain unchanged.
   const displayTopic = slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home' ? 'Home' : article.topic;
 
-  // Three stories to read next: same topic first, topped up with the latest
-  // stories when the topic has fewer than three others.
-  let relatedArticles = (await fetchRelatedArticles(article.id, displayTopic, 3)).slice(0, 3);
+  // Three stories to read next: same bucket first, topped up with the latest
+  // stories when the bucket has fewer than three others.
+  let relatedArticles = (await fetchRelatedArticles(article.id, topicsInBucket(bucketFor(displayTopic)), 3)).slice(0, 3);
 
   if (relatedArticles.length < 3) {
     const fallbackArticles = await fetchPublishedArticles(6);
@@ -134,26 +135,29 @@ export default async function ArticlePage({ params }: PageProps) {
         : { '@type': 'Person', name: article.author_name },
     datePublished: article.published_at || article.created_at,
     dateModified: article.note_at || article.updated_at || undefined,
+    keywords: normalizeTags(article.tags).join(', ') || undefined,
     url: shareUrl,
     publisher: { '@type': 'Organization', name: 'The Daily Dribble', logo: { '@type': 'ImageObject', url: `${siteUrl}/uploads/articles/dribbles_favicon_1.png` } },
   };
   const family = topicFamily(displayTopic);
   const publishedAt = currentArticle.publishedAt;
-  // FEATURED is an editorial flag, not a section a reader can browse.
-  const topicLink = displayTopic && displayTopic !== 'FEATURED' && isArticleTopic(displayTopic)
-    ? displayTopic
-    : null;
+  // The story's bucket (Court, Code, Culture, Life), also for older stories
+  // still saved under a pre-bucket topic.
+  const topicLink = bucketFor(displayTopic);
 
   return (
     <>
       <script type="application/ld+json" suppressHydrationWarning>{JSON.stringify(jsonLd)}</script>
       <ViewTracker slug={slug} />
-      <ReadProgress />
-      <BackToTop />
       {/* View counts are tracked (ViewTracker) but only shown in admin: a
           public count invites comparison, and a small one reads as "nobody
           is here". Likes stay public, on the like button. */}
-      <article className="tdd-story" data-family={family}>
+      {/* data-accent-scope: every accent on this page (progress bar, links,
+          pull quotes, stat blocks, share buttons, the Opinion label) takes
+          the story's bucket color. See globals.css. */}
+      <article className="tdd-story" data-family={family} data-accent-scope>
+        <ReadProgress />
+        <BackToTop />
         <header className="tdd-story-head">
           <div className="tdd-story-intro">
             <nav className="tdd-story-crumbs" aria-label="Breadcrumb">
@@ -229,6 +233,13 @@ export default async function ArticlePage({ params }: PageProps) {
               </aside>
             )}
             {article.body && <ArticleBody content={article.body} hideTakeaways={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} hideGeneratedHomePodsHeading={slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home'} />}
+            {normalizeTags(article.tags).length > 0 && (
+              <nav className="tdd-hashtags" aria-label="Tags">
+                {normalizeTags(article.tags).map((tag) => (
+                  <Link key={tag} href={`/news?tag=${encodeURIComponent(tag)}`}>{hashtag(tag)}</Link>
+                ))}
+              </nav>
+            )}
             <AuthorCard
               author={{
                 name: article.author_name,

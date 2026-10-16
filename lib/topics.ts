@@ -1,95 +1,84 @@
 /**
- * Topic families: the one rule that lets the front page use all three brand
- * neons without turning them into decoration.
+ * Every story is tagged with exactly one of four buckets, and the bucket is
+ * the story's topic: Court, Code, Culture or Life. It decides the story's
+ * color everywhere (tags, art, the accents on its page, its share graphics),
+ * the home page filter it falls under, and which subscribers get its email.
  *
- * The wordmark is built from three colored dots, so the palette is already
- * the brand's. Here each dot is given a job: every story is sorted into one
- * of three families, and that family drives the story's tag color and the
- * duotone cast on its art. Color on the front page therefore always means
- * something. It is never applied for visual interest.
- *
- * Keys below are the real topic values the admin editor writes
- * (components/admin/ArticleForm.tsx). Add new topics here when the editor
- * gains them, otherwise they fall back to `games`.
+ * Stories saved before buckets carry an old topic (Lakers, NBA, Tech...).
+ * Those still resolve to a bucket through LEGACY_TOPICS, so nothing
+ * breaks before supabase/topics_to_buckets.sql moves them over, and the
+ * editor pre-selects the matching bucket when one is opened.
  */
-/**
- * Every topic an article can have: the ONE list. The admin editor's dropdown,
- * the /news filter and the footer's topic links all read it.
- *
- * They used to be three separate lists that disagreed. /news accepted `Tech`
- * and `Culture`, which no article can be given, so the footer's "Tech & Culture"
- * and "Sports Culture" links always came back empty, while Football, Analysis
- * and Rumors were silently ignored by the filter (the page just showed
- * everything). Add a topic here and it appears everywhere.
- *
- * FEATURED is an editorial flag kept as a topic by the editor, so it is valid
- * but is not offered as a public link.
- *
- * "Rumors" was retired as a topic: Rumor is now a label
- * (lib/articles/piece-type.ts), so a rumor about the Lakers files under
- * Lakers. Older stories may still carry it; the editor keeps it selectable
- * for them until a new topic is picked.
- */
-export const ARTICLE_TOPICS = [
-  'FEATURED',
-  'Recruit Ready',
-  'Lakers',
-  'NBA',
-  'Football',
-  'Analysis',
-  'Tech',
-  'Lifestyle',
-  'Home',
-] as const
+export const ARTICLE_TOPICS = ['Court', 'Code', 'Culture', 'Life'] as const
 
 export type ArticleTopic = (typeof ARTICLE_TOPICS)[number]
 
-/** Topics offered as public links, in display order. */
-export const PUBLIC_TOPICS: readonly ArticleTopic[] = ['Lakers', 'NBA', 'Football', 'Recruit Ready', 'Analysis', 'Tech', 'Lifestyle', 'Home']
+/** Shown as public links (footer, /news filter), in display order. */
+export const PUBLIC_TOPICS: readonly ArticleTopic[] = ARTICLE_TOPICS
 
 export function isArticleTopic(value: string | null | undefined): value is ArticleTopic {
   return (ARTICLE_TOPICS as readonly string[]).includes(value ?? '')
 }
 
-export type TopicFamily = 'games' | 'analysis' | 'culture' | 'home'
+export type TopicFamily = 'court' | 'code' | 'culture' | 'life'
 
-const FAMILY_BY_TOPIC: Record<string, TopicFamily> = {
-  // On the field and on the court.
-  lakers: 'games',
-  nba: 'games',
-  football: 'games',
-  'recruit ready': 'games',
-  // The numbers and the reporting behind the result.
-  analysis: 'analysis',
-  rumors: 'analysis', // retired topic, still on older stories
-  tech: 'analysis',
-  // Everything around the game.
-  lifestyle: 'culture',
-  featured: 'culture',
-  // Marriage, fatherhood, life at home.
-  home: 'home',
+/** Old topic names, by the bucket they belong to. */
+const LEGACY_TOPICS: Record<TopicFamily, string[]> = {
+  court: ['Lakers', 'NBA', 'Football', 'Recruit Ready', 'Analysis', 'Rumors', 'FEATURED'],
+  code: ['Tech'],
+  culture: ['Lifestyle'],
+  life: ['Home'],
 }
 
+const FAMILY_BY_TOPIC: Record<string, TopicFamily> = Object.fromEntries([
+  ...ARTICLE_TOPICS.map((topic) => [topic.toLowerCase(), topic.toLowerCase() as TopicFamily]),
+  ...Object.entries(LEGACY_TOPICS).flatMap(([family, names]) => names.map((name) => [name.toLowerCase(), family])),
+])
+
 export function topicFamily(topic?: string | null): TopicFamily {
-  if (!topic) return 'games'
-  return FAMILY_BY_TOPIC[topic.trim().toLowerCase()] ?? 'games'
+  if (!topic) return 'court'
+  return FAMILY_BY_TOPIC[topic.trim().toLowerCase()] ?? 'court'
+}
+
+/** True for a pre-bucket topic name (Lakers, NBA, Tech...). */
+export function isLegacyTopic(value: string | null | undefined) {
+  const v = (value ?? '').trim().toLowerCase()
+  return Object.values(LEGACY_TOPICS).some((names) => names.some((name) => name.toLowerCase() === v))
+}
+
+/** The bucket name for any topic, old or new: 'Lakers' -> 'Court'. */
+export function bucketFor(topic?: string | null): ArticleTopic {
+  const family = topicFamily(topic)
+  return ARTICLE_TOPICS.find((bucket) => bucket.toLowerCase() === family) ?? 'Court'
+}
+
+/** Every stored topic value that means this bucket, old names included. */
+export function topicsInBucket(bucket: ArticleTopic): string[] {
+  const family = bucket.toLowerCase() as TopicFamily
+  return [bucket, ...LEGACY_TOPICS[family]]
+}
+
+/** Each bucket's color, for places CSS can't reach (share graphics). */
+export const BUCKET_COLORS: Record<TopicFamily, string> = {
+  court: '#FF6B35',
+  code: '#00D4FF',
+  culture: '#B857FF',
+  life: '#2FE6C8',
 }
 
 /** Podcast and video shelves are not topic-tagged, so they get fixed families. */
 export const PODCAST_FAMILY: TopicFamily = 'culture'
-export const VIDEO_FAMILY: TopicFamily = 'analysis'
+export const VIDEO_FAMILY: TopicFamily = 'code'
 
 /**
- * The four lanes readers see (About page, home page filters, subscribe
- * form). Each lane is one topic family, so a story's lane always follows
- * its topic: Court = games, Code = analysis, Culture = culture, Home = home.
+ * The four buckets as lanes: About page, home page filters, subscribe form.
  * `key` is what a subscriber's lane picks are stored as.
  */
 export const LANES = [
-  { key: 'court', label: 'Court', family: 'games' },
-  { key: 'code', label: 'Code', family: 'analysis' },
+  { key: 'court', label: 'Court', family: 'court' },
+  { key: 'code', label: 'Code', family: 'code' },
   { key: 'culture', label: 'Culture', family: 'culture' },
-  { key: 'home', label: 'Home', family: 'home' },
+  { key: 'life', label: 'Life', family: 'life' },
 ] as const satisfies ReadonlyArray<{ key: string; label: string; family: TopicFamily }>
 
 export type LaneKey = (typeof LANES)[number]['key']
@@ -109,5 +98,8 @@ export function laneForTopic(topic?: string | null) {
  * story's lane.
  */
 export function wantsStory(subscriberLanes: string[] | null | undefined, topic?: string | null) {
-  return !subscriberLanes?.length || subscriberLanes.includes(laneForTopic(topic).key)
+  if (!subscriberLanes?.length) return true
+  // "home" was the Life lane's first name; anyone who picked it means Life.
+  const picks = subscriberLanes.map((lane) => (lane === 'home' ? 'life' : lane))
+  return picks.includes(laneForTopic(topic).key)
 }

@@ -271,7 +271,7 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
               {/* The formatted story, rendered the way it will publish */}
               <div>
                 <p className="mb-2 text-sm font-semibold text-neutral-200">Story</p>
-                <div className="tdd-ai-preview rounded border border-neutral-800 bg-[var(--bg-primary)] px-4 py-2" data-family={topicFamily(current.topic)}>
+                <div className="tdd-ai-preview rounded border border-neutral-800 bg-[var(--bg-primary)] px-4 py-2" data-family={topicFamily(current.topic)} data-accent-scope>
                   <ArticleBody content={doc as any} />
                 </div>
               </div>

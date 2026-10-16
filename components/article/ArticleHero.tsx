@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { responsiveImage } from '@/lib/images';
 
 type Article = {
   slug: string;
@@ -62,9 +63,10 @@ export default function ArticleHero({ currentArticle }: ArticleHeroProps) {
           />
         ) : (
           <img
-            src={currentArticle.heroImage}
+            {...responsiveImage(currentArticle.heroImage, '(min-width: 1024px) 55vw, 100vw')}
             alt={currentArticle.title}
             loading="eager"
+            fetchPriority="high"
             decoding="async"
           />
         )}

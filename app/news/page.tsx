@@ -3,8 +3,12 @@ import Link from 'next/link';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { fetchPublishedArticles } from '@/lib/supabase/articles';
 import type { Article } from '@/types/supabase';
-import { isArticleTopic, topicFamily } from '@/lib/topics';
+import { bucketFor, isArticleTopic, isLegacyTopic, topicFamily, topicsInBucket } from '@/lib/topics';
+import { redirect } from 'next/navigation';
+import { fetchTagVocabulary } from '@/lib/supabase/articles';
+import { canonicalizeTags } from '@/lib/articles/tags';
 import { pieceTypeInfo } from '@/lib/articles/piece-type';
+import { hashtag, normalizeTags } from '@/lib/articles/tags';
 
 async function getArticles(): Promise<Article[]> {
   return fetchPublishedArticles(12);
@@ -15,10 +19,10 @@ async function getArticles(): Promise<Article[]> {
 // separate per-topic map that had no entry for Football or Analysis, so those
 // chips fell back to grey.
 const FAMILY_CHIP: Record<ReturnType<typeof topicFamily>, string> = {
-  games: 'border-neon-orange text-neon-orange',
-  analysis: 'border-neon-blue text-neon-blue',
+  court: 'border-neon-orange text-neon-orange',
+  code: 'border-neon-blue text-neon-blue',
   culture: 'border-neon-purple text-neon-purple',
-  home: 'border-[#3DDC97] text-[#3DDC97]',
+  life: 'border-[#2FE6C8] text-[#2FE6C8]',
 };
 
 function formatDate(dateString?: string | null): string {
@@ -36,10 +40,20 @@ export const metadata = {
   description: 'Everything I write, newest first: sports, tech, culture, and life at home.',
 };
 
-export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string}>}) {
-  const {topic} = await searchParams;
+export default async function NewsPage({searchParams}: {searchParams: Promise<{topic?: string; tag?: string}>}) {
+  const {topic, tag: rawTag} = await searchParams;
+  // Old links (/news?topic=Lakers, from the old footer and search results)
+  // go to the bucket that topic now lives in.
+  if (topic && !isArticleTopic(topic) && isLegacyTopic(topic)) {
+    redirect(`/news?topic=${encodeURIComponent(bucketFor(topic))}`);
+  }
+  // ?tag=LeBron%20James: every story with that tag (the #hashtags on stories
+  // link here). Snapped to the site's spelling, so ?tag=lakers finds Lakers.
+  const typedTag = normalizeTags([rawTag ?? ''])[0];
+  const tag = typedTag ? canonicalizeTags([typedTag], await fetchTagVocabulary())[0] : undefined;
   const selectedTopic = isArticleTopic(topic) ? topic : undefined;
-  const articles = await fetchPublishedArticles(24, selectedTopic);
+  // A bucket filter also matches stories still saved under an old topic.
+  const articles = await fetchPublishedArticles(24, selectedTopic ? topicsInBucket(selectedTopic) : undefined, tag);
 
   // Helper for image rendering (matches ContentRowWithHero)
   const canUseNextImage = (url: string) => {
@@ -54,10 +68,10 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background pb-48">
         <div className="relative z-10 max-w-7xl mx-auto px-6 pt-10 md:pt-20">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight">
-            {selectedTopic || "Stories"}
+            {tag ? hashtag(tag) : selectedTopic || "Stories"}
           </h1>
           <p className="mt-4 text-lg md:text-2xl text-[var(--text-secondary)] max-w-xl">
-            Everything I write, newest first.
+            {tag ? `Every story tagged ${tag}, newest first.` : "Everything I write, newest first."}
           </p>
         </div>
       </div>
@@ -74,7 +88,7 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article, i) => {
                   const isHero = i === 0;
-                  const colorClass = article.topic ? FAMILY_CHIP[topicFamily(article.topic)] : 'border-white/30 text-white/70';
+                  const colorClass = FAMILY_CHIP[topicFamily(article.topic)];
 
                   return (
                     <Link href={`/news/${article.slug}`} key={article.id}>
@@ -114,9 +128,9 @@ export default async function NewsPage({searchParams}: {searchParams: Promise<{t
                           )}
                         </div>
                         <div className="p-6 space-y-3">
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2" data-family={topicFamily(article.topic)}>
                             <span className={`inline-flex px-3 py-1 rounded-full border text-xs font-semibold tracking-wide uppercase ${colorClass}`}>
-                              {(article.topic || 'NBA').toUpperCase()}
+                              {bucketFor(article.topic).toUpperCase()}
                             </span>
                             {pieceTypeInfo(article.article_type) && (
                               <span className="tdd-kind" data-kind={article.article_type ?? undefined}>

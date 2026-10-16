@@ -4,8 +4,8 @@ import { SITE_OWNER, SITE_OWNER_X_URL } from '@/lib/author'
 
 /**
  * Lane colors follow the site-wide topic-family rule (lib/topics.ts):
- * Court is on-field coverage, Code is analysis and tech, Culture is
- * lifestyle, Home is marriage and fatherhood. The same
+ * Court is sports, Code is tech, Culture is lifestyle, Life is marriage,
+ * fatherhood and home. The same
  * three families color story tags and art on the front page, so a color here
  * means the same thing it means there.
  *
@@ -16,13 +16,13 @@ import { SITE_OWNER, SITE_OWNER_X_URL } from '@/lib/author'
 const lanes = [
   {
     title: 'Court',
-    family: 'games',
+    family: 'court',
     desc: 'The sharpest takes on the NBA, football, recruiting, and the global game. No fluff.',
   },
   {
     title: 'Code',
-    family: 'analysis',
-    desc: 'Tech, analytics, sneakers, and gaming. Everything shaping the future of the sport.',
+    family: 'code',
+    desc: 'Tech, sneakers, and gaming. Everything shaping what comes next.',
   },
   {
     title: 'Culture',
@@ -30,8 +30,8 @@ const lanes = [
     desc: 'Fashion, music, film, and art. The lifestyle that grew up around the game.',
   },
   {
-    title: 'Home',
-    family: 'home',
+    title: 'Life',
+    family: 'life',
     desc: 'Marriage, fatherhood, and life at my own front door. It’s where a lot of my takes start.',
   },
 ]
@@ -48,10 +48,10 @@ export default function AboutPage() {
     <div className="tdd-home tdd-about">
       <header className="tdd-about-hero">
         <h1>
-          <span data-family="games">Court.</span>
-          <span data-family="analysis">Code.</span>
+          <span data-family="court">Court.</span>
+          <span data-family="code">Code.</span>
           <span data-family="culture">Culture.</span>
-          <span data-family="home">Home.</span>
+          <span data-family="life">Life.</span>
         </h1>
         <p>Sports, tech, culture, and life at home, from one writer.</p>
       </header>

@@ -1,7 +1,8 @@
 import Link from 'next/link'
 
 import { pieceTypeInfo } from '@/lib/articles/piece-type'
-import { topicFamily } from '@/lib/topics'
+import { optimizedSrc, responsiveImage } from '@/lib/images'
+import { bucketFor, topicFamily } from '@/lib/topics'
 import type { Article } from '@/types/supabase'
 
 type RelatedStoriesProps = {
@@ -38,16 +39,14 @@ export default function RelatedStories({ articles }: RelatedStoriesProps) {
             <Link href={`/news/${article.slug}`} className="tdd-related-story">
               <div
                 className={`tdd-related-art ${article.cover_has_text && article.hero_image_url ? 'tdd-related-art--whole' : ''}`}
-                style={article.cover_has_text && article.hero_image_url ? ({ '--shot': `url(${JSON.stringify(article.hero_image_url)})` } as React.CSSProperties) : undefined}
+                style={article.cover_has_text && article.hero_image_url ? ({ '--shot': `url(${JSON.stringify(optimizedSrc(article.hero_image_url, 640))})` } as React.CSSProperties) : undefined}
               >
                 {article.hero_image_url
-                  ? <img src={article.hero_image_url} alt="" loading="lazy" decoding="async" />
+                  ? <img {...responsiveImage(article.hero_image_url, '(min-width: 768px) 33vw, 100vw')} alt="" loading="lazy" decoding="async" />
                   : <span className="tdd-related-fallback" aria-hidden="true">TDD</span>}
               </div>
-              <div className="tdd-related-tags">
-                {article.topic && article.topic !== 'FEATURED' && (
-                  <span className="tdd-tag" data-family={topicFamily(article.topic)}>{article.topic}</span>
-                )}
+              <div className="tdd-related-tags" data-family={topicFamily(article.topic)}>
+                <span className="tdd-tag">{bucketFor(article.topic)}</span>
                 {pieceTypeInfo(article.article_type) && (
                   <span className="tdd-kind" data-kind={article.article_type ?? undefined}>
                     {pieceTypeInfo(article.article_type)?.label}

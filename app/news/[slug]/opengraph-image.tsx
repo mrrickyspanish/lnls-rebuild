@@ -16,7 +16,7 @@ export default async function StoryOpengraphImage({ params }: { params: Promise<
   const { slug } = await params
   const article = await fetchArticleBySlug(slug)
   return renderShareCard(
-    article ?? { title: 'The Daily Dribble', hero_image_url: '', article_type: null, cover_has_text: false },
+    article ?? { title: 'The Daily Dribble', hero_image_url: '', article_type: null, cover_has_text: false, topic: '' },
     'og',
     getSiteUrl()
   )

@@ -36,7 +36,7 @@ export async function subscribeToNewsletter(
   email: string,
   source: string = "site",
   lanes: string[] | null = null
-): Promise<{ data: unknown; error: PostgrestError | null }> {
+): Promise<{ data: unknown; error: PostgrestError | null; token: string }> {
   const supabase = createSupabaseServiceClient();
   const unsubscribeToken = randomUUID();
   const row = { email, active: true, unsubscribe_token: unsubscribeToken };
@@ -54,7 +54,7 @@ export async function subscribeToNewsletter(
   if (error) {
     console.error("Supabase insert error:", error);
   }
-  return { data, error };
+  return { data, error, token: unsubscribeToken };
 }
 
 /**

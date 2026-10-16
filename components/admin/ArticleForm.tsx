@@ -1,7 +1,8 @@
 'use client'
 import { SITE_OWNER, isSiteOwner } from '@/lib/author'
 import { NOTE_KINDS, PIECE_TYPES } from '@/lib/articles/piece-type'
-import { ARTICLE_TOPICS, isArticleTopic } from '@/lib/topics'
+import { MAX_TAGS, hashtag, normalizeTags } from '@/lib/articles/tags'
+import { bucketFor, isArticleTopic, topicFamily } from '@/lib/topics'
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
@@ -44,6 +45,13 @@ function bylineChoices(initialData?: Article) {
  * label and logo itself, on the page and in the share graphics.
  */
 const AI_COVER_PROMPT = 'Wide 16:9 editorial sports photograph of [DESCRIBE THE SCENE]. Dramatic arena or stadium lighting, shallow depth of field, shot like a real sports photographer, rich true color with warm orange highlights. No text, words, letters, numbers or logos anywhere, including jerseys, signs and scoreboards. No watermark. Main subject centered with room around it.'
+
+const BUCKETS = [
+  { name: 'Court', hint: 'Lakers, NBA, football, recruiting.' },
+  { name: 'Code', hint: 'Tech, sneakers, gaming.' },
+  { name: 'Culture', hint: 'Fashion, music, film, art.' },
+  { name: 'Life', hint: 'Marriage, fatherhood, home.' },
+] as const
 
 const SHARE_SIZES = [
   { format: 'post', label: 'Post', ratio: '4:5', aspect: 'aspect-[4/5]' },
@@ -140,10 +148,12 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
     authorBio: initialData?.author_name ? initialData.author_bio || '' : SITE_OWNER.bio,
     authorTwitter: initialData?.author_name ? initialData.author_twitter || '' : SITE_OWNER.twitter,
     readTime: initialData?.read_time || 5,
-    topic: initialData?.topic || 'Lakers',
+    // Older stories open on the bucket their old topic belongs to.
+    topic: bucketFor(initialData?.topic),
     videoUrl: initialData?.video_url || '',
     featured: initialData?.featured || false,
     coverHasText: Boolean(initialData?.cover_has_text),
+    tags: normalizeTags(initialData?.tags),
     // Older stories have no label until one is picked; saving requires one.
     pieceType: (initialData?.article_type as string | null | undefined) || '',
     rumorSource: initialData?.rumor_source || '',
@@ -153,6 +163,14 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
   const authorChoices = bylineChoices(initialData)
 
   const [aiOpen, setAiOpen] = useState(false)
+  const [tagDraft, setTagDraft] = useState('')
+  const addTags = (text: string) => {
+    const next = normalizeTags([...formData.tags, ...text.split(',')])
+    setFormData((prev) => ({ ...prev, tags: next }))
+    setTagDraft('')
+  }
+  const removeTag = (tag: string) =>
+    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }))
   const [promptCopied, setPromptCopied] = useState(false)
 
   const copyPrompt = async () => {
@@ -381,24 +399,41 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           />
         </div>
 
-        <div>
-          <label htmlFor="article-topic" className={LABEL}>Topic</label>
-          <select
-            id="article-topic"
-            value={formData.topic}
-            onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-            className={FIELD}
-          >
-            {ARTICLE_TOPICS.map((topic) => (
-              <option key={topic} value={topic}>{topic}</option>
-            ))}
-            {/* A retired topic (e.g. "Rumors") stays selectable on the story
-                that has it, so opening it doesn't silently change it. */}
-            {initialData?.topic && !isArticleTopic(initialData.topic) && (
-              <option value={initialData.topic}>{initialData.topic} (retired, pick a new topic)</option>
-            )}
-          </select>
-        </div>
+        {/* The bucket is the story's one tag: its color everywhere, its home
+            page filter and who gets its email (lib/topics.ts). */}
+        <fieldset id="article-topic">
+          <legend className={LABEL}>Bucket</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {BUCKETS.map((bucket) => {
+              const checked = formData.topic === bucket.name
+              return (
+                <label
+                  key={bucket.name}
+                  data-family={topicFamily(bucket.name)}
+                  className={`flex min-h-[64px] cursor-pointer flex-col justify-center rounded border-2 px-3 py-2 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-white ${
+                    checked ? 'tdd-bucket-on' : 'border-neutral-700 bg-neutral-900 hover:border-neutral-500'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="article-topic"
+                    value={bucket.name}
+                    checked={checked}
+                    onChange={() => setFormData({ ...formData, topic: bucket.name })}
+                    className="sr-only"
+                  />
+                  <span className="text-base font-bold text-[var(--family)]">{bucket.name}</span>
+                  <span className="mt-0.5 text-sm leading-snug text-neutral-400">{bucket.hint}</span>
+                </label>
+              )
+            })}
+          </div>
+          {initialData?.topic && !isArticleTopic(initialData.topic) && (
+            <p className={HINT}>
+              Was tagged &ldquo;{initialData.topic}&rdquo;, which now goes under {bucketFor(initialData.topic)}. Saving keeps it there unless you pick another.
+            </p>
+          )}
+        </fieldset>
 
         {/* The label readers see on the story and its cards. /standards
             explains each one. Required, but checked on save rather than with
@@ -463,6 +498,57 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
             The editor previews the published page. Tap an image, stat block or table to get its edit buttons.
           </p>
         </div>
+      </section>
+
+      {/* ---------- Tags ---------- */}
+      <section className={`${SECTION} mt-10`} aria-labelledby="tags-heading">
+        <div>
+          <h2 id="tags-heading" className={SECTION_TITLE}>Tags</h2>
+          <p className={HINT}>
+            Who and what the story is about, shown as #hashtags at the end of it and used by search. Leave this empty and they&apos;re written for you when you save.
+          </p>
+        </div>
+        {formData.tags.length > 0 && (
+          <ul className="flex flex-wrap gap-2" aria-label="Tags">
+            {formData.tags.map((tag) => (
+              <li key={tag}>
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-neutral-600 bg-neutral-900 pl-4 pr-3 text-base text-white hover:border-red-500"
+                  aria-label={`Remove tag ${tag}`}
+                >
+                  {hashtag(tag)} <span aria-hidden="true" className="text-neutral-400">×</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {formData.tags.length < MAX_TAGS && (
+          <div>
+            <label htmlFor="tag-input" className="sr-only">Add a tag</label>
+            <input
+              id="tag-input"
+              type="text"
+              value={tagDraft}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value.includes(',')) addTags(value)
+                else setTagDraft(value)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (tagDraft.trim()) addTags(tagDraft)
+                }
+              }}
+              onBlur={() => { if (tagDraft.trim()) addTags(tagDraft) }}
+              className={FIELD}
+              placeholder="Add a tag, e.g. LeBron James"
+              enterKeyHint="done"
+            />
+          </div>
+        )}
       </section>
 
       {/* ---------- Cover image ---------- */}
