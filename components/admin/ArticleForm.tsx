@@ -369,7 +369,7 @@ export default function ArticleForm({ initialData, mode }: ArticleFormProps) {
           <span className="flex-1">
             <span className="block text-base font-bold text-white">Paste &amp; format with AI</span>
             <span className="mt-0.5 block text-sm text-neutral-300">
-              Formats your draft, fixes typos, and suggests a headline, summary and search description. You review it all first.
+              Adds structure to your draft without changing a word, and suggests a headline, summary and search description. You review it all first.
             </span>
           </span>
         </button>
