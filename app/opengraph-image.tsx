@@ -65,8 +65,8 @@ borderTop: '18px solid #FF6B35',
           </div>
         </div>
 
-        <div style={{ fontSize: 38, color: '#A8ACB2', display: 'flex' }}>
-          Sports, tech, culture, and life at home, from one writer.
+        <div style={{ fontSize: 30, color: '#A8ACB2', display: 'flex' }}>
+          Sports, tech, culture, and life at home, from the mind of Rick Barnes Jr.
         </div>
       </div>
     ),

@@ -376,7 +376,28 @@ a.tdd-nav-icon { display: none; }
   line-height: 1.5;
 }
 
-@media (min-width: 760px) {
+/* Tagline: one line, always (components/Tagline.tsx). The full line is
+   about 32em wide, so it shows only where its container is at least that
+   wide; otherwise the short byline shows. Container-query em units are the
+   container's own font size, so this holds at any text size. */
+.tdd-tagline {
+  display: block;
+  container-type: inline-size;
+}
+
+.tdd-tagline-full,
+.tdd-tagline-short { white-space: nowrap; }
+
+.tdd-tagline-full { display: none; }
+
+@container (min-width: 32.5em) {
+  .tdd-tagline-full { display: inline; }
+  .tdd-tagline-short { display: none; }
+}
+
+/* Date and tagline side by side only where the full tagline still fits on
+   its one line next to the date; stacked below that. */
+@media (min-width: 960px) {
   .tdd-dateline {
     grid-template-columns: auto 1fr;
     align-items: baseline;
@@ -535,25 +556,41 @@ a:active .tdd-cta { transform: translateY(1px); }
 }
 
 /* ---------- Lane filter -------------------------------------------------- */
+/* One row at every width, never wrapping: on phones the five buttons share
+   the row evenly; from 600px they sit at their natural width. */
 .tdd-lane-filter {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 26px;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin: 0 0 24px;
 }
 
 .tdd-lane-filter button {
-  min-height: 44px;
-  padding: 0 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 6px;
   border: 2px solid var(--tdd-rule);
   background: transparent;
   color: var(--tdd-muted);
   font-family: var(--tdd-text);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   transition: border-color 0.18s var(--tdd-ease), color 0.18s var(--tdd-ease), background 0.18s var(--tdd-ease);
+}
+
+/* Smallest phones: tighter spacing so CULTURE still fits inside its button. */
+@media (max-width: 359px) {
+  .tdd-lane-filter { gap: 4px; }
+  .tdd-lane-filter button { padding: 0 3px; letter-spacing: 0.02em; }
+}
+
+@media (min-width: 600px) {
+  .tdd-lane-filter { gap: 8px; }
+  .tdd-lane-filter button { flex: 0 0 auto; padding: 0 14px; letter-spacing: 0.1em; }
 }
 
 .tdd-lane-filter button:hover { color: var(--tdd-ink); border-color: var(--family, var(--tdd-ink)); }
@@ -834,7 +871,6 @@ a:active .tdd-cta { transform: translateY(1px); }
   line-height: 1.5;
   color: var(--tdd-muted);
   margin-top: 24px;
-  max-width: 40ch;
 }
 
 .tdd-about-section { margin-top: 64px; }
@@ -1488,6 +1524,24 @@ button.tdd-cta:disabled {
 }
 
 .tdd-story-byline strong { color: var(--tdd-ink); font-weight: 700; }
+
+/* One line at every width. The full byline is about 24.5em wide; where the
+   row is narrower, "By" and "read" drop out, then the year. The row is its
+   own container, so the thresholds follow its real width and text size. */
+.tdd-story-byline {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  container-type: inline-size;
+}
+
+@container (max-width: 25em) {
+  .tdd-byline-by,
+  .tdd-byline-read { display: none; }
+}
+
+@container (max-width: 21em) {
+  .tdd-byline-year { display: none; }
+}
 
 .tdd-story-crumbs a.tdd-kind { color: var(--tdd-ink); margin-left: 6px; }
 .tdd-story-crumbs a.tdd-kind[data-kind='opinion'] { color: #0D0D0D; }

@@ -23,7 +23,7 @@ const ibmPlex = IBM_Plex_Sans({
 
 const SITE_URL = getSiteUrl()
 const DESCRIPTION =
-  'Sports, tech, culture, and life at home, from one writer: Rick Barnes Jr. Read The Daily Dribble and listen to Late Night Lake Show.'
+  'Sports, tech, culture, and life at home, from the mind of Rick Barnes Jr. Read The Daily Dribble and listen to Late Night Lake Show.'
 
 /**
  * Site metadata. This used to live in app/head.tsx, which is a Next 13.0/13.1

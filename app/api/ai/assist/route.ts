@@ -1,8 +1,8 @@
 import { requireAdmin } from '@/lib/auth/guard'
 import { NextRequest, NextResponse } from 'next/server';
 import { askClaude } from '@/lib/ai/claude';
-import { cleanStats } from '@/lib/tiptap/stat-block-extension';
-import { DEFAULT_TAKEAWAYS_TITLE } from '@/lib/tiptap/key-takeaways-extension';
+import { buildFormattedDoc, numberedView, parseDraft } from '@/lib/ai/format-plan';
+import { plainDocFrom, verifyFormattedDoc } from '@/lib/ai/format-verify';
 
 // Formatting a long article (the whole piece written back out as JSON, with
 // thinking) can run past Vercel's default function time limit.
@@ -44,41 +44,15 @@ function isRecord(value: unknown): value is AnyRecord {
   return typeof value === 'object' && value !== null;
 }
 
-function toText(value: unknown): string | null {
-  // Preserve whitespace-only strings (e.g. " " between bold words).
-  // Only reject truly empty strings.
-  if (typeof value !== 'string') return null;
-  if (value === '') return null;
-  return value;
-}
-
-function makeFallbackDoc(rawText: string): AnyRecord {
-  const text = rawText.trim() || 'Formatting completed, but no structured content was returned.';
-  return {
-    type: 'doc',
-    content: [
-      {
-        type: 'paragraph',
-        content: [{ type: 'text', text }],
-      },
-    ],
-  };
-}
-
-// Marks the editor and article page know. An unknown mark type in the
-// returned JSON would make the editor refuse the whole document.
-const ALLOWED_MARKS = new Set(['bold', 'italic', 'underline']);
-
 /** Lowercased with spaces and thousands separators removed, for loose matching. */
 function squash(text: string): string {
   return text.toLowerCase().replace(/[\s,]/g, '');
 }
 
 /**
- * True when every number in `text` appears in the writer's raw text. The
- * formatter may restructure and summarize, but a sports site can't publish a
- * stat the model made up, so blocks built around numbers (stats, tables,
- * takeaways) only keep numbers that are in the source.
+ * True when every number in `text` appears in the writer's raw text. Used
+ * for the headline/summary suggestions: a suggestion with a number that
+ * isn't in the draft is dropped.
  */
 function numbersAreSourced(text: string, source: string): boolean {
   const numbers = text.match(/\d[\d.,]*/g) ?? [];
@@ -86,28 +60,11 @@ function numbersAreSourced(text: string, source: string): boolean {
   return numbers.every((n) => haystack.includes(squash(n).replace(/[.,]+$/, '')));
 }
 
-/** True when `text` appears in the source, ignoring case, spacing and punctuation. */
-function appearsInSource(text: string, source: string): boolean {
-  const plain = (value: string) => squash(value.replace(/[“”"‘’'.,!?;:()\u2014\u2013-]/g, ''));
-  const needle = plain(text);
-  return needle.length > 0 && plain(source).includes(needle);
-}
-
 /** All text inside a sanitized node tree, joined. */
 function allText(node: unknown): string {
   if (Array.isArray(node)) return node.map(allText).join(' ');
   if (!isRecord(node)) return '';
   return (typeof node.text === 'string' ? node.text : '') + ' ' + allText(node.content ?? []);
-}
-
-function inlineText(content: unknown[]): string {
-  return content.map((node) => (isRecord(node) && typeof node.text === 'string' ? node.text : '')).join('');
-}
-
-function sanitizeInline(node: AnyRecord): AnyRecord[] {
-  return Array.isArray(node.content)
-    ? (node.content.map(sanitizeInlineNode).filter(Boolean) as AnyRecord[])
-    : [];
 }
 
 function extractJsonObject(text: string): string {
@@ -129,187 +86,6 @@ function extractJsonObject(text: string): string {
   }
 
   return withoutFences;
-}
-
-function sanitizeInlineNode(node: unknown): AnyRecord | null {
-  if (!isRecord(node) || typeof node.type !== 'string') return null;
-
-  if (node.type === 'text') {
-    const text = toText(node.text);
-    if (!text) return null;
-
-    const marks = Array.isArray(node.marks)
-      ? node.marks
-          .filter((mark) => isRecord(mark) && typeof mark.type === 'string' && ALLOWED_MARKS.has(mark.type))
-          .map((mark) => ({ type: (mark as AnyRecord).type }))
-      : undefined;
-
-    return marks && marks.length > 0
-      ? { type: 'text', text, marks }
-      : { type: 'text', text };
-  }
-
-  if (node.type === 'hardBreak') {
-    return { type: 'hardBreak' };
-  }
-
-  return null;
-}
-
-function sanitizeBlockNode(node: unknown, source: string): AnyRecord | null {
-  if (!isRecord(node) || typeof node.type !== 'string') return null;
-
-  if (node.type === 'paragraph' || node.type === 'calloutCard') {
-    const inline = sanitizeInline(node);
-    if (inline.length === 0) return null;
-    return { type: node.type, content: inline };
-  }
-
-  // A pull quote repeats a line from the story; sanitizeTipTapDoc checks
-  // that it does once the whole document is known.
-  if (node.type === 'pullQuote') {
-    const inline = sanitizeInline(node);
-    if (inline.length === 0) return null;
-    return { type: 'pullQuote', content: inline };
-  }
-
-  if (node.type === 'blockquote') {
-    const paragraphs = Array.isArray(node.content)
-      ? node.content
-          .map((child) => sanitizeBlockNode(child, source))
-          .filter((child): child is AnyRecord => isRecord(child) && child.type === 'paragraph')
-      : [];
-    if (paragraphs.length === 0) return null;
-    return { type: 'blockquote', content: paragraphs };
-  }
-
-  if (node.type === 'heading') {
-    const inline = sanitizeInline(node);
-    if (inline.length === 0) return null;
-    const level = isRecord(node.attrs) && typeof node.attrs.level === 'number'
-      ? node.attrs.level
-      : 2;
-    const normalizedLevel = Math.max(2, Math.min(3, level));
-    return { type: 'heading', attrs: { level: normalizedLevel }, content: inline };
-  }
-
-  if (node.type === 'bulletList' || node.type === 'orderedList') {
-    const items = Array.isArray(node.content)
-      ? node.content
-          .map((item) => sanitizeBlockNode(item, source))
-          .filter((item): item is AnyRecord => isRecord(item) && item.type === 'listItem')
-      : [];
-
-    if (items.length === 0) return null;
-    return { type: node.type, content: items };
-  }
-
-  if (node.type === 'listItem') {
-    const children = Array.isArray(node.content)
-      ? node.content
-          .map((child) => sanitizeBlockNode(child, source))
-          .filter(Boolean)
-      : [];
-
-    if (children.length === 0) return null;
-    return { type: 'listItem', content: children };
-  }
-
-  if (node.type === 'keyTakeaways') {
-    const list = Array.isArray(node.content)
-      ? node.content.find((child) => isRecord(child) && child.type === 'bulletList')
-      : null;
-    const sanitized = list ? sanitizeBlockNode(list, source) : null;
-    const items = Array.isArray(sanitized?.content)
-      ? (sanitized.content as AnyRecord[]).filter((item) =>
-          numbersAreSourced(allText(item), source)
-        )
-      : [];
-    if (items.length === 0) return null;
-    const rawTitle = isRecord(node.attrs) && typeof node.attrs.title === 'string' ? node.attrs.title.trim() : '';
-    return {
-      type: 'keyTakeaways',
-      attrs: { title: rawTitle && rawTitle.length <= 40 ? rawTitle : DEFAULT_TAKEAWAYS_TITLE },
-      content: [{ type: 'bulletList', content: items }],
-    };
-  }
-
-  if (node.type === 'statBlock') {
-    const attrs = isRecord(node.attrs) ? node.attrs : {};
-    const stats = cleanStats(attrs.stats).filter((stat) =>
-      numbersAreSourced(`${stat.value} ${stat.label}`, source)
-    );
-    if (stats.length === 0) return null;
-    const statSource = typeof attrs.source === 'string' ? attrs.source.trim().slice(0, 80) : '';
-    return { type: 'statBlock', attrs: { stats, source: statSource } };
-  }
-
-  if (node.type === 'table') {
-    const rows = Array.isArray(node.content)
-      ? node.content.filter((row): row is AnyRecord => isRecord(row) && row.type === 'tableRow').slice(0, 30)
-      : [];
-    const firstRow = rows[0];
-    const width = Math.min(Array.isArray(firstRow?.content) ? firstRow.content.length : 0, 8);
-    if (rows.length < 2 || width < 2) return null;
-
-    let sourced = true;
-    const cleanRows = rows.map((row, rowIndex) => {
-      const cells = Array.isArray(row.content) ? row.content.slice(0, width) : [];
-      while (cells.length < width) cells.push({});
-      return {
-        type: 'tableRow',
-        content: cells.map((cell) => {
-          const paragraphs = isRecord(cell) && Array.isArray(cell.content)
-            ? cell.content
-                .map((child) => sanitizeBlockNode(child, source))
-                .filter((child): child is AnyRecord => isRecord(child) && child.type === 'paragraph')
-            : [];
-          if (!numbersAreSourced(allText(paragraphs), source)) sourced = false;
-          return {
-            type: rowIndex === 0 ? 'tableHeader' : 'tableCell',
-            content: paragraphs.length > 0 ? paragraphs : [{ type: 'paragraph' }],
-          };
-        }),
-      };
-    });
-    // A table with a number that isn't in the writer's text is dropped whole:
-    // one invented figure makes the rest untrustworthy.
-    return sourced ? { type: 'table', content: cleanRows } : null;
-  }
-
-  return null;
-}
-
-function sanitizeTipTapDoc(value: unknown, rawText: string): AnyRecord {
-  if (!isRecord(value) || value.type !== 'doc') {
-    return makeFallbackDoc(rawText);
-  }
-
-  const content = Array.isArray(value.content)
-    ? value.content.map((node) => sanitizeBlockNode(node, rawText)).filter(Boolean)
-    : [];
-
-  if (content.length === 0) {
-    return makeFallbackDoc(rawText);
-  }
-
-  // A pull quote has to be a line from the story. The formatter fixes typos,
-  // so a genuine line can differ from the raw text by a corrected word: it
-  // counts if it matches either the raw text or the rest of the story. A line
-  // the model wrote itself is kept as an ordinary paragraph.
-  const storyText = allText((content as AnyRecord[]).filter((node) => node.type !== 'pullQuote'));
-  const checked = (content as AnyRecord[]).map((node) =>
-    node.type === 'pullQuote' &&
-    !appearsInSource(inlineText(node.content as unknown[]), rawText) &&
-    !appearsInSource(inlineText(node.content as unknown[]), storyText)
-      ? { type: 'paragraph', content: node.content }
-      : node
-  );
-
-  return {
-    type: 'doc',
-    content: checked,
-  };
 }
 
 export type FormatSuggestions = {
@@ -587,88 +363,80 @@ Thread (one tweet per line, numbered):`);
     .filter(line => line.trim().length > 0)
     .map(line => line.replace(/^\d+\.\s*/, '').trim());
 }
-// Format raw article text into structured TipTap JSON
+// Format raw article text into structured TipTap JSON.
+//
+// The writer's words are untouchable, so the AI never writes the story. It
+// sees the draft with every paragraph and sentence numbered and returns a
+// formatting plan; lib/ai/format-plan.ts builds the story from the writer's
+// original text by following it, skipping anything that doesn't fit. The
+// result is always the writer's exact words, formatted. verifyFormattedDoc
+// re-checks it as a safety net (a bug, not the AI, is the only way it could
+// fail), falling back to the plain draft.
 async function formatArticle(content: string, context?: any): Promise<{ doc: AnyRecord; suggestions: FormatSuggestions }> {
   const currentHeadline = typeof context?.title === 'string' && context.title.trim() ? context.title.trim() : null;
-  const isOpinion = context?.articleType === 'opinion';
-  // The answer is the whole article as JSON, several times longer than the
-  // prose, plus the model's thinking. A cut-off document can't be parsed, so
-  // the limit is generous; tokens are only billed when used.
-  const text = await askClaude(`You are a professional editor preparing an article for The Daily Dribble, Rick Barnes Jr.'s one-writer publication covering sports (the Lakers, the NBA, football), tech, culture, and life at home as a husband and dad.
+  const paras = parseDraft(content);
+  if (paras.length === 0) throw new Error('Paste a draft to format.');
 
-Turn the writer's raw draft below into a structured TipTap JSON document, and suggest a headline, summary and search description.
+  const text = await askClaude(`You format drafts for The Daily Dribble, Rick Barnes Jr.'s one-writer publication. You are a formatter, not an editor. Your only job is structure. The author's words are untouchable.
 
-EDITING - keep the writer's voice:
-- Fix spelling, grammar and punctuation mistakes.
-- Do not otherwise reword, shorten, reorder or add sentences.
-- Never change anything inside quotation marks: quotes are what someone said.
-- Never change names, nicknames, slang, or numbers.
+You never write or rewrite the story. The draft below is split into numbered paragraphs [P1], [P2]... and sentences <s1>, <s2>... You return a formatting PLAN that points at them, and the site applies it to the author's own text. Anything that doesn't match the draft exactly is ignored.
 
-FORMATTING:
-- Use H2 headings for major sections (player analysis, game recap sections, etc.); H3 for subsections if needed
-- Bold player names, key stats, and important phrases
-- Create proper paragraph breaks for readability
-- Use bullet lists for lineups or lists of points
-- Use a blockquote for a quoted passage (a player's or coach's words that run a sentence or more)
-- Use at most one pullQuote: a single striking line copied word-for-word from the story, placed a few paragraphs after where it appears
-- Use calloutCard for one important aside or note
-- ${isOpinion ? 'Do NOT add keyTakeaways or a short-version roundup. This is a personal opinion essay: lead with the writer’s opening and preserve the reveal.' : 'Use keyTakeaways (2-4 short bullets) near the top only for longer news stories or explainers with several distinct points.'}
-- Use statBlock for 1-3 standout numbers, and a table for comparisons across players or games
+What the plan can do:
+- headings: turn one of the author's own short lines into a heading (level 2, or 3 for a sub-section). Use for lines that already read like a section title. Never for a normal sentence in the middle of the argument.
+- emphasis: bold or italicize exact words already in a paragraph (copy them exactly, same capitalization). Use sparingly: key names, key numbers, the punchline phrase.
+- lists: turn a run of short paragraphs into a list ({"from": 5, "to": 8}), or one paragraph's sentences into list items ({"from": 4}). Only where the author is already listing things. "ordered": true for steps or rankings.
+- quotes: paragraph numbers that are a quoted passage (someone else's words).
+- breaks: split a long paragraph into two after a sentence, where the thought turns.
+- pullQuote: one sentence worth repeating big, by paragraph and sentence number, placed "after" a later paragraph. It's a copy; the sentence also stays where it is.
+- tables: from one sentence with several stats. Cells must be the exact words and numbers from that sentence. You may write short column headers (1-3 words, no numbers on their own, e.g. "Stat", "Made-Attempted", "3PT").
+- statBlocks: 1-3 big-number cards from one sentence. Each value is the exact number text from the sentence (e.g. "81", "28 of 46"); you may write a short label (1-4 words, no numbers on their own, e.g. "Points").
 
-NUMBERS - STRICT:
-- Every number in a statBlock, table, keyTakeaways bullet, headline, summary or search description must appear in the raw text exactly. Never calculate, round, convert, or invent a number. If the text has no standout numbers, use no statBlock or table.
+Never invent a number, never compute one (no percentages, totals or averages), and never change the author's words, slang, typos or style. Use only what the draft supports; an empty plan is fine for a short piece.
 
-SUGGESTIONS:
-- headlines: 3 different headline options, under 90 characters each, in the publication's confident, conversational voice. ${currentHeadline ? `The writer's working headline is: "${currentHeadline}".` : 'The writer has no headline yet.'}
-- summary: 1-2 sentences (under 280 characters) shown under the headline. It should make someone want to read on, without repeating the headline.
+Also suggest, separately (these are offered to the writer, never put into the story):
+- headlines: 3 headline options, under 90 characters each. ${currentHeadline ? `The writer's working headline is: "${currentHeadline}".` : 'The writer has no headline yet.'}
+- summary: 1-2 sentences (under 280 characters) shown under the headline.
 - metaDescription: under 155 characters, for search results and link previews.
+- Every number in a suggestion must appear in the draft exactly.
 
-RAW TEXT:
-${content}
+DRAFT:
+${numberedView(paras)}
 
-Return ONLY a JSON object in this exact structure (no markdown, no explanations):
+Return ONLY a JSON object, no markdown, no explanations:
 {
-  "doc": {
-    "type": "doc",
-    "content": [
-      {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Heading text"}]},
-      {"type": "paragraph", "content": [{"type": "text", "text": "Regular text"}, {"type": "text", "marks": [{"type": "bold"}], "text": "bold text"}]},
-      {"type": "blockquote", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A quoted passage."}]}]},
-      {"type": "pullQuote", "content": [{"type": "text", "text": "One line copied from the story"}]},
-      {"type": "calloutCard", "content": [{"type": "text", "text": "Important callout"}]},
-      {"type": "keyTakeaways", "attrs": {"title": "The short version"}, "content": [{"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A key point"}]}]}]}]},
-      {"type": "statBlock", "attrs": {"stats": [{"value": "31.4", "label": "Points per game"}], "source": "NBA.com"}},
-      {"type": "table", "content": [
-        {"type": "tableRow", "content": [{"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Player"}]}]}, {"type": "tableHeader", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "PPG"}]}]}]},
-        {"type": "tableRow", "content": [{"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Name"}]}]}, {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "24.8"}]}]}]}
-      ]},
-      {"type": "bulletList", "content": [{"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "List item"}]}]}]}
-    ]
+  "plan": {
+    "headings": [{"p": 1, "level": 2}],
+    "emphasis": [{"p": 2, "text": "exact words", "mark": "bold"}],
+    "lists": [{"from": 5, "to": 7, "ordered": false}],
+    "quotes": [],
+    "breaks": [{"p": 2, "afterSentence": 2}],
+    "pullQuote": {"p": 2, "s": 1, "after": 4},
+    "tables": [{"p": 3, "s": 1, "after": 3, "headers": ["Stat", "Made-Attempted"], "rows": [["from the field", "28 of 46"], ["from three", "7 of 13"]]}],
+    "statBlocks": [{"p": 2, "s": 1, "after": 2, "stats": [{"value": "81", "label": "Points"}]}]
   },
   "headlines": ["Option one", "Option two", "Option three"],
   "summary": "One or two sentences.",
   "metaDescription": "Under 155 characters."
-}
+}`, { maxTokens: 16000 });
 
-IMPORTANT: Return only the JSON object, no other text.`, { maxTokens: 64000 });
-  if (!text) {
-    throw new Error('No text content in AI response');
-  }
-
+  let parsed: unknown = null;
   try {
-    const parsed = JSON.parse(extractJsonObject(text));
-    // Older-style answers are a bare document with no suggestions.
-    const rawDoc = isRecord(parsed) && parsed.type === 'doc' ? parsed : isRecord(parsed) ? parsed.doc : null;
-    const doc = sanitizeTipTapDoc(rawDoc, content);
-    if (isOpinion && Array.isArray(doc.content)) {
-      doc.content = doc.content.filter((node) => !isRecord(node) || node.type !== 'keyTakeaways');
-    }
-    return { doc, suggestions: sanitizeSuggestions(parsed, content, doc) };
+    parsed = JSON.parse(extractJsonObject(text ?? ''));
   } catch (error) {
-    console.error('Failed to parse AI-formatted article:', error);
-    const doc = makeFallbackDoc(content);
-    return { doc, suggestions: sanitizeSuggestions(null, content, doc) };
+    // Unreadable answer: the draft still comes back, with paragraph breaks.
+    console.error('Failed to parse AI formatting plan:', error);
   }
+
+  const plan = isRecord(parsed) ? parsed.plan : null;
+  let doc = buildFormattedDoc(paras, plan) as AnyRecord;
+  const check = verifyFormattedDoc(doc as any, content);
+  if (!check.ok) {
+    console.error('Formatter safety net tripped (builder bug); returning the plain draft:', check.reason);
+    doc = plainDocFrom(content) as AnyRecord;
+  } else {
+    doc = check.doc as AnyRecord;
+  }
+  return { doc, suggestions: sanitizeSuggestions(parsed, content, doc) };
 }
 // Generate podcast show notes from transcript
 async function generateShowNotes(transcript: string, context?: any): Promise<{

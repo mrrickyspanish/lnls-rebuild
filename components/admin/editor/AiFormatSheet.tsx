@@ -40,9 +40,9 @@ const BUTTON = 'min-h-[48px] rounded px-4 text-base font-semibold disabled:curso
 
 /**
  * AI Auto-Format as a full-screen sheet on phones (a large panel on desktop):
- * paste a draft, let the AI structure it, fix typos and suggest a headline,
- * summary and search description, then review all of it before anything in
- * the article changes. Apply or Discard; nothing is saved until the article
+ * paste a draft and get it back formatted (the AI only plans the structure;
+ * the site builds it from the writer's exact words, so no word can change),
+ * with headline, summary and search-description ideas. Review, then Apply. Apply or Discard; nothing is saved until the article
  * itself is saved.
  *
  * Portaled to <body> because it opens from inside the article <form>; its
@@ -170,9 +170,9 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
           {step === 'paste' && (
             <div className="space-y-4">
               <p className="text-base text-neutral-300">
-                Paste your draft. The AI adds headings, quotes, stats and takeaways, fixes typos, and suggests a
-                headline, summary and search description. Quotes, names and numbers stay exactly as written, and you
-                review everything before it’s used.
+                Paste your draft and get it back formatted: exactly your words, with headings, bold and italics, lists,
+                a pull quote, stat cards and tables built from your own numbers. Your wording is never touched, typos
+                included. You review it before anything changes.
               </p>
 
               <div className="flex flex-wrap gap-2">
