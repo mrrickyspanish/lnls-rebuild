@@ -1,3 +1,5 @@
+import { isValidLabel } from '@/lib/ai/format-plan'
+
 /**
  * The AI formatter's guarantee: it may add structure, never change words.
  *
@@ -10,8 +12,10 @@
  * - A pull quote must be a word-for-word copy of one of the writer's
  *   sentences. One that isn't is dropped (it's a copy, so no words are lost).
  * - A stats table must take every cell from a single sentence of the
- *   writer's, verbatim, with headers that are generic ("Stat", "Value") or
- *   left off. One that doesn't is dropped.
+ *   writer's, verbatim. Headers are labels the writer approved the AI
+ *   writing: short, with no bare numbers. A stat card's value must come
+ *   from one of the writer's sentences; its label follows the same rule.
+ *   A table or stat card that doesn't qualify is dropped.
  *
  * Any word-level difference in the story rejects the whole result.
  */
@@ -20,13 +24,11 @@ type Node = { type?: string; text?: string; content?: Node[]; attrs?: Record<str
 
 /** Block types the formatter may use. Everything else is an invented block. */
 const STORY_BLOCKS = new Set(['paragraph', 'heading', 'bulletList', 'orderedList', 'blockquote'])
-const COPY_BLOCKS = new Set(['pullQuote', 'table'])
-const GENERIC_HEADERS = new Set(['', 'stat', 'stats', 'value', 'values'])
+const COPY_BLOCKS = new Set(['pullQuote', 'table', 'statBlock'])
 
 /** Plain names for blocks the formatter isn't allowed to add. */
 const BLOCK_NAMES: Record<string, string> = {
   keyTakeaways: 'a takeaways box',
-  statBlock: 'a stat block',
   calloutCard: 'a callout box',
   image: 'an image',
   videoEmbed: 'a video',
@@ -113,7 +115,7 @@ function isValidStatsTable(node: Node, sentences: string[]): boolean {
     for (const cell of row.content ?? []) {
       const text = cellText(cell)
       if (cell.type === 'tableHeader') {
-        if (!GENERIC_HEADERS.has(text.toLowerCase())) return false
+        if (text && !isValidLabel(text, 3)) return false
       } else if (text) {
         bodyCells.push(text)
       }
@@ -121,6 +123,15 @@ function isValidStatsTable(node: Node, sentences: string[]): boolean {
   }
   if (bodyCells.length === 0) return false
   return sentences.some((sentence) => bodyCells.every((cell) => sentence.includes(cell)))
+}
+
+function isValidStatBlock(node: Node, sentences: string[]): boolean {
+  const stats = Array.isArray(node.attrs?.stats) ? (node.attrs!.stats as { value?: string; label?: string }[]) : []
+  return stats.length > 0 && stats.every((stat) =>
+    typeof stat.value === 'string' && /\d/.test(stat.value) &&
+    sentences.some((sentence) => sentence.includes(normalizeForCompare(stat.value!))) &&
+    isValidLabel(stat.label)
+  )
 }
 
 export interface FormatCheck {
@@ -191,6 +202,11 @@ export function verifyFormattedDoc(doc: { content?: Node[] } | null | undefined,
     }
     if (node.type === 'table') {
       if (isValidStatsTable(node, sentences)) kept.push(node)
+      else dropped.tables += 1
+      continue
+    }
+    if (node.type === 'statBlock') {
+      if (isValidStatBlock(node, sentences)) kept.push(node)
       else dropped.tables += 1
       continue
     }

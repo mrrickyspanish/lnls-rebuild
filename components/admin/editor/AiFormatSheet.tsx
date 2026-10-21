@@ -40,9 +40,9 @@ const BUTTON = 'min-h-[48px] rounded px-4 text-base font-semibold disabled:curso
 
 /**
  * AI Auto-Format as a full-screen sheet on phones (a large panel on desktop):
- * paste a draft, let the AI add structure (never changing a word; the server
- * rejects any version that does) and suggest a headline, summary and search
- * description, then review all of it before anything in the article changes. Apply or Discard; nothing is saved until the article
+ * paste a draft and get it back formatted (the AI only plans the structure;
+ * the site builds it from the writer's exact words, so no word can change),
+ * with headline, summary and search-description ideas. Review, then Apply. Apply or Discard; nothing is saved until the article
  * itself is saved.
  *
  * Portaled to <body> because it opens from inside the article <form>; its
@@ -54,8 +54,6 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
   const [error, setError] = useState('')
   const [doc, setDoc] = useState<JSONContent | null>(null)
   const [suggestions, setSuggestions] = useState<Suggestions | null>(null)
-  // The server's word-for-word check on the AI's version (app/api/ai/assist).
-  const [check, setCheck] = useState<{ verified: boolean; reason: string | null; dropped?: { pullQuotes: number; tables: number } } | null>(null)
   const [canReadClipboard, setCanReadClipboard] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const pasteRef = useRef<HTMLTextAreaElement>(null)
@@ -121,7 +119,6 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
       const s: Suggestions = data.suggestions ?? { headlines: [], summary: null, metaDescription: null, readTime: 0 }
       setDoc(data.doc)
       setSuggestions(s)
-      setCheck(data.check ?? null)
       // Fields the writer already filled in stay theirs unless they opt in.
       setHeadlineChoice(current.title.trim() || !s.headlines[0] ? KEEP : s.headlines[0])
       setSummary(s.summary ?? '')
@@ -173,10 +170,9 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
           {step === 'paste' && (
             <div className="space-y-4">
               <p className="text-base text-neutral-300">
-                Paste your draft. The AI adds structure only: paragraph breaks, headings from your own lines, bold and
-                italics, lists, a pull quote copied from your words, and stats tables from your own numbers. It never
-                changes, adds or removes a word, typos included. Every result is checked word for word against your
-                draft, and you review everything before it&apos;s used.
+                Paste your draft and get it back formatted: exactly your words, with headings, bold and italics, lists,
+                a pull quote, stat cards and tables built from your own numbers. Your wording is never touched, typos
+                included. You review it before anything changes.
               </p>
 
               <div className="flex flex-wrap gap-2">
@@ -219,20 +215,6 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
 
           {step === 'review' && doc && suggestions && (
             <div className="space-y-6">
-              {check && !check.verified && (
-                <div className="rounded border border-red-700/60 bg-red-900/20 px-3 py-3 text-sm text-red-200" role="alert">
-                  <p className="font-semibold text-red-100">The AI changed your words, so its version was thrown out.</p>
-                  <p className="mt-1">It {check.reason}. Below is your draft exactly as written, with paragraph breaks only. Apply it as-is, or go back and try formatting again.</p>
-                </div>
-              )}
-              {check?.verified && (
-                <p className="rounded border border-emerald-700/50 bg-emerald-900/20 px-3 py-2 text-sm text-emerald-200" role="status">
-                  ✓ Checked word for word: every word is yours, in your order.
-                  {check.dropped && check.dropped.pullQuotes + check.dropped.tables > 0
-                    ? ` Removed ${[check.dropped.pullQuotes ? `${check.dropped.pullQuotes} pull quote${check.dropped.pullQuotes > 1 ? 's' : ''}` : '', check.dropped.tables ? `${check.dropped.tables} table${check.dropped.tables > 1 ? 's' : ''}` : ''].filter(Boolean).join(' and ')} that weren’t exact copies of your sentences.`
-                    : ''}
-                </p>
-              )}
               {editorMediaCount > 0 && (
                 <p className="rounded border border-yellow-700/60 bg-yellow-900/20 px-3 py-2 text-sm text-yellow-200">
                   Apply replaces the story in the editor, including its {editorMediaCount} {editorMediaCount === 1 ? 'image or embed' : 'images and embeds'}. Add them back afterwards, or Discard to keep the current story.
