@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Tagline from '@/components/Tagline'
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Play } from 'lucide-react'
@@ -124,7 +125,7 @@ export default function EditorialHome({
           was missing. */}
       <div className="tdd-dateline">
         <p className="tdd-dateline-date">{dateline}</p>
-        <p className="tdd-dateline-line">Sports, tech, culture, and life at home, from one writer.</p>
+        <p className="tdd-dateline-line"><Tagline /></p>
       </div>
 
       {articles.length > 0 && (

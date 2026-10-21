@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import NewsletterSignup from './NewsletterSignup'
+import Tagline from './Tagline'
 import { CONTACT_EMAIL, SOCIAL_HANDLE, SOCIALS } from '@/lib/contact'
 import { PUBLIC_TOPICS } from '@/lib/topics'
 
@@ -29,7 +30,7 @@ export default function Footer() {
         <div className="tdd-footer-main">
           <div className="tdd-footer-brand">
             <p className="tdd-footer-wordmark">The Daily Dribble</p>
-            <p>Sports, tech, culture, and life at home, from one writer.</p>
+            <p><Tagline /></p>
           </div>
 
           <nav aria-label="Sections">

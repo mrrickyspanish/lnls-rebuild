@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import Tagline from '@/components/Tagline'
+
 import { SITE_OWNER, SITE_OWNER_X_URL } from '@/lib/author'
 
 /**
@@ -53,7 +55,7 @@ export default function AboutPage() {
           <span data-family="culture">Culture.</span>
           <span data-family="life">Life.</span>
         </h1>
-        <p>Sports, tech, culture, and life at home, from one writer.</p>
+        <p><Tagline /></p>
       </header>
 
       {/* One writer, and the site says so: the byline on every story links
