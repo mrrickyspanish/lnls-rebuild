@@ -20,6 +20,14 @@ import { noteKindLabel, pieceTypeInfo } from "@/lib/articles/piece-type";
 import { hashtag, normalizeTags } from "@/lib/articles/tags";
 import { SITE_OWNER, SITE_OWNER_X_URL, isSiteOwner } from "@/lib/author";
 
+function shortDate(value: string) {
+  return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+function yearOf(value: string) {
+  return new Date(value).getUTCFullYear();
+}
+
 function longDate(value: string) {
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
@@ -183,11 +191,13 @@ export default async function ArticlePage({ params }: PageProps) {
             </nav>
             <h1 className="tdd-story-title" data-length={article.title.length > 70 ? "long" : undefined}>{article.title}</h1>
             {article.excerpt && <p className="tdd-story-dek">{article.excerpt}</p>}
+            {/* One line, always: on narrow screens "By", "read" and then the
+                year drop out (globals.css, .tdd-story-byline) rather than wrap. */}
             <p className="tdd-story-byline">
               {article.author_name && (
                 <>
                   <span>
-                    By{" "}
+                    <span className="tdd-byline-by">By </span>
                     {byOwner
                       ? <Link href={SITE_OWNER.aboutPath} className="tdd-story-author"><strong>{article.author_name}</strong></Link>
                       : <strong>{article.author_name}</strong>}
@@ -197,11 +207,13 @@ export default async function ArticlePage({ params }: PageProps) {
               )}
               {publishedAt && (
                 <>
-                  <time dateTime={publishedAt}>{longDate(publishedAt)}</time>
+                  <time dateTime={publishedAt}>
+                    {shortDate(publishedAt)}<span className="tdd-byline-year">, {yearOf(publishedAt)}</span>
+                  </time>
                   <span aria-hidden="true">·</span>
                 </>
               )}
-              <span>{currentArticle.readTime} min read</span>
+              <span>{currentArticle.readTime} min<span className="tdd-byline-read"> read</span></span>
             </p>
           </div>
           <ArticleHero currentArticle={currentArticle} />

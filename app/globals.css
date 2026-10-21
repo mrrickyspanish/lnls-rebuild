@@ -1525,6 +1525,24 @@ button.tdd-cta:disabled {
 
 .tdd-story-byline strong { color: var(--tdd-ink); font-weight: 700; }
 
+/* One line at every width. The full byline is about 24.5em wide; where the
+   row is narrower, "By" and "read" drop out, then the year. The row is its
+   own container, so the thresholds follow its real width and text size. */
+.tdd-story-byline {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  container-type: inline-size;
+}
+
+@container (max-width: 25em) {
+  .tdd-byline-by,
+  .tdd-byline-read { display: none; }
+}
+
+@container (max-width: 21em) {
+  .tdd-byline-year { display: none; }
+}
+
 .tdd-story-crumbs a.tdd-kind { color: var(--tdd-ink); margin-left: 6px; }
 .tdd-story-crumbs a.tdd-kind[data-kind='opinion'] { color: #0D0D0D; }
 .tdd-story-crumbs a.tdd-kind:hover { border-color: var(--family); }
