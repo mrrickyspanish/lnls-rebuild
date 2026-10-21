@@ -1,0 +1,36 @@
+.page { padding-top: 44px; }
+.hero { padding: 12px 0 44px; border-bottom: 2px solid var(--tdd-ink); }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--tdd-muted); line-height: 1.5; margin: 0 0 18px; }
+.hero h1 { font-size: clamp(56px, 10vw, 140px); line-height: .98; max-width: 12ch; }
+.roles { margin-top: 24px; font-size: clamp(17px, 2vw, 24px); font-weight: 700; }
+.intro { margin-top: 20px; max-width: 58ch; font-size: clamp(18px, 2vw, 22px); line-height: 1.65; color: var(--tdd-muted); }
+.links { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; margin-top: 28px; }
+.links a { line-height: 1.5; }
+.credentials { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; list-style: none; padding: 28px 0; border-bottom: 1px solid var(--tdd-rule); }
+.credentials li { display: flex; flex-direction: column; gap: 7px; }
+.credentials strong { font-size: 15px; line-height: 1.4; }
+.credentials span { font-size: 13px; line-height: 1.5; color: var(--tdd-muted); }
+.section { display: grid; gap: 26px; padding: 44px 0; border-bottom: 1px solid var(--tdd-rule); }
+.section h2, .selected h2 { font-size: clamp(30px, 4vw, 48px); line-height: 1.1; }
+.copy { min-width: 0; }
+.copy > p { max-width: 62ch; font-size: 18px; line-height: 1.75; color: var(--tdd-muted); margin: 0 0 18px; }
+.copy > p:last-child { margin-bottom: 0; }
+.lanes { display: grid; gap: 22px; margin-top: 32px; }
+.lanes h3 { font-size: 28px; color: var(--family); }
+.lanes p { font-size: 16px; line-height: 1.6; color: var(--tdd-muted); margin-top: 8px; }
+.selected { padding: 48px 0; border-bottom: 1px solid var(--tdd-rule); }
+.stories { display: grid; gap: 32px; margin-top: 30px; }
+.story { display: block; min-width: 0; }
+.story img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+.story > p { color: var(--family); text-transform: uppercase; font-size: 12px; letter-spacing: .1em; font-weight: 700; margin: 18px 0 10px; }
+.story h3 { font-size: 27px; line-height: 1.18; }
+.story > span { display: block; margin-top: 16px; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.story:hover h3 { color: var(--family); }
+@media (min-width: 640px) { .lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) {
+  .page { padding-top: 60px; }
+  .hero { padding-bottom: 52px; }
+  .credentials { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 32px 0; }
+  .section { grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr); gap: 64px; padding: 56px 0; }
+  .stories { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+}

@@ -8,7 +8,7 @@
 export const SITE_OWNER = {
   name: 'Rick Barnes Jr.',
   twitter: '@mrrickyspanish',
-  bio: 'Founder of The Daily Dribble & Creative Eye Studios. Digital creator and sports storyteller mixing hoops, culture, and life. Patiently persistent.',
+  bio: 'Founder of The Daily Dribble and Creative Eye Studios. Marketing leader and Late Night Lake Show co-host covering sports, technology, culture, and everyday life.',
   aboutPath: '/about',
 } as const
 
