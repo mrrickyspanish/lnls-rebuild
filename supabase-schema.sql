@@ -73,9 +73,7 @@ CREATE POLICY "News stream is viewable by everyone"
 -- Newsletter: Insert only (no public reads)
 ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can subscribe"
-  ON newsletter_subscribers FOR INSERT
-  WITH CHECK (true);
+-- No public policies: the site reads and writes subscribers with the service role only.
 
 -- Analytics: Insert only
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
