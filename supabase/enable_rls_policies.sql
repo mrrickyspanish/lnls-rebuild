@@ -14,12 +14,9 @@ FOR INSERT
 TO anon, authenticated
 WITH CHECK (true);
 
+-- No public read policy. Subscriber emails and unsubscribe tokens must never be readable with the
+-- public anon key. Every site route reads this table with the service role, which bypasses RLS.
 DROP POLICY IF EXISTS "Allow public read access to newsletter_subscribers" ON public.newsletter_subscribers;
-CREATE POLICY "Allow public read access to newsletter_subscribers"
-ON public.newsletter_subscribers
-FOR SELECT
-TO anon, authenticated
-USING (true);
 
 DROP POLICY IF EXISTS "Allow service role full access to newsletter_subscribers" ON public.newsletter_subscribers;
 CREATE POLICY "Allow service role full access to newsletter_subscribers"
