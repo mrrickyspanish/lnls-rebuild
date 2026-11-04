@@ -7,12 +7,10 @@
 
 ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 
+-- No public insert policy either. Sign-ups go through /api/newsletter/subscribe, which uses the
+-- service role, so the public anon key never needs to write this table.
 DROP POLICY IF EXISTS "Allow public insert for newsletter subscriptions" ON public.newsletter_subscribers;
-CREATE POLICY "Allow public insert for newsletter subscriptions"
-ON public.newsletter_subscribers
-FOR INSERT
-TO anon, authenticated
-WITH CHECK (true);
+DROP POLICY IF EXISTS "Anyone can subscribe" ON public.newsletter_subscribers;
 
 -- No public read policy. Subscriber emails and unsubscribe tokens must never be readable with the
 -- public anon key. Every site route reads this table with the service role, which bypasses RLS.
