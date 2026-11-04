@@ -62,8 +62,10 @@ export default function StandardsPage() {
       <section className="tdd-standards-section" aria-labelledby="standards-mine">
         <h2 id="standards-mine">The takes are mine.</h2>
         <p>
-          I write everything here myself. The Daily Dribble is independent and isn&apos;t
-          affiliated with the NBA or any team. <Link href="/about">More about me</Link>.
+          I use AI tools to help research and draft some stories. I edit every one, and nothing
+          goes live until I&apos;ve read it and signed off. The takes, the jokes and the calls are
+          mine, and so are the mistakes. The Daily Dribble is independent and isn&apos;t affiliated
+          with the NBA or any team. <Link href="/about">More about me</Link>.
         </p>
       </section>
     </div>

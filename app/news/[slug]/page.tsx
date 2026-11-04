@@ -98,9 +98,8 @@ export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
   if (!article) return notFound();
-  // Presentation-only editorial classification until the CMS topic is updated.
-  // The saved article and its body remain unchanged.
-  const displayTopic = slug === 'i-know-me-that-s-the-problem-with-apple-s-new-smart-home' ? 'Home' : article.topic;
+  // The CMS topic is the single source of a story's bucket.
+  const displayTopic = article.topic;
 
   // Three stories to read next: same bucket first, topped up with the latest
   // stories when the bucket has fewer than three others.
