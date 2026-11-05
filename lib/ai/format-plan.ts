@@ -18,8 +18,9 @@
  * writer's sentence.
  */
 
-type Mark = 'bold' | 'italic'
-type Range = { start: number; end: number; mark: Mark }
+type Mark = 'bold' | 'italic' | 'link'
+/** A formatting range in a paragraph's text. Links carry their address. */
+type Range = { start: number; end: number; mark: Mark; href?: string }
 type Span = { start: number; end: number }
 
 export interface Para {
@@ -33,7 +34,51 @@ export interface Para {
   sentences: Span[]
 }
 
-type DocNode = { type: string; attrs?: Record<string, unknown>; content?: DocNode[]; text?: string; marks?: { type: Mark }[] }
+type DocNode = { type: string; attrs?: Record<string, unknown>; content?: DocNode[]; text?: string; marks?: { type: Mark; attrs?: Record<string, unknown> }[] }
+
+/**
+ * A markdown link typed into the draft: [words](https://...). Only web
+ * addresses count, so a stray bracket in the writer's text is left alone.
+ */
+export const DRAFT_LINK = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g
+const DRAFT_BOLD = /\*\*(?=\S)([^*]+?)\*\*|__(?=\S)([^_]+?)__/g
+
+/**
+ * Removes typed markers from `src`, keeping the words inside them. Returns
+ * the clean text, where each kept span landed, and which characters of `src`
+ * were removed (to move ranges found earlier).
+ */
+function unwrap(src: string, re: RegExp, inner: (m: RegExpMatchArray) => string) {
+  let text = ''
+  let last = 0
+  const found: { start: number; end: number; m: RegExpMatchArray }[] = []
+  const removed: number[] = []
+  for (const m of src.matchAll(re)) {
+    const at = m.index!
+    const words = inner(m)
+    const lead = m[0].indexOf(words)
+    text += src.slice(last, at)
+    for (let k = 0; k < lead; k++) removed.push(at + k)
+    found.push({ start: text.length, end: text.length + words.length, m })
+    text += words
+    for (let k = at + lead + words.length; k < at + m[0].length; k++) removed.push(k)
+    last = at + m[0].length
+  }
+  text += src.slice(last)
+  const shift = (pos: number) => pos - removed.filter((r) => r < pos).length
+  return { text, found, shift }
+}
+
+/** A draft line's words with typed links and bold turned into ranges. */
+export function readInline(line: string): { text: string; ranges: Range[] } {
+  const links = unwrap(line, DRAFT_LINK, (m) => m[1])
+  const bold = unwrap(links.text, DRAFT_BOLD, (m) => m[1] ?? m[2])
+  const ranges: Range[] = [
+    ...links.found.map(({ start, end, m }) => ({ start: bold.shift(start), end: bold.shift(end), mark: 'link' as const, href: m[2] })),
+    ...bold.found.map(({ start, end }) => ({ start, end, mark: 'bold' as const })),
+  ]
+  return { text: bold.text, ranges: ranges.filter((r) => r.end > r.start) }
+}
 
 const SENTENCE_BREAK = /(?<=[.!?…]["')\]]?)\s+(?=["'(\[]?[A-Z0-9])/g
 
@@ -64,18 +109,9 @@ export function parseDraft(raw: string): Para[] {
       else if (/^\d{1,3}[.)][ \t]+/.test(rest)) { kind = 'ordered'; rest = rest.replace(/^\S+[ \t]+/, '') }
       else if (/^>[ \t]?/.test(rest)) { kind = 'quote'; rest = rest.replace(/^>[ \t]?/, '') }
 
-      // **bold** / __bold__ typed in the draft: keep the words, record the bold.
-      const ranges: Range[] = []
-      let text = ''
-      let last = 0
-      for (const m of rest.matchAll(/\*\*(?=\S)([^*]+?)\*\*|__(?=\S)([^_]+?)__/g)) {
-        text += rest.slice(last, m.index!)
-        const inner = m[1] ?? m[2]
-        ranges.push({ start: text.length, end: text.length + inner.length, mark: 'bold' })
-        text += inner
-        last = m.index! + m[0].length
-      }
-      text += rest.slice(last)
+      // **bold** / __bold__ and [words](https://...) typed in the draft:
+      // keep the words, record the bold and the link.
+      const { text, ranges } = readInline(rest)
       return { text, kind, level, ranges, sentences: sentenceSpans(text) }
     })
 }
@@ -138,7 +174,12 @@ function textRuns(text: string, from: number, to: number, ranges: Range[]): DocN
     const [a, b] = [points[i], points[i + 1]]
     const piece = text.slice(a, b)
     if (!piece) continue
-    const marks = [...new Set(ranges.filter((r) => r.start <= a && r.end >= b).map((r) => r.mark))].map((type) => ({ type }))
+    const covering = ranges.filter((r) => r.start <= a && r.end >= b)
+    const marks: NonNullable<DocNode['marks']> = []
+    for (const r of covering) {
+      if (marks.some((m) => m.type === r.mark)) continue
+      marks.push(r.mark === 'link' ? { type: 'link', attrs: { href: r.href } } : { type: r.mark })
+    }
     runs.push(marks.length ? { type: 'text', text: piece, marks } : { type: 'text', text: piece })
   }
   // Trim the outer whitespace of the run so paragraphs don't start or end with spaces.

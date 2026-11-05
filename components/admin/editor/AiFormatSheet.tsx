@@ -172,7 +172,7 @@ export default function AiFormatSheet({ editorText, editorMediaCount, current, o
               <p className="text-base text-neutral-300">
                 Paste your draft and get it back formatted: exactly your words, with headings, bold and italics, lists,
                 a pull quote, stat cards and tables built from your own numbers. Your wording is never touched, typos
-                included. You review it before anything changes.
+                included. Links typed as [words](https://...) become real links. You review it before anything changes.
               </p>
 
               <div className="flex flex-wrap gap-2">

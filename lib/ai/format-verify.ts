@@ -1,4 +1,4 @@
-import { isValidLabel } from '@/lib/ai/format-plan'
+import { DRAFT_LINK, isValidLabel } from '@/lib/ai/format-plan'
 
 /**
  * The AI formatter's guarantee: it may add structure, never change words.
@@ -54,14 +54,15 @@ export function normalizeForCompare(text: string): string {
 
 /**
  * Formatting markers already typed into the draft (bullets, list numbers,
- * markdown headings, quote arrows, **bold** / __bold__) become real
- * structure in the result, so they aren't words to compare.
+ * markdown headings, quote arrows, **bold** / __bold__, [links](https://...))
+ * become real structure in the result, so they aren't words to compare.
  */
 export function rawForCompare(raw: string): string {
   return raw
     .replace(/^[ \t]*(?:[-*\u2022\u2023\u25E6\u2043]|\d{1,3}[.)])[ \t]+/gm, '')
     .replace(/^[ \t]*#{1,6}[ \t]+/gm, '')
     .replace(/^[ \t]*>[ \t]?/gm, '')
+    .replace(DRAFT_LINK, '$1')
     .replace(/\*\*(?=\S)([^*]+?)\*\*/g, '$1')
     .replace(/__(?=\S)([^_]+?)__/g, '$1')
 }
