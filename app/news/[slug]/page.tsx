@@ -75,8 +75,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const siteUrl = getSiteUrl();
   const url = `${siteUrl.replace(/\/$/, "")}/news/${slug}`;
   const description = article.meta_description || article.excerpt || "TDD article";
-  // The preview image comes from ./opengraph-image.tsx (cover, label and
-  // headline, generated). X falls back to it when no twitter:image is set.
+  // Social previews use the story's hero image as uploaded: no generated card,
+  // no crop. A story without a hero falls back to the site card
+  // (app/opengraph-image.tsx).
+  const hero = article.hero_image_url ? new URL(article.hero_image_url, siteUrl).toString() : null;
+  const images = hero ? [{ url: hero, alt: article.title }] : undefined;
   return {
     title: article.title,
     description,
@@ -85,11 +88,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url,
       type: "article",
+      ...(images ? { images } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description,
+      ...(images ? { images } : {}),
     },
   };
 }
